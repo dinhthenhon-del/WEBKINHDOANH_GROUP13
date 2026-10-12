@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  [THÀNH VIÊN 1 - DỮ LIỆU XML NỘI DUNG & CÂU CHUYỆN GỐM TRANG CHỦ]
+  Tài liệu: server/public/data/storytelling.xml
+  Kỹ thuật áp dụng: Slide 10 (XML và Mô hình DOM - Thẻ gốc, phân tầng Node)
+  Mục đích: Lưu trữ toàn bộ nội dung tĩnh, thông điệp truyền thông, triết lý
+  nung củi Bát Tràng và các câu chuyện văn hóa phục vụ hiển thị Trang Chủ.
+  ============================================================================
+-->
+<storytelling>
+  <brand>
+    <name>Gốm Mộc</name>
+    <slogan>Tĩnh Tại Trong Từng Thớ Đất &amp; Ngọn Lửa Nung Củi</slogan>
+    <tagline>Nghệ thuật gốm nung củi Bát Tràng</tagline>
+    <description>Mỗi dáng hình là sự hòa quyện nhịp nhàng giữa cốt đất sét phù sa sông Hồng, ngọn lửa lò củi 1.300°C và tâm huyết trầm tích của người thợ gốm.</description>
+    <artisan>Nghệ nhân Bát Tràng</artisan>
+    <foundedYear>1474</foundedYear>
+    <village>Làng nghề Bát Tràng, Gia Lâm, Hà Nội</village>
+  </brand>
+
+  <!-- 3 Giá trị cốt lõi / Điểm chạm nghệ thuật -->
+  <touchpoints>
+    <item id="tp-1">
+      <icon>landscape</icon>
+      <title>100% Đất Thô</title>
+      <subtitle>Phù sa sông Hồng</subtitle>
+      <description>Cốt đất sét dẻo mịn khai thác tự nhiên, lọc thủ công không pha tạp chất hóa học.</description>
+    </item>
+    <item id="tp-2">
+      <icon>local_fire_department</icon>
+      <title>Lò Nung Củi</title>
+      <subtitle>Hỏa biến 72 giờ</subtitle>
+      <description>Giữ lửa liên tục từ 1.280°C - 1.320°C tạo lớp men ngọc tan chảy huyền ảo.</description>
+    </item>
+    <item id="tp-3">
+      <icon>edit_note</icon>
+      <title>Khắc Triện Riêng</title>
+      <subtitle>Dấu ấn độc bản</subtitle>
+      <description>Khắc chìm danh tính, ấn niệm tối đa 20 ký tự theo yêu cầu của khách hàng.</description>
+    </item>
+  </touchpoints>
+
+  <!-- Tác phẩm tiêu biểu giới thiệu trên Trang chủ -->
+  <featuredArtworks>
+    <artwork id="art-1">
+      <category>Tuyển tập kinh điển</category>
+      <name>Bộ Thưởng Trà Men Ngọc &amp; Sa Mộc</name>
+      <detail>Nung củi bạch đàn 72 giờ tại lò Bát Tràng, vân rạn chỉ mộc độc bản.</detail>
+      <image>https://lh3.googleusercontent.com/aida/AEtjO1Whp2dQjvCO5gOchX8Wd8u4VpPTWdFWckJ7ocTPRAUgRYp14ndLwL5XwG1xJqAyhpt3s2L3AN_rdAF42zfrRalEjC8VCiAhG8V68Dhly8gR104KEFTKi_9fIN5v8YdlT6Z7rEFn9dZlXAdmblX10fN01Ev4Ibcvxo46hXNkLWnhBbCc0se_f1Bd6Sgb65VWjByPQjaYYaA0sY_yx48RJxrkRF1EAQDc-rKjM9eVMKO84yFJrlY0FOKozA</image>
+    </artwork>
+  </featuredArtworks>
+
+  <!-- 3 Trụ cột triết lý làm gốm -->
+  <philosophies>
+    <heading>Đất Lành Nung Lửa Thật</heading>
+    <subheading>Triết Lý Cốt Gốm Mộc</subheading>
+    <intro>Chúng tôi giữ nguyên những vết gồ ghề của ngón tay người thợ, đốm tro bay bám trên bề mặt men ngọc như một minh chứng sống động của tính nguyên bản.</intro>
+    <pillars>
+      <pillar id="pil-1">
+        <icon>mode_heat</icon>
+        <title>Lò Nung Củi Truyền Thống</title>
+        <content>Nhiệt độ đạt chuẩn từ 1.280°C - 1.320°C tạo cốt gốm đanh vang như chuông, men ngọc tan chảy tự nhiên thành màu ngọc bích sâu thẳm.</content>
+        <badge>72 Giờ Giữ Lửa</badge>
+      </pillar>
+      <pillar id="pil-2">
+        <icon>inventory_2</icon>
+        <title>Bảo Hiểm Vận Chuyển 100%</title>
+        <content>Đóng gói tiêu chuẩn hộp gỗ chèn rơm mộc tự nhiên. Bồi hoàn hoặc chế tác mới ngay lập tức nếu xuất hiện bất kỳ tì vết nào khi tới tư gia.</content>
+        <badge>Đóng Hộp Gỗ Thủ Công</badge>
+      </pillar>
+      <pillar id="pil-3">
+        <icon>fingerprint</icon>
+        <title>Dấu Triện Khắc Cá Nhân</title>
+        <content>Khắc ấn danh tính, năm kỷ niệm hoặc câu thư pháp mang phong vị thiền lên đáy gốm bằng dao khắc tre truyền thống trước khi vào lò.</content>
+        <badge>Khắc Chìm Độc Bản</badge>
+      </pillar>
+    </pillars>
+  </philosophies>
+
+  <!-- Thông điệp studio tương tác 2D -->
+  <custom2dStudio>
+    <badge>Trải Nghiệm Tương Tác Độc Quyền</badge>
+    <title>Studio Thiết Kế 2D: Tác Chế Dáng Gốm Riêng Biệt</title>
+    <description>Tự tay vuốt chỉnh dáng cong, lựa chọn chất men ngọc hay men rạn cổ điển, và khắc tên riêng của bạn vào đáy gốm trước khi lò nung đỏ lửa.</description>
+    <steps>
+      <step number="01">
+        <title>Chọn Dáng Phôi Thô</title>
+        <desc>Tùy chỉnh độ thắt eo, bán kính miệng bình qua mô hình phôi tương tác 2D.</desc>
+      </step>
+      <step number="02">
+        <title>Phối Màu Men &amp; Hoa Văn</title>
+        <desc>Thử nghiệm sắc Men Ngọc Celadon, Men Rạn cổ truyền hoặc Sa Mộc phù sa.</desc>
+      </step>
+      <step number="03">
+        <title>Khắc Tên &amp; Nung Củi</title>
+        <desc>Khắc ấn dấu triện tên riêng (tối đa 20 ký tự) lên đáy gốm trước khi đưa vào lò nung.</desc>
+      </step>
+    </steps>
+  </custom2dStudio>
+</storytelling>

@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
-  imports: [],
   selector: 'app-header',
-  styleUrl: './header.css',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './header.html',
+  styleUrl: './header.css',
 })
-export class Header {}
+export class Header {
+  auth = inject(AuthService);
+}

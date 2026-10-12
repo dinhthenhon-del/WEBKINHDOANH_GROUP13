@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gốm Mộc - Tác Chế & Thưởng Lãm Gốm Sứ Bát Tràng</title>
+
+  <!-- Google Fonts theo bản thiết kế Stitch & Slide 05 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind CSS Engine & Token Config từ Stitch Mockup -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#9f3c16',
+            'primary-container': '#bf542c',
+            secondary: '#38665f',
+            'secondary-container': '#bbece2',
+            surface: '#fff8f6',
+            'surface-container': '#faebe6',
+            'surface-container-low': '#fff1ec',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#211a17',
+            'on-surface-variant': '#57423b',
+            outline: '#8a726a',
+            tertiary: '#5f5b58'
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- File CSS Nền tảng chung -->
+  <link rel="stylesheet" href="core/base.css">
+</head>
+
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col">
+
+  <!-- ==================================================================== -->
+  <!-- 1. HEADER / NAVBAR DÙNG CHUNG (Do core/navbar.js phụ trách render)   -->
+  <!-- ==================================================================== -->
+  <header id="site-header"
+    class="fixed top-0 left-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-b border-[#faebe6] shadow-[0_1px_8px_rgba(43,35,32,0.04)]">
+    <!-- Navbar động sẽ được nạp vào đây -->
+  </header>
+
+  <!-- ==================================================================== -->
+  <!-- 2. VÙNG HIỂN THỊ TRUNG TÂM (APP CONTENT AREA)                        -->
+  <!-- File index.html làm trung tâm gọi lên giao diện từ các module con:   -->
+  <!--   - Trang Chủ: core/app.js (TV1)                                     -->
+  <!--   - Hồ sơ & Sổ địa chỉ: modules/auth/tv1_auth.js (TV1)                -->
+  <!--   - Danh mục sản phẩm & Chi tiết: modules/products/ (TV2)            -->
+  <!--   - Checkout & Đơn hàng: modules/orders/ (TV3)                       -->
+  <!--   - Studio Thiết kế 2D: modules/custom-2d/ (TV4)                     -->
+  <!-- ==================================================================== -->
+  <main id="app-content" class="w-full pt-20 flex-grow">
+    <!-- View đang hoạt động sẽ được router nạp tự động vào đây -->
+  </main>
+
+  <!-- ==================================================================== -->
+  <!-- 3. FOOTER DÙNG CHUNG (Do core/footer.js phụ trách render)            -->
+  <!-- ==================================================================== -->
+  <footer id="site-footer" class="w-full bg-[#fff1ec] border-t border-[#faebe6] mt-auto">
+    <!-- Footer sẽ được nạp vào đây -->
+  </footer>
+
+  <!-- ==================================================================== -->
+  <!-- 4. KHUNG CHỨA CÁC THÀNH PHẦN NỔI / MODAL / DRAWER CỦA CÁC THÀNH VIÊN  -->
+  <!-- ==================================================================== -->
+
+  <!-- Modal Xác thực: Đăng nhập / Đăng ký / Quên mật khẩu (TV1 phụ trách) -->
+  <div id="auth-modal-container" class="hidden"></div>
+
+  <!-- Cart Drawer trượt bên phải (Slot sẵn sàng cho TV3 nhúng vào) -->
+  <div id="cart-drawer-container"></div>
+
+  <!-- Chatbot AI Widget nổi góc phải màn hình (Slot sẵn sàng cho TV4 nhúng vào) -->
+  <div id="chatbot-container"></div>
+
+  <!-- ==================================================================== -->
+  <!-- 5. TẬP HỢP CÁC SCRIPT ĐIỀU HÀNH HỆ THỐNG                            -->
+  <!-- ==================================================================== -->
+
+  <!-- API Client dùng chung nền tảng AJAX & JSON theo slide môn học -->
+  <script src="core/api.js"></script>
+
+  <!-- [THÀNH VIÊN 1] Module Xác thực, Phân quyền & Quản lý Tài khoản -->
+  <script src="modules/auth/tv1_auth.js"></script>
+
+  <!-- [THÀNH VIÊN 1] Component Navbar & Footer dùng chung -->
+  <script src="core/navbar.js"></script>
+  <script src="core/footer.js"></script>
+
+  <!-- KHUNG SẴN SÀNG CHO CÁC THÀNH VIÊN KHÁC ĐẤU NỐI KHI CODE:
+  <script src="modules/products/tv2_products.js"></script>
+  <script src="modules/cart/tv3_cart.js"></script>
+  <script src="modules/orders/tv3_orders.js"></script>
+  <script src="modules/custom-2d/tv4_custom2d.js"></script>
+  <script src="modules/chatbot/tv4_chatbot.js"></script>
+  <script src="modules/reviews/tv5_reviews.js"></script>
+  -->
+
+  <!-- [THÀNH VIÊN 1] App Router trung tâm điều phối nạp view -->
+  <script src="core/app.js"></script>
+
+</body>
+
+</html>

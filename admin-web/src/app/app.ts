@@ -1,12 +1,22 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router } from '@angular/router';
+import { Sidebar } from './layout/sidebar/sidebar';
+import { Header } from './layout/header/header';
+import { AuthService } from './core/services/auth';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.css',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, Sidebar, Header],
   templateUrl: './app.html',
+  styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('admin-web');
+  auth = inject(AuthService);
+  router = inject(Router);
+
+  isLoginPage(): boolean {
+    return this.router.url.includes('/login');
+  }
 }

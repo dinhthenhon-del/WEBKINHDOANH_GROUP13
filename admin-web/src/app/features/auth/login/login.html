@@ -1,1 +1,155 @@
-<p>login works!</p>
+<div class="min-h-screen bg-[#fdf9f1] flex items-center justify-center p-4 md:p-8">
+  <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#dec0b7] grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+
+    <!-- Cột trái: Di Sản Gốm Việt (Dark theme) -->
+    <div class="md:col-span-5 bg-[#31302b] text-white p-8 flex flex-col justify-between relative overflow-hidden">
+      <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#993913]/30 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="space-y-4 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#ffb59c] text-xs font-bold uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-[#ffb59c] animate-pulse"></span>
+          BPMN 12 GATEKEEPER
+        </div>
+
+        <div class="pt-2">
+          <span class="text-xs uppercase tracking-widest text-neutral-400 block mb-1">DI SẢN GỐM VIỆT 700 NĂM</span>
+          <h2 class="font-serif text-3xl font-bold leading-tight">Hệ Thống Vận Hành & Quản Trị Trung Tâm</h2>
+        </div>
+
+        <p class="text-xs text-neutral-300 leading-relaxed">
+          Trung tâm điều phối số hóa quy trình lò nung, chứng thực phôi gốm men rạn và chuỗi phân phối sản phẩm thủ công Bát Tràng cao cấp.
+        </p>
+      </div>
+
+      <div class="relative z-10 pt-8 space-y-4">
+        <div class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-3">
+          <div class="p-2 rounded-lg bg-[#993913] text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white">Cổng Quản Trị Nội Bộ</h4>
+            <p class="text-[11px] text-neutral-400 mt-0.5">Dành riêng cho Quản trị viên (role: admin) được cấp quyền vận hành.</p>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-neutral-400 flex items-center justify-between border-t border-white/10 pt-3">
+          <span>Bảo mật JWT & BCrypt Hash</span>
+          <span>Bát Tràng Portal v2.4</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột phải: Form Đăng nhập Admin (UC-A01) -->
+    <div class="md:col-span-7 p-8 md:p-12 flex flex-col justify-center bg-[#fdf9f1]">
+      <div class="max-w-md mx-auto w-full">
+
+        <div class="mb-6">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faebe6] text-[#993913] text-xs font-bold mb-3">
+            <span>Atelier Portal v2.4.0</span>
+          </div>
+          <h1 class="font-serif text-3xl font-bold text-[#1c1c17]">Đăng nhập Hệ Thống Quản Trị</h1>
+          <p class="text-xs text-[#57423b] mt-1.5">Vui lòng nhập tài khoản quản trị viên để truy cập bảng điều khiển vận hành gốm sứ.</p>
+        </div>
+
+        <!-- Banner cảnh báo BR-A02 -->
+        <div class="mb-6 p-3.5 rounded-xl bg-[#faebe6] border border-[#dec0b7] flex items-start gap-3 text-xs text-[#57423b]">
+          <svg class="w-4 h-4 text-[#993913] mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+          <div>
+            <strong class="text-[#993913] block">Yêu cầu quyền truy cập (BR-A02):</strong>
+            Tài khoản cần được cấp vai trò <code class="bg-white px-1.5 py-0.5 rounded text-[#993913] font-bold">ADMIN</code>.
+          </div>
+        </div>
+
+        <!-- Thông báo lỗi (nếu có) -->
+        @if (errorMessage()) {
+          <div class="mb-4 p-3 rounded-lg text-xs font-semibold bg-[#ffdad6] text-[#ba1a1a] border border-[#ffb4ab]">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- FORM CHÍNH -->
+        <form (ngSubmit)="onSubmit()" class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="admin-email" class="text-xs font-bold uppercase tracking-wider text-[#57423b]">Email quản trị viên *</label>
+              <span class="text-[10px] text-neutral-400">BR-A01: Bắt buộc</span>
+            </div>
+            <div class="relative">
+              <input type="email" id="admin-email" name="email" [(ngModel)]="email" required placeholder="admin@battrang.vn" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#dec0b7] bg-white focus:outline-none focus:ring-2 focus:ring-[#993913]/20 focus:border-[#993913]">
+              <span class="absolute right-3.5 top-3 text-neutral-400 text-xs">@battrang.vn</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="admin-pwd" class="text-xs font-bold uppercase tracking-wider text-[#57423b]">Mật khẩu quản trị *</label>
+              <button type="button" (click)="openForgotPassword()" class="text-xs text-[#993913] hover:underline font-semibold cursor-pointer">Quên mật khẩu? (BRD-A03)</button>
+            </div>
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" id="admin-pwd" name="password" [(ngModel)]="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#dec0b7] bg-white focus:outline-none focus:ring-2 focus:ring-[#993913]/20 focus:border-[#993913]">
+              <button type="button" (click)="toggleShowPassword()" class="absolute right-3.5 top-2.5 text-neutral-400 hover:text-neutral-700 text-xs cursor-pointer">
+                {{ showPassword ? 'Ẩn' : 'Hiện' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-1">
+            <label class="flex items-center gap-2 text-[#57423b] cursor-pointer">
+              <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe" class="rounded text-[#993913] focus:ring-[#993913]">
+              <span>Ghi nhớ phiên đăng nhập trên thiết bị này</span>
+            </label>
+            <span class="text-[10px] text-neutral-400">JWT Token</span>
+          </div>
+
+          <button type="submit" [disabled]="isLoading()" class="w-full py-3.5 bg-[#993913] hover:bg-[#b95029] disabled:bg-neutral-400 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 mt-2">
+            @if (isLoading()) {
+              <span>Đang xác thực...</span>
+            } @else {
+              <span>Đăng nhập Quản trị</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            }
+          </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-[#dec0b7] text-center text-xs text-neutral-400">
+          Hotline kỹ thuật xưởng: <strong class="text-[#993913]">1900 6886</strong> • Làng gốm Bát Tràng
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL QUÊN MẬT KHẨU OTP (UC-A01 E4) -->
+  @if (showForgotModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#dec0b7] space-y-4">
+        <div class="flex items-center justify-between border-b pb-3">
+          <h3 class="font-serif text-lg font-bold text-[#1c1c17]">Khôi phục mật khẩu Admin qua OTP</h3>
+          <button (click)="closeForgotPassword()" class="text-neutral-400 hover:text-black">✕</button>
+        </div>
+
+        @if (forgotStep() === 1) {
+          <div class="space-y-3">
+            <p class="text-xs text-neutral-600">Nhập email quản trị để nhận mã OTP xác thực bảo mật 6 số (Hiệu lực 15 phút):</p>
+            <input type="email" [(ngModel)]="forgotEmail" placeholder="admin@battrang.vn" class="w-full px-3 py-2 text-sm border rounded-lg">
+            <button (click)="sendOtp()" [disabled]="isLoading()" class="w-full py-2.5 bg-[#993913] text-white rounded-lg text-xs font-bold cursor-pointer">
+              Gửi Mã OTP Xác Thực
+            </button>
+          </div>
+        } @else {
+          <div class="space-y-3">
+            <div class="p-2.5 bg-green-50 text-green-800 text-xs rounded-lg">
+              Đã gửi OTP về <strong>{{ forgotEmail }}</strong>
+              @if (devOtpNotice()) { <div class="font-mono font-bold mt-1 text-red-600">{{ devOtpNotice() }}</div> }
+            </div>
+            <input type="text" [(ngModel)]="forgotOtp" placeholder="Nhập mã OTP 6 số" class="w-full px-3 py-2 text-sm border rounded-lg text-center font-mono font-bold tracking-widest">
+            <input type="password" [(ngModel)]="forgotNewPassword" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" class="w-full px-3 py-2 text-sm border rounded-lg">
+            <button (click)="confirmReset()" [disabled]="isLoading()" class="w-full py-2.5 bg-[#993913] text-white rounded-lg text-xs font-bold cursor-pointer">
+              Xác Nhận Đặt Lại Mật Khẩu
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,1 +1,23 @@
-<p>header works!</p>
+<header class="h-20 bg-white border-b border-[#dec0b7] px-6 flex items-center justify-between shrink-0 shadow-sm">
+  <div class="flex items-center gap-3">
+    <h3 class="font-serif text-lg font-bold text-[#1c1c17]">Hệ Thống Quản Trị Bát Tràng</h3>
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#faebe6] text-[#993913]">BPMN 16 & BRD-A16</span>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <!-- Chuông thông báo -->
+    <button type="button" class="relative p-2 rounded-xl text-neutral-500 hover:bg-[#faebe6] hover:text-[#993913] transition-colors cursor-pointer">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+      <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#993913]"></span>
+    </button>
+
+    <!-- Thông tin Quản trị viên (TV1 Auth) -->
+    <div class="flex items-center gap-3 pl-3 border-l border-[#faebe6]">
+      <img [src]="auth.currentUser()?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'" class="w-9 h-9 rounded-full object-cover ring-2 ring-[#faebe6]">
+      <div class="text-left hidden sm:block">
+        <span class="text-xs font-bold text-[#1c1c17] block leading-tight">{{ auth.currentUser()?.fullName || 'Quản trị viên' }}</span>
+        <span class="text-[10px] text-[#993913] font-semibold">{{ auth.currentUser()?.email || 'admin@battrang.vn' }}</span>
+      </div>
+    </div>
+  </div>
+</header>

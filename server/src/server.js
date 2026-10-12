@@ -4,21 +4,107 @@ const cors = require('cors');
 require('dotenv').config();
 
 const Product = require('./models/Product');
+const User = require('./models/User');
 const { upload, uploadToCloudinary, deleteFromCloudinary } = require('./core/cloudinary');
 
+// [THÀNH VIÊN 1 - AUTH & USER MANAGEMENT]
+const authRoutes = require('./modules/auth/auth.routes');
+const usersRoutes = require('./modules/users/users.routes');
+
 const app = express();
+
+const path = require('path');
+const { getStorytellingXml, saveStorytellingXml } = require('./core/xmlStore');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 1. KẾT NỐI MONGODB (Tự động fallback URI dùng chung của nhóm nếu chưa có file .env)
+// [Slide 10 XML] Phục vụ tệp tĩnh XML trực tiếp từ server/public
+app.use(express.static(path.join(__dirname, '../public')));
+
+// [THÀNH VIÊN 1] Đăng ký router Auth & Users
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+
+// [Slide 10 XML API] Endpoint cung cấp dữ liệu XML câu chuyện trang chủ
+app.get('/api/content/storytelling.xml', (req, res) => {
+  try {
+    const xml = getStorytellingXml();
+    res.set('Content-Type', 'text/xml; charset=utf-8');
+    res.status(200).send(xml);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 1. KẾT NỐI MONGODB & SEED TÀI KHOẢN MẪU
 const DEFAULT_MONGO_URI = 'mongodb://dinhthenhon_db_user:dinhthenhongmail.com@ac-1u1pbza-shard-00-00.y2hcyuo.mongodb.net:27017,ac-1u1pbza-shard-00-01.y2hcyuo.mongodb.net:27017,ac-1u1pbza-shard-00-02.y2hcyuo.mongodb.net:27017/?ssl=true&replicaSet=atlas-13eeom-shard-0&authSource=admin&appName=craftory-ecommerce-cluster';
 const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGO_URI;
 
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ KẾT NỐI MONGODB THÀNH CÔNG!'))
+  .then(async () => {
+    console.log('✅ KẾT NỐI MONGODB THÀNH CÔNG!');
+    // [TV1 Auto Seed] Khởi tạo tài khoản Quản trị viên & Khách hàng mẫu theo Mockup nếu chưa có
+    try {
+      const adminExists = await User.findOne({ email: 'admin@battrang.vn' });
+      if (!adminExists) {
+        const adminHash = await User.hashPassword('Admin@123456');
+        await User.create({
+          fullName: 'Quản Trị Viên Bát Tràng',
+          email: 'admin@battrang.vn',
+          phone: '0903888999',
+          passwordHash: adminHash,
+          role: 'ADMIN',
+          status: 'ACTIVE'
+        });
+        console.log('👑 [TV1 Seed] Đã tạo tài khoản Admin mẫu: admin@battrang.vn / Admin@123456');
+      }
+
+      const sampleCustomer = await User.findOne({ email: 'huong.le@gmail.com' });
+      if (!sampleCustomer) {
+        const custHash = await User.hashPassword('123456');
+        await User.create([
+          {
+            fullName: 'Lê Thị Mai Hương',
+            email: 'huong.le@gmail.com',
+            phone: '0912889922',
+            passwordHash: custHash,
+            role: 'CUSTOMER',
+            status: 'ACTIVE',
+            addresses: [{
+              recipientName: 'Lê Thị Mai Hương',
+              phone: '0912889922',
+              province: 'Hà Nội',
+              ward: 'Gia Lâm',
+              addressDetail: 'Số 12 ngõ Xưởng Gốm Bát Tràng',
+              isDefault: true
+            }]
+          },
+          {
+            fullName: 'Trần Quốc Toản',
+            email: 'toan.tran@bat-trang.vn',
+            phone: '0987654321',
+            passwordHash: custHash,
+            role: 'CUSTOMER',
+            status: 'ACTIVE'
+          },
+          {
+            fullName: 'Hoàng Tuấn Kiệt',
+            email: 'kiet.hoang@yahoo.com',
+            phone: '0904556778',
+            passwordHash: custHash,
+            role: 'CUSTOMER',
+            status: 'LOCKED' // Tài khoản bị khóa mẫu (Mockup a_customers.html)
+          }
+        ]);
+        console.log('👥 [TV1 Seed] Đã tạo danh sách khách hàng mẫu theo Mockup Stitch');
+      }
+    } catch (seedErr) {
+      console.warn('Lưu ý seed user:', seedErr.message);
+    }
+  })
   .catch((err) => console.error('❌ LỖI KẾT NỐI MONGODB:', err.message));
 
 // 2. API: Lấy danh sách sản phẩm

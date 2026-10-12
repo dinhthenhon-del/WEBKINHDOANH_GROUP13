@@ -1,1 +1,52 @@
-<p>sidebar works!</p>
+<aside class="w-64 bg-[#1c1c17] text-white flex flex-col justify-between min-h-screen shrink-0 border-r border-neutral-800">
+  <div>
+    <!-- Logo & Thương hiệu gốm -->
+    <div class="p-6 flex items-center gap-3 border-b border-white/10">
+      <div class="w-10 h-10 rounded-xl bg-[#993913] flex items-center justify-center text-white font-serif font-bold text-lg shadow-md">
+        BT
+      </div>
+      <div>
+        <h2 class="font-serif text-lg font-bold tracking-tight text-white leading-tight">Gốm Bát Tràng</h2>
+        <span class="text-[10px] text-[#ffb59c] uppercase font-bold tracking-widest block">CỔNG QUẢN TRỊ VIÊN</span>
+      </div>
+    </div>
+
+    <!-- Menu Điều hướng Phân chia theo Thành viên -->
+    <nav class="p-4 space-y-1 text-xs font-semibold">
+      <!-- 1. Dashboard (TV5) -->
+      <a routerLink="/dashboard" routerLinkActive="bg-[#993913] text-white font-bold" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-neutral-300 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        <span>Tổng quan</span>
+      </a>
+
+      <!-- 2. Sản phẩm (TV2) -->
+      <a routerLink="/products" routerLinkActive="bg-[#993913] text-white font-bold" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-neutral-300 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        <span>Sản phẩm & Tồn kho</span>
+      </a>
+
+      <!-- 3. Đơn hàng (TV3) -->
+      <a routerLink="/orders" routerLinkActive="bg-[#993913] text-white font-bold" class="flex items-center justify-between px-3.5 py-3 rounded-xl text-neutral-300 hover:bg-white/10 hover:text-white transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+          <span>Đơn hàng</span>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[10px] bg-[#993913] text-white font-bold">Mới</span>
+      </a>
+
+      <!-- 4. Khách hàng (TV1 Phụ trách) -->
+      <a routerLink="/customers" routerLinkActive="bg-[#993913] text-white font-bold" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-neutral-300 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <span>Khách hàng (TV1)</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Nút Đăng xuất phía dưới (UC-A01) -->
+  <div class="p-4 border-t border-white/10">
+    <button (click)="onLogout()" type="button" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-neutral-400 hover:text-[#ffdad6] hover:bg-white/5 transition-colors cursor-pointer text-xs font-semibold">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+      <span>Đăng xuất hệ thống</span>
+    </button>
+  </div>
+</aside>

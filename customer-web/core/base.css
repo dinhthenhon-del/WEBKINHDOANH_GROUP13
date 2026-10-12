@@ -1,0 +1,91 @@
+/**
+ * ============================================================================
+ * [DÙNG CHUNG CẢ NHÓM - NỀN TẢNG BỞI THÀNH VIÊN 1]
+ * Base CSS (core/base.css)
+ * Phương pháp: Áp dụng CSS Box Model (Slide 06), Typography & Colors (Slide 05)
+ * Tokens trích xuất trực tiếp từ bản thiết kế Stitch "Website Gốm Sứ Cá Nhân Hóa"
+ * ============================================================================
+ */
+
+:root {
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Bảng màu Đất Sét & Men Gốm Bát Tràng (Stitch Mockup) */
+  --color-primary: #9f3c16;             /* Màu Đất Nung Sa Mộc */
+  --color-primary-container: #bf542c;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #38665f;           /* Màu Men Ngọc Thủy Trúc */
+  --color-secondary-container: #bbece2;
+  --color-on-secondary: #ffffff;
+
+  --color-surface: #fff8f6;             /* Màu Nền Gốm Mộc */
+  --color-surface-container: #faebe6;
+  --color-surface-container-low: #fff1ec;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #f4e5e0;
+
+  --color-on-surface: #211a17;
+  --color-on-surface-variant: #57423b;
+  --color-outline: #8a726a;
+  --color-tertiary: #5f5b58;
+  --color-error: #ba1a1a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Hiệu ứng chuyển động mượt mà */
+.fade-in {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline);
+  border-radius: 999px;
+}
+
+/* Badge trạng thái */
+.badge-active {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+.badge-locked {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  background: rgba(33, 26, 23, 0.6);
+  backdrop-filter: blur(4px);
+}
