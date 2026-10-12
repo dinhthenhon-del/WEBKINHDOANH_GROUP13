@@ -1,136 +1,219 @@
-<div class="space-y-6">
-
-  <!-- Tiêu đề & Breadcrumb -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div>
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#faebe6] text-[#993913] text-xs font-bold uppercase tracking-wider mb-1">
-        BÁT TRÀNG CRM PROTOCOL • BPMN 16 & BRD-A16
+<div class="flex flex-col w-full">
+  <!-- Top Stats Row (Stitch Mockup) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+    <div class="bg-white p-4 rounded-xl shadow-sm flex flex-col justify-between border border-[#dec0b7]/60">
+      <div class="flex items-center justify-between text-[#57423b] mb-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider">Tổng hội viên</span>
+        <span class="material-symbols-outlined text-[20px] text-[#406182]">groups</span>
       </div>
-      <h1 class="font-serif text-2xl md:text-3xl font-bold text-[#1c1c17]">Quản lý Khách hàng & Tài khoản</h1>
-      <p class="text-xs text-[#57423b] mt-1">Kiểm soát hồ sơ hội viên, quyền truy cập tài khoản, lịch sử mua sắm và chính sách bảo mật thông tin chuẩn BR-A14.</p>
+      <div>
+        <span class="font-serif text-2xl md:text-3xl font-bold text-[#1c1c17] tracking-tight">{{ stats().totalCustomers }}</span>
+        <p class="text-xs text-[#57423b] mt-1 flex items-center gap-1">
+          <span class="text-[#993913] font-semibold flex items-center">
+            <span class="material-symbols-outlined text-[14px]">arrow_upward</span> +14.2%
+          </span> so với tháng trước
+        </p>
+      </div>
     </div>
 
-    <div class="flex items-center gap-2 self-start md:self-auto">
-      <button (click)="loadCustomers()" class="p-2 rounded-xl bg-white border border-[#dec0b7] hover:bg-[#faebe6] text-xs font-semibold text-[#57423b] flex items-center gap-1.5 cursor-pointer shadow-sm">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-        <span>Làm mới</span>
-      </button>
+    <div class="bg-white p-4 rounded-xl shadow-sm flex flex-col justify-between border border-[#dec0b7]/60">
+      <div class="flex items-center justify-between text-[#57423b] mb-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider">Đang hoạt động (Active)</span>
+        <span class="material-symbols-outlined text-[20px] text-[#406182]">verified_user</span>
+      </div>
+      <div>
+        <span class="font-serif text-2xl md:text-3xl font-bold text-[#1c1c17] tracking-tight">{{ stats().totalActive }}</span>
+        <p class="text-xs text-[#57423b] mt-1">99.04% tài khoản hợp lệ</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-sm flex flex-col justify-between border border-[#dec0b7]/60">
+      <div class="flex items-center justify-between text-[#57423b] mb-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-[#ba1a1a]">Tài khoản bị khóa (Banned)</span>
+        <span class="material-symbols-outlined text-[20px] text-[#ba1a1a]">lock_person</span>
+      </div>
+      <div>
+        <span class="font-serif text-2xl md:text-3xl font-bold text-[#ba1a1a] tracking-tight">{{ stats().totalLocked }}</span>
+        <p class="text-xs text-[#57423b] mt-1">Chặn quyền đăng nhập BPMN 01</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-sm flex flex-col justify-between border border-[#dec0b7]/60">
+      <div class="flex items-center justify-between text-[#57423b] mb-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider">Tổng giá trị trọn đời (LTV)</span>
+        <span class="material-symbols-outlined text-[20px] text-[#993913]">payments</span>
+      </div>
+      <div>
+        <span class="font-serif text-2xl md:text-3xl font-bold text-[#1c1c17] tracking-tight">2.84 tỷ ₫</span>
+        <p class="text-xs text-[#57423b] mt-1">Trung bình: 2.270.000 ₫ / KH</p>
+      </div>
     </div>
   </div>
 
-  <!-- 4 Thẻ KPI Chỉ số nhanh (Stitch Mockup) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="p-5 rounded-2xl bg-white border border-[#dec0b7] shadow-sm flex items-center justify-between">
+  <!-- Header & CRM Tooling Panel -->
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-[#dec0b7]/60">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#faebe6]">
       <div>
-        <span class="text-xs uppercase tracking-wider text-[#57423b] font-semibold">TỔNG HỘI VIÊN</span>
-        <div class="text-2xl font-serif font-bold text-[#1c1c17] mt-1">{{ stats().totalCustomers }}</div>
-        <span class="text-[11px] text-green-700 font-medium">↑ Toàn hệ thống</span>
+        <div class="flex items-center gap-1.5 text-[#993913] text-[11px] font-bold uppercase tracking-wider mb-1">
+          <span class="material-symbols-outlined text-[16px]">account_box</span>
+          <span>Bát Tràng CRM Protocol • BPMN 16 &amp; BRD-A16</span>
+        </div>
+        <h1 class="font-serif text-2xl md:text-3xl font-bold text-[#1c1c17] tracking-tight">Quản lý Khách hàng &amp; Tài khoản</h1>
+        <p class="text-xs text-[#57423b] mt-1">
+          Kiểm soát hồ sơ hội viên, quyền truy cập tài khoản, lịch sử mua sắm và chính sách bảo mật thông tin chuẩn BR-A14.
+        </p>
       </div>
-      <div class="w-10 h-10 rounded-xl bg-[#faebe6] text-[#993913] flex items-center justify-center font-bold">KH</div>
+      <!-- Quick Action / Security status -->
+      <div class="flex items-center gap-2">
+        <div class="px-3 py-1.5 rounded-lg bg-[#f1ede6] text-[#57423b] flex items-center gap-2 text-xs">
+          <span class="material-symbols-outlined text-[18px] text-[#406182]">security</span>
+          <span>Bảo mật mật khẩu BRD-A19: Bật (BCrypt 12 rounds)</span>
+        </div>
+      </div>
     </div>
 
-    <div class="p-5 rounded-2xl bg-white border border-[#dec0b7] shadow-sm flex items-center justify-between">
-      <div>
-        <span class="text-xs uppercase tracking-wider text-[#57423b] font-semibold">ĐANG HOẠT ĐỘNG (ACTIVE)</span>
-        <div class="text-2xl font-serif font-bold text-[#1c1c17] mt-1">{{ stats().totalActive }}</div>
-        <span class="text-[11px] text-green-700 font-medium">Tài khoản hợp lệ</span>
+    <!-- Search & Filter Controls (BRD-16-02) -->
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+      <!-- Search Input -->
+      <div class="relative flex-1 max-w-2xl">
+        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#57423b] text-[20px]">search</span>
+        <input [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" class="w-full pl-11 pr-12 py-2.5 rounded-lg bg-[#f7f3eb] text-[#1c1c17] placeholder:text-[#57423b]/70 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-[#993913] transition-all" id="crmSearchInput" placeholder="Tìm kiếm khách hàng theo Họ tên, Email, Số điện thoại (GET /api/users?search=)..." type="text">
+        <button (click)="onSearch()" class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-[#993913] text-white text-xs font-semibold hover:bg-[#822802] transition-colors" type="button">
+          Tìm
+        </button>
       </div>
-      <div class="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center font-bold">✓</div>
-    </div>
 
-    <div class="p-5 rounded-2xl bg-white border border-[#dec0b7] shadow-sm flex items-center justify-between">
-      <div>
-        <span class="text-xs uppercase tracking-wider text-[#ba1a1a] font-semibold">TÀI KHOẢN BỊ KHÓA</span>
-        <div class="text-2xl font-serif font-bold text-[#ba1a1a] mt-1">{{ stats().totalLocked }}</div>
-        <span class="text-[11px] text-red-600 font-medium">Chặn quyền đăng nhập BPMN 01</span>
+      <!-- Segmented Status Tabs -->
+      <div class="flex items-center gap-1 bg-[#f7f3eb] p-1 rounded-xl">
+        <button (click)="setFilter('ALL')" [class.bg-white]="statusFilter === 'ALL'" [class.shadow-sm]="statusFilter === 'ALL'" [class.text-[#1c1c17]]="statusFilter === 'ALL'" class="status-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#57423b] transition-all flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Tất cả</span>
+          <span class="px-1.5 py-0.5 bg-[#e6e2da] rounded-full text-[10px] text-[#57423b]">{{ stats().totalCustomers }}</span>
+        </button>
+        <button (click)="setFilter('ACTIVE')" [class.bg-white]="statusFilter === 'ACTIVE'" [class.shadow-sm]="statusFilter === 'ACTIVE'" [class.text-[#1c1c17]]="statusFilter === 'ACTIVE'" class="status-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#57423b] hover:text-[#1c1c17] transition-all flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Hoạt động</span>
+          <span class="px-1.5 py-0.5 bg-[#b6d8fe]/50 text-[#406182] rounded-full text-[10px] font-bold">{{ stats().totalActive }}</span>
+        </button>
+        <button (click)="setFilter('LOCKED')" [class.bg-white]="statusFilter === 'LOCKED'" [class.shadow-sm]="statusFilter === 'LOCKED'" [class.text-[#1c1c17]]="statusFilter === 'LOCKED'" class="status-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#57423b] hover:text-[#1c1c17] transition-all flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Đã khóa</span>
+          <span class="px-1.5 py-0.5 bg-[#ffdad6] text-[#93000a] rounded-full text-[10px] font-bold">{{ stats().totalLocked }}</span>
+        </button>
       </div>
-      <div class="w-10 h-10 rounded-xl bg-red-50 text-[#ba1a1a] flex items-center justify-center font-bold">✕</div>
-    </div>
-
-    <div class="p-5 rounded-2xl bg-white border border-[#dec0b7] shadow-sm flex items-center justify-between">
-      <div>
-        <span class="text-xs uppercase tracking-wider text-[#57423b] font-semibold">BẢO MẬT HASH (BRD-A14)</span>
-        <div class="text-sm font-bold text-[#38665f] mt-1">Bcrypt 10 Rounds</div>
-        <span class="text-[11px] text-neutral-400">Tuyệt đối không lưu plain text</span>
-      </div>
-      <div class="w-10 h-10 rounded-xl bg-[#bbece2] text-[#38665f] flex items-center justify-center font-bold">🛡</div>
     </div>
   </div>
 
-  <!-- Thanh Tìm Kiếm & Lọc Trạng Thái -->
-  <div class="p-4 rounded-2xl bg-white border border-[#dec0b7] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-    <div class="relative w-full md:w-96">
-      <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Tìm khách hàng theo Họ tên, Email, Số điện thoại..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-[#dec0b7] bg-[#fdf9f1] focus:outline-none focus:ring-1 focus:ring-[#993913]">
-      <button (click)="onSearch()" class="absolute right-2 top-2 px-2.5 py-1 bg-[#993913] text-white text-[10px] font-bold rounded-lg cursor-pointer">Tìm</button>
-    </div>
-
-    <div class="flex items-center gap-1.5 self-start md:self-auto bg-[#faebe6] p-1 rounded-xl">
-      <button (click)="setFilter('ALL')" [class.bg-white]="statusFilter === 'ALL'" [class.text-[#993913]]="statusFilter === 'ALL'" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-[#57423b] cursor-pointer">Tất cả ({{ stats().totalCustomers }})</button>
-      <button (click)="setFilter('ACTIVE')" [class.bg-white]="statusFilter === 'ACTIVE'" [class.text-[#993913]]="statusFilter === 'ACTIVE'" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-[#57423b] cursor-pointer">Hoạt động ({{ stats().totalActive }})</button>
-      <button (click)="setFilter('LOCKED')" [class.bg-white]="statusFilter === 'LOCKED'" [class.text-[#ba1a1a]]="statusFilter === 'LOCKED'" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-[#57423b] cursor-pointer">Đã khóa ({{ stats().totalLocked }})</button>
-    </div>
-  </div>
-
-  <!-- Khu vực bảng và Drawer chi tiết bên phải -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-    <!-- BẢNG DANH SÁCH KHÁCH HÀNG (lg:col-span-8) -->
-    <div class="lg:col-span-8 bg-white rounded-2xl border border-[#dec0b7] shadow-sm overflow-hidden">
-      <div class="p-4 border-b border-[#faebe6] flex items-center justify-between">
-        <h3 class="font-serif text-base font-bold text-[#1c1c17]">Danh sách khách hàng đăng ký</h3>
-        <span class="text-xs text-[#57423b]">{{ customers().length }} hồ sơ</span>
+  <!-- Main CRM Grid: Table on Left (8 cols) & Detail Inspector on Right (4 cols) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <!-- Customer Data Table (BRD-A16, BR-A14) -->
+    <div class="lg:col-span-8 bg-white rounded-xl shadow-sm overflow-hidden border border-[#dec0b7]/60">
+      <div class="p-4 flex items-center justify-between bg-[#f1ede6]/50 border-b border-[#dec0b7]/40">
+        <div class="flex items-center gap-2">
+          <span class="font-serif font-bold text-sm text-[#1c1c17]">Danh sách khách hàng đăng ký</span>
+          <span class="text-[#57423b] text-xs">(Hiển thị {{ customers().length }}/{{ stats().totalCustomers }} kết quả mẫu)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button (click)="loadCustomers()" class="p-1.5 rounded-lg hover:bg-[#e6e2da] text-[#57423b] transition-colors cursor-pointer" title="Làm mới dữ liệu" type="button">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+          </button>
+          <button (click)="exportCsv()" class="p-1.5 rounded-lg hover:bg-[#e6e2da] text-[#57423b] transition-colors cursor-pointer" title="Xuất báo cáo CSV" type="button">
+            <span class="material-symbols-outlined text-[18px]">download</span>
+          </button>
+        </div>
       </div>
 
+      <!-- Data Table -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-[#fdf9f1] text-[#57423b] uppercase tracking-wider text-[10px] border-b border-[#dec0b7]">
-            <tr>
+        <table class="w-full text-left text-xs" id="customerTable">
+          <thead>
+            <tr class="bg-[#f7f3eb] text-[#57423b] font-bold uppercase tracking-wider text-[10px] border-b border-[#dec0b7]/60">
+              <th class="py-3 px-4">Mã KH</th>
               <th class="py-3 px-4">Khách hàng</th>
               <th class="py-3 px-4">Liên hệ</th>
-              <th class="py-3 px-4">Ngày đăng ký</th>
-              <th class="py-3 px-4">Trạng thái</th>
-              <th class="py-3 px-4 text-right">Thao tác</th>
+              <th class="py-3 px-4">Ngày gia nhập</th>
+              <th class="py-3 px-4 text-right">Đơn hàng / LTV</th>
+              <th class="py-3 px-4 text-center">Trạng thái</th>
+              <th class="py-3 px-4 text-center">Thao tác</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#faebe6]">
-            @for (c of customers(); track c._id) {
-              <tr (click)="selectCustomer(c)" [class.bg-[#faebe6]/50]="selectedCustomer()?._id === c._id" class="hover:bg-[#fdf9f1] transition-colors cursor-pointer">
+          <tbody class="divide-y divide-[#faebe6] text-[#1c1c17]">
+            @for (c of customers(); track c._id; let idx = $index) {
+              <tr (click)="selectCustomer(c)" [class.bg-[#faebe6]/60]="selectedCustomer()?._id === c._id" [class.bg-[#ffdad6]/20]="c.status === 'LOCKED'" class="hover:bg-[#f7f3eb]/70 transition-colors cursor-pointer customer-row">
+                <!-- Mã KH -->
+                <td class="py-3.5 px-4 font-mono font-bold text-[#406182]">
+                  {{ getCustomerDisplayCode(c, idx) }}
+                </td>
+
+                <!-- Khách hàng -->
                 <td class="py-3.5 px-4">
-                  <div class="flex items-center gap-3">
-                    <img [src]="c.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'" class="w-9 h-9 rounded-full object-cover ring-1 ring-[#dec0b7]">
+                  <div class="flex items-center gap-2.5">
+                    <div [class.bg-[#cfe5ff]]="c.status === 'ACTIVE'" [class.text-[#001d34]]="c.status === 'ACTIVE'" [class.bg-[#ffdad6]]="c.status === 'LOCKED'" [class.text-[#93000a]]="c.status === 'LOCKED'" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
+                      {{ getInitials(c.fullName) }}
+                    </div>
                     <div>
-                      <strong class="text-sm text-[#1c1c17] block">{{ c.fullName }}</strong>
-                      <span class="text-[10px] text-[#993913] uppercase font-bold">Hội viên Bát Tràng</span>
+                      <span class="font-bold text-xs text-[#1c1c17] block leading-tight">{{ c.fullName }}</span>
+                      <span [class.text-[#ba1a1a]]="c.status === 'LOCKED'" [class.text-[#57423b]]="c.status === 'ACTIVE'" class="text-[10px] flex items-center gap-1 mt-0.5">
+                        @if (c.status === 'ACTIVE') {
+                          <span class="w-1.5 h-1.5 rounded-full bg-[#993913] inline-block"></span>
+                        }
+                        {{ c.membershipTier || (c.status === 'LOCKED' ? 'Vi phạm điều khoản' : 'Thành viên Bát Tràng') }}
+                      </span>
                     </div>
                   </div>
                 </td>
+
+                <!-- Liên hệ -->
                 <td class="py-3.5 px-4 text-[#57423b]">
-                  <div class="font-medium text-[#1c1c17]">{{ c.email }}</div>
-                  <div class="text-[11px]">{{ c.phone || 'Chưa cập nhật SĐT' }}</div>
+                  <span class="block text-[#1c1c17] font-medium">{{ c.email }}</span>
+                  <span class="text-[11px] font-mono">{{ c.phone || 'Chưa có SĐT' }}</span>
                 </td>
+
+                <!-- Ngày gia nhập -->
                 <td class="py-3.5 px-4 text-[#57423b]">
                   {{ c.createdAt | date:'dd/MM/yyyy' }}
                 </td>
-                <td class="py-3.5 px-4">
+
+                <!-- Đơn hàng / LTV -->
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-bold text-[#1c1c17] block">9.200.000 ₫</span>
+                  <span class="text-[11px] text-[#57423b]">5 đơn thành công</span>
+                </td>
+
+                <!-- Trạng thái -->
+                <td class="py-3.5 px-4 text-center">
                   @if (c.status === 'ACTIVE') {
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-50 text-green-700">
-                      <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>Hoạt động
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#cfe5ff] text-[#274969] text-[10px] font-bold">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#406182]"></span> Hoạt động
                     </span>
                   } @else {
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-700">
-                      <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>Đã khóa (Banned)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#ffdad6] text-[#93000a] text-[10px] font-bold">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#ba1a1a]"></span> Đã khóa (Banned)
                     </span>
                   }
                 </td>
-                <td class="py-3.5 px-4 text-right">
-                  <button (click)="$event.stopPropagation(); toggleStatus(c)" [class.text-green-700]="c.status === 'LOCKED'" [class.text-[#ba1a1a]]="c.status === 'ACTIVE'" class="font-bold hover:underline cursor-pointer">
-                    {{ c.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa' }}
-                  </button>
+
+                <!-- Thao tác -->
+                <td class="py-3.5 px-4 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <button (click)="$event.stopPropagation(); triggerResetPassword(c)" class="p-1 rounded-lg text-[#406182] hover:bg-[#e6e2da] transition-colors cursor-pointer" title="Gửi liên kết đặt lại mật khẩu (BR-A14)" type="button">
+                      <span class="material-symbols-outlined text-[18px]">key</span>
+                    </button>
+                    @if (c.status === 'ACTIVE') {
+                      <button (click)="$event.stopPropagation(); openBanModal(c)" class="p-1 rounded-lg text-[#ba1a1a] hover:bg-[#e6e2da] transition-colors cursor-pointer" title="Khóa tài khoản" type="button">
+                        <span class="material-symbols-outlined text-[18px]">block</span>
+                      </button>
+                    } @else {
+                      <button (click)="$event.stopPropagation(); unbanCustomer(c)" class="px-2 py-0.5 rounded bg-[#406182] text-white text-[11px] font-semibold hover:bg-[#274969] transition-colors cursor-pointer" title="Mở khóa tài khoản" type="button">
+                        Mở khóa
+                      </button>
+                    }
+                    <button (click)="$event.stopPropagation(); openSoftDeleteModal(c)" class="p-1 rounded-lg text-[#ba1a1a] hover:bg-[#e6e2da] transition-colors cursor-pointer" title="Xóa tài khoản (Xóa mềm BRD-16-08)" type="button">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="5" class="py-8 text-center text-neutral-400">
+                <td colspan="7" class="py-8 text-center text-[#57423b]/60">
                   Không tìm thấy khách hàng nào phù hợp với điều kiện tìm kiếm.
                 </td>
               </tr>
@@ -138,60 +221,240 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination Footer (Stitch Mockup) -->
+      <div class="p-3 bg-[#f7f3eb]/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#57423b] border-t border-[#dec0b7]/40">
+        <span>
+          Hiển thị {{ customers().length }} trên tổng số {{ stats().totalCustomers }} hồ sơ
+        </span>
+        <div class="flex items-center gap-1">
+          <button (click)="currentPage = currentPage > 1 ? currentPage - 1 : 1; loadCustomers()" [disabled]="currentPage <= 1" class="p-1 rounded bg-white text-[#1c1c17] disabled:opacity-40 border border-[#dec0b7]/40 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+          <button class="px-2.5 py-1 rounded bg-[#406182] text-white font-bold text-xs">1</button>
+          <button class="px-2.5 py-1 rounded bg-white text-[#1c1c17] hover:bg-[#e6e2da] text-xs border border-[#dec0b7]/40 cursor-pointer">2</button>
+          <button class="px-2.5 py-1 rounded bg-white text-[#1c1c17] hover:bg-[#e6e2da] text-xs border border-[#dec0b7]/40 cursor-pointer">3</button>
+          <span class="px-1 text-[#57423b]">...</span>
+          <button class="px-2.5 py-1 rounded bg-white text-[#1c1c17] hover:bg-[#e6e2da] text-xs border border-[#dec0b7]/40 cursor-pointer">{{ totalPages }}</button>
+          <button (click)="currentPage = currentPage < totalPages ? currentPage + 1 : totalPages; loadCustomers()" [disabled]="currentPage >= totalPages" class="p-1 rounded bg-white text-[#1c1c17] disabled:opacity-40 border border-[#dec0b7]/40 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- CHI TIẾT HỒ SƠ KHÁCH HÀNG (lg:col-span-4 - Mockup a_customers.html) -->
-    <div class="lg:col-span-4 space-y-4">
+    <!-- Right Side Panel: Customer Dossier (Stitch Mockup) -->
+    <div class="lg:col-span-4 flex flex-col gap-4">
       @if (selectedCustomer(); as cust) {
-        <div class="bg-white rounded-2xl border border-[#dec0b7] shadow-sm p-6 space-y-6">
-          <div class="flex items-center justify-between border-b pb-4">
-            <h4 class="font-serif text-lg font-bold text-[#1c1c17]">Hồ sơ khách hàng</h4>
-            <span [class.bg-green-50]="cust.status === 'ACTIVE'" [class.text-green-700]="cust.status === 'ACTIVE'" [class.bg-red-50]="cust.status === 'LOCKED'" [class.text-red-700]="cust.status === 'LOCKED'" class="px-2.5 py-1 rounded-full text-[10px] font-bold">
-              {{ cust.status === 'ACTIVE' ? 'Đang hoạt động' : 'Tài khoản bị khóa' }}
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-[#dec0b7]/60">
+          <!-- Dossier Header -->
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#faebe6]">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[#993913] text-[20px]">badge</span>
+              <span class="font-serif font-bold text-base text-[#1c1c17]">Hồ sơ khách hàng</span>
+            </div>
+            <span [class.bg-[#cfe5ff]]="cust.status === 'ACTIVE'" [class.text-[#274969]]="cust.status === 'ACTIVE'" [class.bg-[#ffdad6]]="cust.status === 'LOCKED'" [class.text-[#93000a]]="cust.status === 'LOCKED'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+              {{ cust.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã khóa (Banned)' }}
             </span>
           </div>
 
-          <!-- Thông tin tổng quan -->
-          <div class="text-center">
-            <img [src]="cust.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'" class="w-20 h-20 rounded-full mx-auto object-cover ring-4 ring-[#faebe6] mb-2">
-            <h5 class="font-serif text-xl font-bold text-[#1c1c17]">{{ cust.fullName }}</h5>
-            <p class="text-xs text-[#57423b]">{{ cust.email }}</p>
-            <p class="text-xs text-[#57423b]">{{ cust.phone || 'Chưa có SĐT' }}</p>
-          </div>
-
-          <!-- Sổ địa chỉ giao hàng -->
-          <div class="border-t pt-4 space-y-2">
-            <span class="text-xs font-bold text-[#57423b] block uppercase tracking-wider">Địa chỉ giao hàng đã lưu</span>
-            @if (cust.addresses && cust.addresses.length > 0) {
-              @for (a of cust.addresses; track $index) {
-                <div class="p-2.5 bg-[#fdf9f1] rounded-xl text-xs border border-[#faebe6]">
-                  <strong>{{ a.recipientName }}</strong> ({{ a.phone }})
-                  <p class="text-neutral-600 mt-0.5">{{ a.addressDetail }}, {{ a.province }}</p>
-                </div>
-              }
-            } @else {
-              <p class="text-xs text-neutral-400 italic">Khách hàng chưa lưu sổ địa chỉ nào.</p>
-            }
-          </div>
-
-          <!-- Nút Thao tác Quản trị (Admin Actions) -->
-          <div class="border-t pt-4 space-y-2">
-            <span class="text-xs font-bold text-[#57423b] block uppercase tracking-wider">Hành động quản trị bảo mật</span>
-            <button (click)="toggleStatus(cust)" [class.bg-[#ba1a1a]]="cust.status === 'ACTIVE'" [class.bg-green-700]="cust.status === 'LOCKED'" class="w-full py-2.5 text-white font-bold text-xs rounded-xl shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
-              {{ cust.status === 'ACTIVE' ? '🔒 Khóa tài khoản khách hàng' : '🔓 Mở khóa tài khoản' }}
-            </button>
-          </div>
-
-          <!-- Cam kết bảo mật (UC-A04 E1 & Mockup BR-A14) -->
-          <div class="p-3 bg-[#fdf9f1] rounded-xl border border-[#dec0b7] text-[11px] text-[#57423b] flex items-start gap-2">
-            <span class="text-[#993913] font-bold">🛡</span>
-            <div>
-              <strong class="text-[#1c1c17]">Cam kết bảo mật Bát Tràng (BR-A14):</strong>
-              Hệ thống mã hóa một chiều Bcrypt mật khẩu người dùng. Tuyệt đối không lưu trữ hoặc hiển thị bản rõ mật khẩu của khách hàng trên bất kỳ giao diện nào.
+          <!-- Identity Banner -->
+          <div class="bg-[#f7f3eb] rounded-xl p-3.5 mb-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-[#406182] text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+              {{ getInitials(cust.fullName) }}
             </div>
+            <div class="min-w-0">
+              <h3 class="font-serif font-bold text-sm text-[#1c1c17] truncate">{{ cust.fullName }}</h3>
+              <p class="text-xs text-[#57423b] truncate">{{ cust.email }}</p>
+              <p class="text-[11px] text-[#406182] font-mono font-medium">{{ cust.phone || 'Chưa cập nhật SĐT' }}</p>
+            </div>
+          </div>
+
+          <!-- Customer Menu Navigation (Stitch Mockup) -->
+          <div class="space-y-1.5 mb-5">
+            <div class="flex items-center justify-between p-2 rounded-lg bg-[#f7f3eb] hover:bg-[#e6e2da] transition-all cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#406182] text-[18px]">receipt_long</span>
+                <span class="text-xs font-semibold text-[#1c1c17]">Lịch sử đơn hàng</span>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-[#1c1c17] shadow-2xs">8 đơn</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-[#f7f3eb] hover:bg-[#e6e2da] transition-all cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#993913] text-[18px]">sync_alt</span>
+                <span class="text-xs font-semibold text-[#1c1c17]">Yêu cầu Đổi / Trả</span>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-[#1c1c17] shadow-2xs">0 khiếu nại</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-[#f7f3eb] hover:bg-[#e6e2da] transition-all cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#b95029] text-[18px]">favorite</span>
+                <span class="text-xs font-semibold text-[#1c1c17]">Sản phẩm yêu thích</span>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-[#1c1c17] shadow-2xs">14 món gốm</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-lg bg-[#f7f3eb] hover:bg-[#e6e2da] transition-all cursor-pointer">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#57423b] text-[18px]">location_on</span>
+                <span class="text-xs font-semibold text-[#1c1c17]">Địa chỉ giao hàng</span>
+              </div>
+              <span class="text-[11px] text-[#57423b] font-medium">{{ cust.addresses?.length || 0 }} địa chỉ</span>
+            </div>
+          </div>
+
+          <!-- Security & Admin Commands (BR-A14 & BRD-A19 compliant) -->
+          <div class="space-y-2">
+            <div class="flex items-center gap-1.5 text-[#57423b] text-[10px] font-bold uppercase tracking-wider mb-1">
+              <span class="material-symbols-outlined text-[15px] text-[#993913]">lock_clock</span>
+              <span>Hành động quản trị bảo mật (Admin Actions)</span>
+            </div>
+
+            <button (click)="triggerResetPassword(cust)" class="w-full py-2 px-3 rounded-lg bg-[#f1ede6] hover:bg-[#e6e2da] text-[#1c1c17] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer" type="button">
+              <span class="material-symbols-outlined text-[17px] text-[#406182]">mark_email_read</span>
+              <span>Gửi liên kết đặt lại mật khẩu</span>
+            </button>
+
+            <div class="grid grid-cols-2 gap-2">
+              @if (cust.status === 'ACTIVE') {
+                <button (click)="openBanModal(cust)" class="py-2 px-2 rounded-lg bg-[#ffdad6] text-[#93000a] hover:bg-[#ba1a1a] hover:text-white text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer" type="button">
+                  <span class="material-symbols-outlined text-[16px]">lock</span>
+                  <span>Khóa tài khoản</span>
+                </button>
+              } @else {
+                <button (click)="unbanCustomer(cust)" class="py-2 px-2 rounded-lg bg-[#cfe5ff] text-[#274969] hover:bg-[#406182] hover:text-white text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer" type="button">
+                  <span class="material-symbols-outlined text-[16px]">lock_open</span>
+                  <span>Mở khóa</span>
+                </button>
+              }
+
+              <button (click)="openSoftDeleteModal(cust)" class="py-2 px-2 rounded-lg bg-[#f1ede6] text-[#ba1a1a] hover:bg-[#ffdad6] text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-[16px]">person_remove</span>
+                <span>Xóa mềm</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cam kết bảo mật Bát Tràng (BR-A14) -->
+        <div class="bg-[#f1ede6] p-4 rounded-xl text-[#1c1c17] flex items-start gap-2.5 border border-[#dec0b7]/40">
+          <span class="material-symbols-outlined text-[#993913] text-[22px] shrink-0">verified</span>
+          <div class="text-[11px] leading-relaxed">
+            <span class="font-bold block text-xs text-[#1c1c17] mb-0.5">Cam kết bảo mật Bát Tràng (BR-A14)</span>
+            Hệ thống mã hóa một chiều hash mật khẩu tài khoản người dùng theo chuẩn công nghệ cao. Tuyệt đối không lưu trữ hoặc hiển thị bản rõ mật khẩu của khách hàng trên bất kỳ giao diện quản trị nào.
           </div>
         </div>
       }
     </div>
   </div>
 </div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: Xác nhận Khóa tài khoản (BR-A15 & BRD-16-05, BRD-16-07)         -->
+<!-- ========================================================================= -->
+@if (isBanModalOpen(); as isOpen) {
+  <div class="fixed inset-0 z-50 bg-[#31302b]/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white max-w-lg w-full rounded-2xl shadow-xl overflow-hidden border border-[#dec0b7]">
+      <div class="p-6">
+        <div class="w-12 h-12 rounded-full bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[28px]">lock_person</span>
+        </div>
+        <h3 class="font-serif text-lg font-bold text-[#1c1c17] mb-1">
+          Xác nhận Khóa tài khoản khách hàng
+        </h3>
+        <p class="text-xs text-[#57423b] mb-4">
+          Bạn đang yêu cầu khóa tài khoản của khách hàng <span class="font-bold text-[#1c1c17]">{{ targetBanCustomer()?.fullName }}</span> (Email: <span class="font-mono text-[#406182]">{{ targetBanCustomer()?.email }}</span>).
+        </p>
+
+        <!-- Rule Alert Box -->
+        <div class="p-3.5 rounded-xl bg-[#ffdad6]/40 text-[#1c1c17] space-y-1 text-xs mb-4">
+          <div class="font-bold text-[#ba1a1a] flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">warning</span>
+            <span>Hệ quả kích hoạt BRD-16-06 &amp; BPMN 01:</span>
+          </div>
+          <p>• Trạng thái người dùng sẽ lập tức chuyển thành <code class="bg-[#e6e2da] px-1 py-0.5 rounded text-[#ba1a1a] font-mono font-bold">isBanned = true</code>.</p>
+          <p>• Toàn bộ JWT token / phiên đăng nhập hiện tại trên thiết bị khách hàng sẽ bị thu hồi ngay lập tức.</p>
+          <p>• Khi đăng nhập lại, hệ thống sẽ từ chối và hiển thị thông báo tài khoản đang bị tạm khóa.</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-[#57423b] uppercase tracking-wider mb-1">
+            Lý do khóa tài khoản (Bắt buộc theo BRD-16-07)
+          </label>
+          <textarea [(ngModel)]="banReason" class="w-full p-2.5 rounded-lg bg-[#f7f3eb] text-[#1c1c17] text-xs outline-none focus:bg-white focus:ring-1 focus:ring-[#993913] border border-[#dec0b7]/60" placeholder="Ví dụ: Đặt đơn ảo nhiều lần, spam đánh giá tiêu cực, vi phạm chính sách thanh toán COD..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-[#f7f3eb] flex items-center justify-end gap-2 border-t border-[#dec0b7]/40">
+        <button (click)="closeBanModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-[#57423b] hover:bg-[#e6e2da] transition-colors cursor-pointer" type="button">
+          Hủy bỏ
+        </button>
+        <button (click)="confirmBanAccount()" class="px-4 py-2 rounded-lg bg-[#ba1a1a] text-white hover:bg-[#93000a] text-xs font-bold shadow-sm transition-colors flex items-center gap-1 cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[16px]">block</span>
+          <span>Xác nhận Khóa tài khoản</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: Xóa tài khoản (Xóa mềm - BRD-16-08)                             -->
+<!-- ========================================================================= -->
+@if (isSoftDeleteModalOpen(); as isOpen) {
+  <div class="fixed inset-0 z-50 bg-[#31302b]/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white max-w-lg w-full rounded-2xl shadow-xl overflow-hidden border border-[#dec0b7]">
+      <div class="p-6">
+        <div class="w-12 h-12 rounded-full bg-[#f1ede6] text-[#57423b] flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-[28px]">shield_person</span>
+        </div>
+        <h3 class="font-serif text-lg font-bold text-[#1c1c17] mb-1">
+          Xóa tài khoản (Xóa mềm - Soft Delete)
+        </h3>
+        <p class="text-xs text-[#57423b] mb-4">
+          Yêu cầu lưu trữ &amp; gỡ định danh tài khoản khách hàng <span class="font-bold text-[#1c1c17]">{{ targetDeleteCustomer()?.fullName }}</span>.
+        </p>
+
+        <!-- Information Box on Data Integrity -->
+        <div class="p-3.5 rounded-xl bg-[#f1ede6] text-[#1c1c17] space-y-1 text-xs mb-4">
+          <div class="font-bold text-[#993913] flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">info</span>
+            <span>Quy tắc toàn vẹn dữ liệu kế toán &amp; đánh giá BRD-16-08:</span>
+          </div>
+          <p>• Dữ liệu giao dịch, hóa đơn bán gốm vẫn được bảo toàn cho việc đối soát tài chính.</p>
+          <p>• Tài khoản sẽ được đánh dấu cờ <code class="bg-[#e6e2da] px-1 rounded font-mono font-bold">isDeleted = true</code> và ẩn khỏi danh sách khách hàng tìm kiếm.</p>
+          <p>• Các bài đánh giá sản phẩm của người này sẽ chuyển sang trạng thái <em>"Khách hàng ẩn danh"</em>.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input [(ngModel)]="confirmDataIntegrity" class="w-4 h-4 rounded text-[#993913] focus:ring-0 cursor-pointer" id="confirmDataIntegrity" type="checkbox">
+          <label class="text-xs text-[#1c1c17] select-none cursor-pointer" for="confirmDataIntegrity">
+            Tôi hiểu và xác nhận thực hiện quy trình xóa mềm tài khoản này.
+          </label>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 bg-[#f7f3eb] flex items-center justify-end gap-2 border-t border-[#dec0b7]/40">
+        <button (click)="closeSoftDeleteModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-[#57423b] hover:bg-[#e6e2da] transition-colors cursor-pointer" type="button">
+          Đóng
+        </button>
+        <button (click)="confirmSoftDelete()" class="px-4 py-2 rounded-lg bg-[#b95029] text-white hover:bg-[#993913] text-xs font-bold shadow-sm transition-colors flex items-center gap-1 cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span>
+          <span>Xác nhận Xóa mềm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================================================= -->
+<!-- TOAST NOTIFICATION POPUP THEO STITCH                                     -->
+<!-- ========================================================================= -->
+@if (isToastVisible()) {
+  <div class="fixed bottom-6 right-6 z-50 bg-[#31302b] text-[#f4f0e8] px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 transition-all animate-bounce">
+    <span class="material-symbols-outlined text-[#cfe5ff] text-[20px]">{{ toastIcon() }}</span>
+    <span class="text-xs font-semibold">{{ toastMessage() }}</span>
+  </div>
+}

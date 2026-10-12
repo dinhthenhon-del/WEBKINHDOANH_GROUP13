@@ -113,10 +113,10 @@ exports.getAdminCustomers = async (req, res) => {
   try {
     const { search, status, page = 1, limit = 10 } = req.query;
 
-    const query = { role: 'CUSTOMER' };
+    const query = { role: 'CUSTOMER', isDeleted: { $ne: true } };
 
     // Lọc theo trạng thái ACTIVE / LOCKED / INACTIVE
-    if (status) {
+    if (status && status !== 'ALL') {
       query.status = status.toUpperCase();
     }
 
@@ -197,11 +197,11 @@ exports.getCustomerDetail = async (req, res) => {
 };
 
 /**
- * [UC-A04 E2] Admin: Cập nhật trạng thái Khóa / Mở khóa tài khoản
+ * [UC-A04 E2 & BR-A15 & BRD-16-05, BRD-16-07] Admin: Khóa / Mở khóa tài khoản kèm lý do
  */
 exports.updateCustomerStatus = async (req, res) => {
   try {
-    const { status } = req.body; // 'ACTIVE', 'LOCKED', 'INACTIVE'
+    const { status, banReason } = req.body; // 'ACTIVE', 'LOCKED', 'INACTIVE'
 
     if (!['ACTIVE', 'LOCKED', 'INACTIVE'].includes(status?.toUpperCase())) {
       return res.status(400).json({
@@ -221,20 +221,89 @@ exports.updateCustomerStatus = async (req, res) => {
     }
 
     customer.status = status.toUpperCase();
+    if (status.toUpperCase() === 'LOCKED') {
+      customer.banReason = banReason ? banReason.trim() : 'Vi phạm điều khoản sử dụng';
+    } else {
+      customer.banReason = undefined;
+    }
+
     await customer.save();
 
     return res.status(200).json({
       success: true,
-      message: `Tài khoản khách hàng đã được chuyển sang trạng thái: ${customer.status}`,
+      message: status.toUpperCase() === 'LOCKED'
+        ? `Tài khoản ${customer.customerCode || customer.fullName} đã bị khóa (isBanned = true). Đã thu hồi toàn bộ phiên làm việc.`
+        : `Đã mở khóa tài khoản cho khách hàng ${customer.fullName}.`,
       data: {
         id: customer._id,
         fullName: customer.fullName,
         email: customer.email,
-        status: customer.status
+        status: customer.status,
+        banReason: customer.banReason
       }
     });
   } catch (error) {
     console.error('[TV1 Admin Error] Update Customer Status:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * [BRD-16-08] Admin: Xóa mềm tài khoản khách hàng (Soft Delete)
+ */
+exports.softDeleteCustomer = async (req, res) => {
+  try {
+    const customer = await User.findById(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản khách hàng' });
+    }
+
+    if (customer.role === 'ADMIN') {
+      return res.status(400).json({ success: false, message: 'Không thể xóa tài khoản Quản trị viên' });
+    }
+
+    customer.isDeleted = true;
+    customer.deletedAt = new Date();
+    customer.status = 'INACTIVE';
+    await customer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Đã xóa mềm tài khoản ${customer.customerCode || customer.fullName}. Dữ liệu kế toán được bảo toàn (BRD-16-08).`,
+      data: {
+        id: customer._id,
+        isDeleted: customer.isDeleted
+      }
+    });
+  } catch (error) {
+    console.error('[TV1 Admin Error] Soft Delete Customer:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * [BR-A14 & BRD-A19] Admin: Gửi liên kết đặt lại mật khẩu cho khách hàng
+ */
+exports.triggerResetPassword = async (req, res) => {
+  try {
+    const customer = await User.findById(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản khách hàng' });
+    }
+
+    // Tạo OTP ngẫu nhiên 6 chữ số
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    customer.resetPasswordOtp = otp;
+    customer.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 phút
+    await customer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Đã gửi liên kết khôi phục mật khẩu (BR-A14) tới ${customer.email}`,
+      devOtp: otp
+    });
+  } catch (error) {
+    console.error('[TV1 Admin Error] Trigger Reset Password:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -73,15 +73,17 @@ mongoose.connect(MONGODB_URI)
         const custHash = await User.hashPassword('123456');
         await User.create([
           {
+            customerCode: 'KH-001',
             fullName: 'Lê Thị Mai Hương',
             email: 'huong.le@gmail.com',
-            phone: '0912889922',
+            phone: '0912.889.922',
+            membershipTier: 'Khách VIP Kim Cương',
             passwordHash: custHash,
             role: 'CUSTOMER',
             status: 'ACTIVE',
             addresses: [{
               recipientName: 'Lê Thị Mai Hương',
-              phone: '0912889922',
+              phone: '0912.889.922',
               province: 'Hà Nội',
               ward: 'Gia Lâm',
               addressDetail: 'Số 12 ngõ Xưởng Gốm Bát Tràng',
@@ -89,20 +91,35 @@ mongoose.connect(MONGODB_URI)
             }]
           },
           {
+            customerCode: 'KH-002',
             fullName: 'Trần Quốc Toản',
             email: 'toan.tran@bat-trang.vn',
-            phone: '0987654321',
+            phone: '0987.654.321',
+            membershipTier: 'Khách Mua Sỉ',
             passwordHash: custHash,
             role: 'CUSTOMER',
             status: 'ACTIVE'
           },
           {
+            customerCode: 'KH-003',
             fullName: 'Hoàng Tuấn Kiệt',
             email: 'kiet.hoang@yahoo.com',
-            phone: '0904556778',
+            phone: '0904.556.778',
+            membershipTier: 'Vi phạm điều khoản hoàn hủy',
+            banReason: 'Vi phạm điều khoản hoàn hủy',
             passwordHash: custHash,
             role: 'CUSTOMER',
             status: 'LOCKED' // Tài khoản bị khóa mẫu (Mockup a_customers.html)
+          },
+          {
+            customerCode: 'KH-004',
+            fullName: 'Đỗ Mỹ Linh',
+            email: 'linh.do@gmail.com',
+            phone: '0936.123.456',
+            membershipTier: 'Thành viên Thân thiết',
+            passwordHash: custHash,
+            role: 'CUSTOMER',
+            status: 'ACTIVE'
           }
         ]);
         console.log('👥 [TV1 Seed] Đã tạo danh sách khách hàng mẫu theo Mockup Stitch');

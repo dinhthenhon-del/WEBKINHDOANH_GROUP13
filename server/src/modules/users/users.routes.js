@@ -28,5 +28,7 @@ router.delete('/addresses/:addressId', verifyToken, usersController.deleteAddres
 router.get('/admin/customers', verifyToken, requireAdmin, usersController.getAdminCustomers);
 router.get('/admin/customers/:id', verifyToken, requireAdmin, usersController.getCustomerDetail);
 router.patch('/admin/customers/:id/status', verifyToken, requireAdmin, usersController.updateCustomerStatus);
+router.delete('/admin/customers/:id', verifyToken, requireAdmin, usersController.softDeleteCustomer);
+router.post('/admin/customers/:id/reset-password', verifyToken, requireAdmin, usersController.triggerResetPassword);
 
 module.exports = router;

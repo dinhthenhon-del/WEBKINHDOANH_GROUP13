@@ -16,11 +16,15 @@ import { AuthService } from './auth';
 
 export interface CustomerItem {
   _id: string;
+  customerCode?: string;
   fullName: string;
   email: string;
   phone?: string;
   role: string;
   status: 'ACTIVE' | 'LOCKED' | 'INACTIVE';
+  membershipTier?: string;
+  banReason?: string;
+  isDeleted?: boolean;
   avatar?: string;
   createdAt: string;
   addresses?: Array<{
@@ -84,11 +88,28 @@ export class CustomerService {
     });
   }
 
-  // [UC-A04 E2] Khóa hoặc Mở khóa tài khoản khách hàng
-  updateStatus(id: string, status: 'ACTIVE' | 'LOCKED'): Observable<{ success: boolean; message: string }> {
+  // [UC-A04 E2 & BR-A15 & BRD-16-05, BRD-16-07] Khóa / Mở khóa tài khoản khách hàng kèm lý do
+  updateStatus(id: string, status: 'ACTIVE' | 'LOCKED', banReason?: string): Observable<{ success: boolean; message: string }> {
     return this.http.patch<{ success: boolean; message: string }>(
       `${this.API_URL}/${id}/status`,
-      { status },
+      { status, banReason },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // [BRD-16-08] Xóa mềm tài khoản khách hàng
+  softDelete(id: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.API_URL}/${id}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // [BR-A14 & BRD-A19] Gửi liên kết đặt lại mật khẩu cho khách hàng
+  triggerResetPassword(id: string): Observable<{ success: boolean; message: string; devOtp?: string }> {
+    return this.http.post<{ success: boolean; message: string; devOtp?: string }>(
+      `${this.API_URL}/${id}/reset-password`,
+      {},
       { headers: this.getHeaders() }
     );
   }
