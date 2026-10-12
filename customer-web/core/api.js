@@ -63,8 +63,12 @@
 
         xhr.open(method.toUpperCase(), url, true); // true: Bất đồng bộ
 
-        // Thiết lập header dữ liệu JSON theo Slide 11
-        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        var isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+
+        // Thiết lập header dữ liệu JSON theo Slide 11 (nếu là FormData trình duyệt tự tạo boundary)
+        if (!isFormData) {
+          xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        }
 
         // Gắn JWT token nếu người dùng đã đăng nhập (TV1 cung cấp)
         var token = self.getToken();
@@ -81,7 +85,8 @@
                 responseJson = JSON.parse(xhr.responseText); // Parse JSON theo Slide 11
               }
             } catch (err) {
-              responseJson = { success: false, message: 'Lỗi parse dữ liệu từ Server: ' + xhr.responseText };
+              var cleanText = xhr.responseText ? xhr.responseText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+              responseJson = { success: false, message: cleanText || ('Lỗi máy chủ HTTP ' + xhr.status) };
             }
 
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -107,7 +112,7 @@
 
         // Gửi request
         if (data && (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PUT' || method.toUpperCase() === 'PATCH')) {
-          xhr.send(JSON.stringify(data));
+          xhr.send(isFormData ? data : JSON.stringify(data));
         } else {
           xhr.send();
         }

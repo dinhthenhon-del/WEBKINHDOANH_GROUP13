@@ -64,6 +64,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'
   },
+  avatarPublicId: {
+    type: String
+  },
   // Trường phục vụ mã hiển thị theo Stitch Mockup (ví dụ KH-001) & hạng thành viên
   customerCode: {
     type: String,

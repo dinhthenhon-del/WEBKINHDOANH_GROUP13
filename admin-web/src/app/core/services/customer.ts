@@ -113,4 +113,15 @@ export class CustomerService {
       { headers: this.getHeaders() }
     );
   }
+
+  // Tải ảnh đại diện khách hàng lên Cloudinary
+  uploadCustomerAvatar(id: string, file: File): Observable<{ success: boolean; message: string; data?: { avatar: string } }> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.http.post<{ success: boolean; message: string; data?: { avatar: string } }>(
+      `http://localhost:5000/api/users/admin/customers/${id}/avatar`,
+      formData,
+      { headers: this.getHeaders() }
+    );
+  }
 }

@@ -13,7 +13,13 @@
 
     <!-- Thông tin Quản trị viên (TV1 Auth) -->
     <div class="flex items-center gap-3 pl-3 border-l border-[#faebe6]">
-      <img [src]="auth.currentUser()?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'" class="w-9 h-9 rounded-full object-cover ring-2 ring-[#faebe6]">
+      <div class="relative cursor-pointer group" (click)="avatarInput.click()" title="Click vào ảnh để tải ảnh lên thay cho ảnh đại diện">
+        <img [src]="auth.currentUser()?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ'" class="w-9 h-9 rounded-full object-cover ring-2 ring-[#faebe6] group-hover:opacity-75 transition-opacity">
+        <div class="absolute inset-0 rounded-full bg-black/35 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </div>
+      </div>
+      <input #avatarInput type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)">
       <div class="text-left hidden sm:block">
         <span class="text-xs font-bold text-[#1c1c17] block leading-tight">{{ auth.currentUser()?.fullName || 'Quản trị viên' }}</span>
         <span class="text-[10px] text-[#993913] font-semibold">{{ auth.currentUser()?.email || 'admin@battrang.vn' }}</span>

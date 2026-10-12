@@ -9,6 +9,7 @@
  */
 
 const User = require('../../models/User');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../../core/cloudinary');
 
 /**
  * [UC-C07] Cập nhật thông tin cá nhân khách hàng
@@ -24,7 +25,18 @@ exports.updateProfile = async (req, res) => {
 
     if (fullName) user.fullName = fullName.trim();
     if (phone) user.phone = phone.trim();
-    if (avatar) user.avatar = avatar;
+
+    // Nếu có upload file kèm trong updateProfile
+    if (req.file) {
+      if (user.avatarPublicId) {
+        try { await deleteFromCloudinary(user.avatarPublicId); } catch (e) { /* ignore */ }
+      }
+      const uploadResult = await uploadToCloudinary(req.file.buffer, 'craftory_avatars');
+      user.avatar = uploadResult.secure_url;
+      user.avatarPublicId = uploadResult.public_id;
+    } else if (avatar) {
+      user.avatar = avatar;
+    }
 
     await user.save();
 
@@ -35,6 +47,109 @@ exports.updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('[TV1 User Error] Update Profile:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * [UC-C07 / UC-A01] Tải ảnh đại diện lên Cloudinary (Dành cho Khách hàng & Quản trị viên)
+ */
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn tệp hình ảnh để tải lên'
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+    }
+
+    // Xóa ảnh cũ trên Cloudinary nếu có public_id cũ để tối ưu bộ nhớ
+    if (user.avatarPublicId) {
+      try {
+        await deleteFromCloudinary(user.avatarPublicId);
+      } catch (delErr) {
+        console.warn('Xóa ảnh cũ Cloudinary:', delErr.message);
+      }
+    }
+
+    // Upload stream buffer lên Cloudinary vào thư mục 'craftory_avatars'
+    const uploadResult = await uploadToCloudinary(req.file.buffer, 'craftory_avatars');
+    user.avatar = uploadResult.secure_url;
+    user.avatarPublicId = uploadResult.public_id;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Cập nhật ảnh đại diện thành công!',
+      data: {
+        avatar: user.avatar,
+        avatarPublicId: user.avatarPublicId,
+        user: {
+          id: user._id,
+          _id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar
+        }
+      }
+    });
+  } catch (error) {
+    console.error('[TV1 Avatar Upload Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Lỗi khi tải ảnh đại diện lên Cloudinary'
+    });
+  }
+};
+
+/**
+ * [UC-A04] Admin cập nhật ảnh đại diện cho khách hàng
+ */
+exports.adminUploadCustomerAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn tệp hình ảnh để tải lên'
+      });
+    }
+
+    const customer = await User.findById(req.params.id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+
+    if (customer.avatarPublicId) {
+      try {
+        await deleteFromCloudinary(customer.avatarPublicId);
+      } catch (delErr) {
+        console.warn('Xóa ảnh cũ Cloudinary:', delErr.message);
+      }
+    }
+
+    const uploadResult = await uploadToCloudinary(req.file.buffer, 'craftory_avatars');
+    customer.avatar = uploadResult.secure_url;
+    customer.avatarPublicId = uploadResult.public_id;
+    await customer.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Cập nhật ảnh đại diện khách hàng thành công!',
+      data: {
+        avatar: customer.avatar,
+        avatarPublicId: customer.avatarPublicId,
+        customer
+      }
+    });
+  } catch (error) {
+    console.error('[TV1 Admin Upload Customer Avatar Error]:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

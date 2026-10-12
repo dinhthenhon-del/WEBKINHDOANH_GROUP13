@@ -359,9 +359,14 @@
         '    <!-- Cột trái: Thông tin thẻ thành viên -->',
         '    <div class="lg:col-span-4 space-y-6">',
         '      <div class="bg-white rounded-2xl p-6 border border-[#dec0b7] shadow-sm text-center">',
-        '        <div class="relative w-20 h-20 mx-auto rounded-full overflow-hidden ring-4 ring-[#faebe6] mb-3">',
-        '          <img src="' + (user.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ') + '" class="w-full h-full object-cover">',
+        '        <div id="account-avatar-wrapper" class="relative w-20 h-20 mx-auto rounded-full overflow-hidden ring-4 ring-[#faebe6] mb-2 cursor-pointer group" title="Click vào ảnh để tải ảnh lên thay cho ảnh đại diện">',
+        '          <img id="account-avatar-img" src="' + (user.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOcs5LcnujnUJQh8uk1tcbCEb8hHUsgJQu5MdSKJRejGOXfE-X7AidhlMhEg_6DWeLPxr8sXo9wvqW4z-U-w6vNsFwyV8Hl5ECIyx5MnDvxHw7yT3ICN-CaREbRTi_PukRQcPrLk3s3sk-uaUjbPkRviW2OVpfUlkTTSvLvK-SPogJrSZD1Xyq4FWNnEpIyb02n9V574ZwGz77BNZ4128a1lSAxsDpfCwgoYPrQn0NXchu9FhpXWuJ') + '" class="w-full h-full object-cover">',
+        '          <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">',
+        '            <span class="material-symbols-outlined text-white text-[22px]">photo_camera</span>',
+        '          </div>',
+        '          <input type="file" id="input-account-avatar" accept="image/*" class="hidden">',
         '        </div>',
+        '        <p class="text-[11px] text-[#9f3c16] cursor-pointer hover:underline mb-2 font-medium" onclick="var inp=document.getElementById(\'input-account-avatar\'); if(inp) inp.click();">Click vào ảnh để đổi avatar</p>',
         '        <h3 class="font-serif text-xl font-bold text-[#211a17]">' + user.fullName + '</h3>',
         '        <p class="text-xs text-[#5f5b58]">' + user.email + '</p>',
         '        <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#fff1ec] text-[#9f3c16]">',
@@ -438,6 +443,61 @@
         '  </div>',
         '</div>'
       ].join('\n');
+
+      // Gắn sự kiện click vào ảnh để tải ảnh đại diện lên Cloudinary
+      var avatarWrapper = document.getElementById('account-avatar-wrapper');
+      var avatarInput = document.getElementById('input-account-avatar');
+      var avatarImg = document.getElementById('account-avatar-img');
+
+      if (avatarWrapper && avatarInput) {
+        avatarWrapper.onclick = function() {
+          avatarInput.click();
+        };
+
+        avatarInput.onchange = function(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          if (!file.type || !file.type.startsWith('image/')) {
+            alert('Vui lòng chọn tệp hình ảnh hợp lệ (jpg, png, webp, jpeg)!');
+            return;
+          }
+
+          var originalSrc = avatarImg ? avatarImg.src : '';
+          if (avatarImg) avatarImg.style.opacity = '0.4';
+
+          var formData = new FormData();
+          formData.append('avatar', file);
+
+          window.ApiClient.post('/users/profile/avatar', formData)
+            .then(function(res) {
+              if (avatarImg) avatarImg.style.opacity = '1';
+              if (res.success && res.data && res.data.avatar) {
+                var newUrl = res.data.avatar;
+                if (avatarImg) avatarImg.src = newUrl;
+
+                var current = window.ApiClient.getCurrentUser();
+                if (current) {
+                  current.avatar = newUrl;
+                  window.ApiClient.setSession(window.ApiClient.getToken(), current, true);
+                }
+
+                if (window.Navbar) window.Navbar.render();
+                alert('Tải lên và lưu ảnh đại diện trên Cloudinary thành công!');
+              } else {
+                if (avatarImg) avatarImg.src = originalSrc;
+                alert((res && res.message) ? res.message : 'Không thể tải ảnh lên');
+              }
+            })
+            .catch(function(err) {
+              if (avatarImg) {
+                avatarImg.style.opacity = '1';
+                avatarImg.src = originalSrc;
+              }
+              alert((err && err.message) ? err.message : 'Lỗi khi tải ảnh đại diện lên Cloudinary');
+            });
+        };
+      }
 
       // Gắn sự kiện cập nhật profile
       var formProf = document.getElementById('form-update-profile');

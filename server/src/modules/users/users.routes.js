@@ -19,14 +19,19 @@ const usersController = require('./users.controller');
 const { verifyToken } = require('../../core/auth.middleware');
 const { requireAdmin } = require('../../core/role.middleware');
 
-// Các route cho khách hàng (Yêu cầu đăng nhập)
-router.put('/profile', verifyToken, usersController.updateProfile);
+const { upload } = require('../../core/cloudinary');
+
+// Các route cho khách hàng / tài khoản cá nhân (Yêu cầu đăng nhập)
+router.put('/profile', verifyToken, upload.single('avatar'), usersController.updateProfile);
+router.post('/profile/avatar', verifyToken, upload.single('avatar'), usersController.uploadAvatar);
+router.post('/avatar', verifyToken, upload.single('avatar'), usersController.uploadAvatar);
 router.post('/addresses', verifyToken, usersController.addAddress);
 router.delete('/addresses/:addressId', verifyToken, usersController.deleteAddress);
 
 // Các route cho Admin (Yêu cầu quyền ADMIN)
 router.get('/admin/customers', verifyToken, requireAdmin, usersController.getAdminCustomers);
 router.get('/admin/customers/:id', verifyToken, requireAdmin, usersController.getCustomerDetail);
+router.post('/admin/customers/:id/avatar', verifyToken, requireAdmin, upload.single('avatar'), usersController.adminUploadCustomerAvatar);
 router.patch('/admin/customers/:id/status', verifyToken, requireAdmin, usersController.updateCustomerStatus);
 router.delete('/admin/customers/:id', verifyToken, requireAdmin, usersController.softDeleteCustomer);
 router.post('/admin/customers/:id/reset-password', verifyToken, requireAdmin, usersController.triggerResetPassword);

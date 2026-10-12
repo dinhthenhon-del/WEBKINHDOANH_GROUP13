@@ -10,7 +10,7 @@
  */
 
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
@@ -81,6 +81,34 @@ export class AuthService {
   // [UC-A01 E4] Đặt lại mật khẩu mới với OTP
   resetPassword(payload: { email: string; otp: string; newPassword: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/reset-password`, payload);
+  }
+
+  // Tải ảnh đại diện lên Cloudinary và cập nhật phiên Admin
+  uploadAvatar(file: File): Observable<{ success: boolean; message: string; data?: { avatar: string } }> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const token = this.getToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token || ''}`
+    });
+
+    return this.http.post<{ success: boolean; message: string; data?: { avatar: string } }>(
+      'http://localhost:5000/api/users/profile/avatar',
+      formData,
+      { headers }
+    ).pipe(
+      tap((res) => {
+        if (res.success && res.data?.avatar) {
+          const user = this.currentUser();
+          if (user) {
+            const updated = { ...user, avatar: res.data.avatar };
+            localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+            this.currentUser.set(updated);
+          }
+        }
+      })
+    );
   }
 
   private getStoredUser(): AdminUser | null {

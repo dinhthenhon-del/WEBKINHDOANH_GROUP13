@@ -254,4 +254,33 @@ export class CustomerList implements OnInit {
       this.isToastVisible.set(false);
     }, 3800);
   }
+
+  // Tải ảnh đại diện khách hàng lên Cloudinary khi Admin click vào ảnh
+  onCustomerAvatarSelected(cust: CustomerItem, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (!file.type || !file.type.startsWith('image/')) {
+      this.showToast('Vui lòng chọn file hình ảnh hợp lệ (jpg, png, webp)', 'error');
+      return;
+    }
+
+    this.customerService.uploadCustomerAvatar(cust._id, file).subscribe({
+      next: (res) => {
+        if (res.success && res.data?.avatar) {
+          cust.avatar = res.data.avatar;
+          this.selectedCustomer.set({ ...cust, avatar: res.data.avatar });
+          this.showToast('Đã lưu ảnh đại diện khách hàng lên Cloudinary!');
+        } else {
+          this.showToast(res.message || 'Lỗi upload ảnh', 'error');
+        }
+        input.value = '';
+      },
+      error: (err) => {
+        this.showToast(err?.error?.message || 'Lỗi khi tải ảnh lên Cloudinary', 'error');
+        input.value = '';
+      }
+    });
+  }
 }
