@@ -19,6 +19,7 @@
   var App = {
     // Đăng ký các module từ các thành viên
     auth: window.Tv1Auth,
+    storytelling: window.Tv1Storytelling,
     navbar: window.Navbar,
     footer: window.Footer,
     products: null, // TV2 sẽ đăng ký: window.App.products = ...
@@ -74,6 +75,8 @@
         // Phân phối nạp giao diện từ các module con
         switch (hash) {
           case 'home':
+          case 'story':
+          case 'storytelling':
             App.renderHomeView(contentEl);
             break;
 
@@ -143,16 +146,29 @@
       // Gọi tệp XML bằng AJAX theo Slide 10
       window.ApiClient.getXml('/content/storytelling.xml')
         .then(function(xmlDoc) {
-          self.renderHomeWithXml(containerEl, xmlDoc);
+          if (window.Tv1Storytelling && typeof window.Tv1Storytelling.render === 'function') {
+            window.Tv1Storytelling.render(containerEl, xmlDoc);
+          } else {
+            self.renderHomeWithXml(containerEl, xmlDoc);
+          }
         })
         .catch(function(err) {
           console.warn('Lưu ý nạp XML:', err);
           // Fallback nạp tĩnh nếu backend chưa phản hồi
-          self.renderHomeWithXml(containerEl, null);
+          if (window.Tv1Storytelling && typeof window.Tv1Storytelling.render === 'function') {
+            window.Tv1Storytelling.render(containerEl, null);
+          } else {
+            self.renderHomeWithXml(containerEl, null);
+          }
         });
     },
 
     renderHomeWithXml: function(containerEl, xmlDoc) {
+      if (window.Tv1Storytelling && typeof window.Tv1Storytelling.render === 'function') {
+        window.Tv1Storytelling.render(containerEl, xmlDoc);
+        return;
+      }
+
       // Trích xuất dữ liệu XML theo Slide 10: getElementsByTagName và textContent/childNodes
       var slogan = 'Tĩnh Tại Trong Từng <span class="italic text-[#9f3c16]">Thớ Đất</span> & Ngọn Lửa Nung Củi.';
       var tagline = 'Nghệ thuật gốm nung củi Bát Tràng';

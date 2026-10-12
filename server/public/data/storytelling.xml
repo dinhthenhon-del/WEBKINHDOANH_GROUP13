@@ -98,4 +98,58 @@
       </step>
     </steps>
   </custom2dStudio>
+
+  <!-- Bộ Sưu Tập Tiêu Biểu & Câu Chuyện Dòng Men -->
+  <featuredCollection>
+    <badge>Tuyển Tập Kinh Điển</badge>
+    <name>Bộ Sưu Tập Men Ngọc Thủy Trúc</name>
+    <story>Sắc ngọc lam trầm mặc lấy cảm hứng từ rặng trúc ven hồ cổ. Mỗi tác phẩm được phủ men tro trấu tự nhiên, tạo lớp vân rạn rêu phong trường tồn.</story>
+    <items>
+      <product id="prod-1">
+        <name>Bình Men Ngọc Giọt Nước</name>
+        <shape>Dáng gốm: Giọt Nước Cổ Thon</shape>
+        <detail>Cốt sành nung 1.280°C, vân rạn chỉ mộc</detail>
+        <price>1450000</price>
+        <priceFormatted>1.450.000 đ</priceFormatted>
+        <badge>Độc bản nung củi</badge>
+        <image>https://lh3.googleusercontent.com/aida/AEtjO1WylYf5IsGDlQ7t04aDs5JbzweuclMJGPARU9fgFL0l8Z376TET-cGv9UsRr-tNdGdUd7T4LYaBdKwSN01QDiSXd173Wz2YPPKaXW7nMWZQ-jx-Xq2JvGmdmr64K7m7nb71Y-7WPXuNABvDrMZw96SMhqZ1pHUvLpurBwr0Ta2bZ3nqoQFopxoouaBV_ry-fz5QFWSHC9t3-LVApqWKUtZfJ285e2siWa02FizhWUuTL-UN8NXLnUHq5hw</image>
+      </product>
+      <product id="prod-2">
+        <name>Ấm Trà Sa Mộc Đất Nung</name>
+        <shape>Bộ thưởng trà: Trà đạo thiền</shape>
+        <detail>Khoáng hạt lộ thiên, dung tích 280ml</detail>
+        <price>1850000</price>
+        <priceFormatted>1.850.000 đ</priceFormatted>
+        <badge>Sa Mộc sông Hồng</badge>
+        <image>https://lh3.googleusercontent.com/aida/AEtjO1X1KnvYXZAgb0iE2jTwWBhlJO8N1vTo1z6MTSyCC2jwtV9mJlykJbYV82uhMukiDCaPOeuzAEqj6CobgLmbxWvb1LW2AT-ZkyYbLMi5rPwbVu5oEnq8ysKvJUiI9ULwT9KjPRBz6zW_gubaCkuWOzKA-HRZzQ025iAkfvW7r8dfs3ij8mRONDNIg6IY90yBM424xGXWtld_EcoTUvUHPm6_B8X40QYgJnBo9r5_apalPRXQcc93KmbBZA</image>
+      </product>
+      <product id="prod-3">
+        <name>Đĩa Tròn Thủy Trúc Viền Mộc</name>
+        <shape>Bàn ăn: Đĩa đầm sâu viền mộc</shape>
+        <detail>Lòng men ngọc lam loang hạt mè hữu cơ</detail>
+        <price>680000</price>
+        <priceFormatted>680.000 đ</priceFormatted>
+        <badge>Ẩm thực mộc</badge>
+        <image>https://lh3.googleusercontent.com/aida/AEtjO1XdRVWsQ4BfdXs-yp2ShR4Nff6IRlXBjFHbagyjzgTDDh9yLZO71B0es3-ANsV6Hg1B1vzFSVinKY_8TISH_2ShPQnZKCmMFf1-AGNsQ_uhYlZLKitX7C-QzoDDmus47Gc44cXInZYmKcYhjB51ziDEW6iGe3xpkh8Z8bKeorZhjuW8V-V1xAIbnMCnHCztOZ907Aj_hs_YEQ3nNBVQPgmP_CpmgiHW0VemWoqxIoCTEeQ2WTZfh98f6Q</image>
+      </product>
+      <product id="prod-4">
+        <name>Bộ Chén Trà Men Ngọc Trúc Vân</name>
+        <shape>Trà cụ: Khắc chìm thủ công</shape>
+        <detail>Vân chỉ xanh lục ngọc, đế mộc không tráng men</detail>
+        <price>920000</price>
+        <priceFormatted>920.000 đ</priceFormatted>
+        <badge>Bộ 4 chén trà</badge>
+        <image>https://lh3.googleusercontent.com/aida/AEtjO1Whp2dQjvCO5gOchX8Wd8u4VpPTWdFWckJ7ocTPRAUgRYp14ndLwL5XwG1xJqAyhpt3s2L3AN_rdAF42zfrRalEjC8VCiAhG8V68Dhly8gR104KEFTKi_9fIN5v8YdlT6Z7rEFn9dZlXAdmblX10fN01Ev4Ibcvxo46hXNkLWnhBbCc0se_f1Bd6Sgb65VWjByPQjaYYaA0sY_yx48RJxrkRF1EAQDc-rKjM9eVMKO84yFJrlY0FOKozA</image>
+      </product>
+    </items>
+  </featuredCollection>
+
+  <!-- Đăng Ký Nhận Tin Ra Lò Mỗi Tháng -->
+  <newsletter>
+    <badge>Thưởng Lãm Mẻ Gốm Mới</badge>
+    <title>Đăng Ký Nhận Tin Ra Lò Mỗi Tháng</title>
+    <description>Mỗi mẻ nung chỉ cho ra khoảng 30–50 tác phẩm độc bản. Để lại hòm thư điện tử để chúng tôi gửi lời mời thưởng lãm sớm nhất.</description>
+    <buttonText>Nhận thông báo</buttonText>
+    <privacyNotice>Cam kết tuyệt đối không spam. Bạn có thể hủy đăng ký bất kỳ lúc nào.</privacyNotice>
+  </newsletter>
 </storytelling>

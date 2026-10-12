@@ -44,8 +44,13 @@
         '    <p class="text-xs text-[#5f5b58]">Thời gian mở cửa: 09:00 - 18:00 (Thứ Hai - Chủ Nhật)</p>',
         '  </div>',
         '</div>',
-        '<div class="border-t border-[#eedfda] py-4 text-center text-xs text-[#5f5b58]">',
-        '  © 2026 Gốm Mộc. Đồ án Phát triển Web Kinh doanh - Nhóm 13 (Craftory E-Commerce)',
+        '<div class="border-t border-[#dec0b7] pt-6 pb-2 flex flex-col sm:flex-row items-center justify-between text-xs text-[#5f5b58] gap-4">',
+        '  <div>© 2026 Gốm Mộc. Tác chế thủ công nguyên bản tại Việt Nam. Đồ án Nhóm 13.</div>',
+        '  <div class="flex items-center gap-4">',
+        '    <a href="#home" data-route="home" class="hover:text-[#9f3c16] transition-colors">Tuyên ngôn thẩm mỹ</a>',
+        '    <span class="text-[#dec0b7]">•</span>',
+        '    <a href="#home" data-route="home" class="hover:text-[#9f3c16] transition-colors">Quy chuẩn cốt đất & men</a>',
+        '  </div>',
         '</div>'
       ].join('\n');
 
