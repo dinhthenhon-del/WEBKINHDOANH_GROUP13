@@ -17,7 +17,14 @@ const path = require('path');
 const { getStorytellingXml, saveStorytellingXml } = require('./core/xmlStore');
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: true, // Cho phép mọi origin bao gồm localhost, 127.0.0.1, hoặc null (file://)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

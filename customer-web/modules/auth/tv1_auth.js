@@ -263,7 +263,8 @@
               }
             })
             .catch(function(err) {
-              self.showAlert(err.message || 'Đăng ký thất bại. Email có thể đã tồn tại!', 'error');
+              var msg = (err && err.message) ? err.message : 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin!';
+              self.showAlert(msg, 'error');
             });
         };
       }

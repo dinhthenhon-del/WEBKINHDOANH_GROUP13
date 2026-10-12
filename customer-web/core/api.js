@@ -11,7 +11,9 @@
 (function(window) {
   'use strict';
 
-  var API_BASE_URL = 'http://localhost:5000/api';
+  // Tự động khớp theo hostname của trình duyệt (tránh lệch 127.0.0.1 với localhost)
+  var host = (typeof window !== 'undefined' && window.location && window.location.hostname === '127.0.0.1') ? '127.0.0.1' : 'localhost';
+  var API_BASE_URL = 'http://' + host + ':5000/api';
   var TOKEN_KEY = 'craftory_auth_token';
   var USER_KEY = 'craftory_auth_user';
 
@@ -92,13 +94,15 @@
                   window.App.navbar.render();
                 }
               }
-              reject(responseJson || { success: false, message: 'Lỗi kết nối máy chủ HTTP ' + xhr.status });
+              var errorMsg = (responseJson && responseJson.message) ? responseJson.message : 
+                (xhr.status === 0 ? 'Không thể kết nối máy chủ backend (Hãy kiểm tra terminal đã chạy npm start ở thư mục server chưa)' : 'Lỗi máy chủ HTTP ' + xhr.status);
+              reject(responseJson || { success: false, message: errorMsg });
             }
           }
         };
 
         xhr.onerror = function() {
-          reject({ success: false, message: 'Không thể kết nối tới Backend (Kiểm tra xem http://localhost:5000 đã chạy chưa)' });
+          reject({ success: false, message: 'Lỗi mạng: Không thể kết nối tới Backend (Kiểm tra xem http://localhost:5000 đã chạy npm start chưa)' });
         };
 
         // Gửi request
