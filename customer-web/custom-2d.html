@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!--
+  [TV4] Trang chạy thử độc lập cho Studio Tác chế 2D và Chatbot.
+  Dùng khi code: mở bằng Live Server để thấy ngay kết quả, chưa phụ thuộc router của nhóm.
+  Khi đã nối vào index.html (route #custom-2d) thì file này chỉ còn để test riêng.
+-->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Tác Chế Gốm 2D | Gốm Mộc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..700&family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-serif { font-family: 'Playfair Display', serif; }
+  </style>
+</head>
+<body class="bg-[#fff8f6] text-[#211a17] antialiased">
+  <header id="site-header" class="sticky top-0 z-30 bg-[#fff8f6]/90 backdrop-blur-xl"></header>
+  <main id="app" class="w-full"></main>
+
+  <script src="core/api.js"></script>
+  <script src="core/navbar.js"></script>
+  <script src="modules/custom-2d/options.js"></script>
+  <script src="modules/custom-2d/tv4_custom2d.js"></script>
+  <script src="modules/chatbot/tv4_chatbot.js"></script>
+  <script>
+    window.Navbar.init();
+    window.Custom2D.mount(document.getElementById('app'));
+  </script>
+</body>
+</html>

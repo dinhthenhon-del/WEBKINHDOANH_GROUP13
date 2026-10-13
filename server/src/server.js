@@ -244,3 +244,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server Backend đang chạy tại http://localhost:${PORT}`);
 });
+
+const chatbotRoutes = require('./modules/chatbot/chatbot.routes');
+app.use('/api/chatbot', chatbotRoutes);
