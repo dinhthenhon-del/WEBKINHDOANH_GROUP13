@@ -5,6 +5,8 @@ npm-debug.log
 # Mac/Windows rác
 .DS_Store
 Thumbs.db
+desktop.ini
+*.tmp
 
 # Môi trường (Bảo mật)
 .env

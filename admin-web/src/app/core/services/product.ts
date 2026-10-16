@@ -9,7 +9,6 @@ export interface ProductItem {
   stock: number;
   description?: string;
   image?: string;
-  imagePublicId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,35 +36,17 @@ export class ProductService {
     return this.http.get<ApiResponse<ProductItem>>(`${this.apiUrl}/${id}`);
   }
 
-  // Tạo sản phẩm mới (hỗ trợ đính kèm file ảnh upload lên Cloudinary)
-  createProduct(product: Partial<ProductItem>, file?: File): Observable<ApiResponse<ProductItem>> {
-    const formData = new FormData();
-    formData.append('name', product.name || '');
-    formData.append('price', String(product.price || 0));
-    formData.append('stock', String(product.stock || 0));
-    if (product.description) {
-      formData.append('description', product.description);
-    }
-    if (file) {
-      formData.append('image', file);
-    }
-    return this.http.post<ApiResponse<ProductItem>>(this.apiUrl, formData);
+  // Tạo sản phẩm mới
+  createProduct(product: Partial<ProductItem>): Observable<ApiResponse<ProductItem>> {
+    return this.http.post<ApiResponse<ProductItem>>(this.apiUrl, product);
   }
 
-  // Cập nhật sản phẩm (hỗ trợ đổi ảnh mới)
-  updateProduct(id: string, product: Partial<ProductItem>, file?: File): Observable<ApiResponse<ProductItem>> {
-    const formData = new FormData();
-    if (product.name) formData.append('name', product.name);
-    if (product.price !== undefined) formData.append('price', String(product.price));
-    if (product.stock !== undefined) formData.append('stock', String(product.stock));
-    if (product.description) formData.append('description', product.description);
-    if (file) {
-      formData.append('image', file);
-    }
-    return this.http.put<ApiResponse<ProductItem>>(`${this.apiUrl}/${id}`, formData);
+  // Cập nhật sản phẩm
+  updateProduct(id: string, product: Partial<ProductItem>): Observable<ApiResponse<ProductItem>> {
+    return this.http.put<ApiResponse<ProductItem>>(`${this.apiUrl}/${id}`, product);
   }
 
-  // Xóa sản phẩm (Backend sẽ tự xóa luôn ảnh trên Cloudinary)
+  // Xóa sản phẩm
   deleteProduct(id: string): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/${id}`);
   }

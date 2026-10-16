@@ -1,13 +1,88 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="utf-8">
-  <title>AdminWeb</title>
+  <title>Bát Tràng Admin - Quản Lý Khách Hàng</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS with Stitch Custom Theme -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#000f22",
+            "primary-container": "#0a2540",
+            "on-primary": "#ffffff",
+            "secondary": "#a23e18",
+            "brand-secondary": "#c85a32",
+            "tertiary": "#170c00",
+            "background": "#f8f9fa",
+            "surface": "#f8f9fa",
+            "surface-container-low": "#f3f4f5",
+            "surface-container": "#edeeef",
+            "surface-container-high": "#e7e8e9",
+            "surface-container-lowest": "#ffffff",
+            "on-surface": "#191c1d",
+            "on-surface-variant": "#43474d",
+            "outline": "#74777e",
+            "outline-variant": "#c4c6ce",
+            "error": "#ba1a1a"
+          },
+          fontFamily: {
+            "headline-sm": ["Playfair Display", "serif"],
+            "headline-md": ["Playfair Display", "serif"],
+            "headline-lg": ["Playfair Display", "serif"],
+            "headline-xl": ["Playfair Display", "serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "title-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "title-md": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2.5rem"
+          },
+          fontSize: {
+            "headline-xl": ["40px", { lineHeight: "50px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "600" }],
+            "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+            "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "500" }],
+            "body-lg": ["16px", { lineHeight: "26px", fontWeight: "400" }],
+            "body-md": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+            "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }],
+            "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+            "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }],
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.03em", fontWeight: "600" }],
+            "title-md": ["18px", { lineHeight: "26px", fontWeight: "600" }],
+            "title-sm": ["16px", { lineHeight: "24px", fontWeight: "600" }]
+          }
+        }
+      }
+    };
+  </script>
 </head>
-<body>
+<body class="bg-background font-body-md text-body-md text-on-surface antialiased m-0 p-0">
   <app-root></app-root>
 </body>
 </html>

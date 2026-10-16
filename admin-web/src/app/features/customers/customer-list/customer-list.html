@@ -1,1 +1,581 @@
-<p>customer-list works!</p>
+<!-- ============================================================== -->
+<!-- GIAO DIỆN 1: BẢNG DANH SÁCH QUẢN LÝ KHÁCH HÀNG                   -->
+<!-- ============================================================== -->
+<div *ngIf="!isDetailOpen" class="max-w-[1440px] mx-auto p-space-xl animate-in fade-in duration-150">
+  <div class="flex flex-col gap-space-lg w-full">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-space-xs">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Cơ sở dữ liệu khách hàng</span>
+        </div>
+        <h1 class="font-headline-xl text-headline-xl text-[40px] leading-[50px] text-primary tracking-tight font-semibold mt-1">Quản lý Khách hàng</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-1">
+          Hồ sơ người mua sắm, tích lũy điểm thưởng và lịch sử mua gốm Thanh Xuân trứ danh qua các bộ sưu tập Men lam &amp; Men rạn.
+        </p>
+      </div>
+      <div class="flex items-center gap-space-sm shrink-0">
+        <button (click)="exportCsv()" class="h-10 px-space-md bg-[#0A2540] text-white hover:bg-[#07192c] rounded-lg font-label-lg text-label-lg shadow-sm flex items-center gap-space-xs transition-all duration-200 cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-lg">file_download</span>
+          <span>Xuất danh sách khách hàng</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Top KPI Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md w-full">
+      <!-- Card 1: Tổng khách hàng -->
+      <div class="relative overflow-hidden bg-white p-space-lg rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-surface-container flex flex-col justify-between">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-primary/5 rounded-full pointer-events-none"></div>
+        <div class="flex items-start justify-between">
+          <div class="flex flex-col">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">Tổng khách hàng</span>
+            <span class="font-body-sm text-body-sm text-outline mt-0.5">Toàn bộ tài khoản định danh</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-xl">group</span>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between mt-space-md">
+          <div class="flex items-baseline gap-space-xs">
+            <span class="font-headline-lg text-headline-xl text-primary font-bold">{{ kpi.totalCustomers }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">thượng khách</span>
+          </div>
+          <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold shrink-0">
+            <span class="material-symbols-outlined text-xs">trending_up</span> 100%
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 2: Đang hoạt động -->
+      <div class="relative overflow-hidden bg-white p-space-lg rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-surface-container flex flex-col justify-between">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-surface-container/60 rounded-full pointer-events-none"></div>
+        <div class="flex items-start justify-between">
+          <div class="flex flex-col">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">Đang hoạt động</span>
+            <span class="font-body-sm text-body-sm text-outline mt-0.5">Giao dịch &amp; đặt hàng bình thường</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700">
+            <span class="material-symbols-outlined text-xl">verified_user</span>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between mt-space-md">
+          <div class="flex items-baseline gap-space-xs">
+            <span class="font-headline-lg text-headline-xl text-primary font-bold">{{ kpi.activeCustomers }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">tài khoản</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-white bg-emerald-700 px-2.5 py-1 rounded-full shadow-sm font-semibold shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span> Khả dụng
+          </span>
+        </div>
+      </div>
+
+      <!-- Card 3: Tài khoản bị khóa -->
+      <div class="relative overflow-hidden bg-white p-space-lg rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.05)] border border-surface-container flex flex-col justify-between">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-secondary/10 rounded-full pointer-events-none"></div>
+        <div class="flex items-start justify-between">
+          <div class="flex flex-col">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">Tài khoản bị khóa</span>
+            <span class="font-body-sm text-body-sm text-outline mt-0.5">Tạm dừng quyền giao dịch</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-[#C85A32]/10 flex items-center justify-center text-[#C85A32]">
+            <span class="material-symbols-outlined text-xl">lock_person</span>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between mt-space-md">
+          <div class="flex items-baseline gap-space-xs">
+            <span class="font-headline-lg text-headline-xl text-[#C85A32] font-bold">{{ kpi.blockedCustomers }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">tài khoản</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-semibold shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> Đã khóa
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="bg-white p-space-md rounded-xl shadow-sm border border-surface-container flex flex-col md:flex-row items-center justify-between gap-space-md">
+      <div class="relative flex-1 w-full">
+        <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-lg">search</span>
+        <input [(ngModel)]="searchQuery" (input)="applyFilter()" class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-outline border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="Tìm theo tên thượng khách, số điện thoại hoặc email..." type="text">
+      </div>
+
+      <div class="flex items-center gap-space-sm w-full md:w-auto shrink-0">
+        <div class="relative w-full sm:w-auto">
+          <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="w-full sm:w-48 h-10 pl-3.5 pr-8 bg-surface-container-low text-on-surface font-label-md text-label-md rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 transition-all truncate border border-surface-container focus:border-surface-variant" id="filterStatus">
+            <option value="all">Trạng thái: Tất cả</option>
+            <option value="active">Hoạt động</option>
+            <option value="blocked">Đã khóa</option>
+            <option value="inactive">Ngừng hoạt động</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-base">expand_more</span>
+        </div>
+
+        <button (click)="loadCustomers()" title="Làm mới danh sách" class="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-surface-container border border-surface-container text-on-surface transition-colors cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-lg" [class.animate-spin]="isLoading">refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Customer Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-surface-container overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider h-12 border-b border-surface-container">
+              <th class="px-space-lg py-3 font-semibold">Thượng Khách</th>
+              <th class="px-space-md py-3 font-semibold">Liên Hệ</th>
+              <th class="px-space-md py-3 font-semibold">Địa Chỉ Nhận Hàng</th>
+              <th class="px-space-md py-3 font-semibold text-center">Đơn Hàng</th>
+              <th class="px-space-md py-3 font-semibold text-right">Tổng Chi Tiêu</th>
+              <th class="px-space-md py-3 font-semibold text-center">Trạng Thái</th>
+              <th class="px-space-lg py-3 font-semibold text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
+            <tr *ngIf="isLoading">
+              <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-2xl animate-spin text-secondary">progress_activity</span>
+                <p class="mt-2 font-body-sm">Đang tải danh bạ khách hàng từ MongoDB...</p>
+              </td>
+            </tr>
+
+            <tr *ngIf="!isLoading && filteredCustomers.length === 0">
+              <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline mb-2">person_off</span>
+                <p class="font-headline-sm text-lg text-primary">Không tìm thấy khách hàng phù hợp</p>
+                <p class="text-body-sm text-outline mt-1">Vui lòng thay đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.</p>
+              </td>
+            </tr>
+
+            <tr *ngFor="let customer of filteredCustomers" class="hover:bg-surface-container-low/40 transition-colors h-20">
+              <td class="px-space-lg py-space-sm">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-10 h-10 rounded-full bg-[#0A2540] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+                    {{ getInitials(customer.fullName) }}
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-title-md text-title-md text-[#0A2540] font-bold truncate">
+                      {{ customer.fullName }}
+                    </span>
+                    <span class="font-label-sm text-secondary text-[11px] uppercase tracking-wider font-semibold">
+                      Hội viên Bát Tràng 1705
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-space-md py-space-sm">
+                <div class="flex flex-col text-body-sm">
+                  <span class="font-semibold text-on-surface flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm text-outline">phone</span>
+                    {{ customer.phone }}
+                  </span>
+                  <span class="text-on-surface-variant truncate text-xs flex items-center gap-1 mt-0.5">
+                    <span class="material-symbols-outlined text-sm text-outline">mail</span>
+                    {{ customer.email }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-space-md py-space-sm">
+                <div class="flex flex-col max-w-[240px] text-body-sm text-on-surface-variant">
+                  <span *ngIf="customer.addresses && customer.addresses.length > 0" class="truncate" [title]="customer.addresses[0].detail + ', ' + customer.addresses[0].ward + ', ' + customer.addresses[0].province">
+                    {{ customer.addresses[0].detail }}, {{ customer.addresses[0].province }}
+                  </span>
+                  <span *ngIf="!customer.addresses || customer.addresses.length === 0" class="text-outline italic text-xs">
+                    Chưa cập nhật địa chỉ
+                  </span>
+                  <span class="text-[11px] text-outline mt-0.5">
+                    Gia nhập: {{ formatDate(customer.createdAt) }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-space-md py-space-sm text-center">
+                <div class="inline-flex flex-col items-center">
+                  <span class="font-bold text-primary font-title-md">
+                    {{ customer.orderCount || 0 }}
+                  </span>
+                  <span class="text-[11px] text-on-surface-variant">
+                    Wishlist: {{ customer.wishlistCount || 0 }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-space-md py-space-sm text-right">
+                <span class="font-label-md font-bold text-[#0A2540]">
+                  {{ formatPrice(customer.totalSpent || 0) }}
+                </span>
+              </td>
+
+              <td class="px-space-md py-space-sm text-center">
+                <span *ngIf="customer.status === 'active'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-emerald-50 text-emerald-800 border border-emerald-100 font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Hoạt động
+                </span>
+                <span *ngIf="customer.status === 'blocked'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-red-50 text-red-800 border border-red-100 font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                  Đã khóa
+                </span>
+                <span *ngIf="customer.status === 'inactive'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-gray-100 text-gray-700 border border-gray-200 font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                  Tạm ngưng
+                </span>
+              </td>
+
+              <td class="px-space-lg py-space-sm text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button (click)="openDetail(customer)" class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" title="Xem chi tiết & lịch sử">
+                    <span>Xem hồ sơ</span>
+                    <span class="material-symbols-outlined text-sm">visibility</span>
+                  </button>
+
+                  <button (click)="openStatusModal(customer, $event)" [class.bg-emerald-50]="customer.status === 'blocked'" [class.text-emerald-700]="customer.status === 'blocked'" [class.hover:bg-emerald-100]="customer.status === 'blocked'" [class.bg-red-50]="customer.status === 'active'" [class.text-[#C85A32]]="customer.status === 'active'" [class.hover:bg-red-100]="customer.status === 'active'" class="h-8 px-2.5 rounded-lg font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" [title]="customer.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">
+                    <span class="material-symbols-outlined text-base">
+                      {{ customer.status === 'active' ? 'lock' : 'lock_open' }}
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- GIAO DIỆN 2: HỒ SƠ CHI TIẾT KHÁCH HÀNG (CHUẨN 100% THEO THIẾT KẾ) -->
+<!-- ============================================================== -->
+<div *ngIf="isDetailOpen && selectedCustomer" class="max-w-[1440px] mx-auto p-space-xl animate-in fade-in duration-200">
+  <div class="flex flex-col w-full">
+
+    <!-- Top Breadcrumb Navigation & Last Updated -->
+    <div class="flex items-center justify-between mb-space-lg">
+      <div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant">
+        <button (click)="closeDetail()" class="hover:text-[#0A2540] transition-colors flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0" type="button">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span class="font-medium">Khách hàng</span>
+        </button>
+        <span class="text-outline-variant font-light">/</span>
+        <span class="text-on-surface font-semibold">
+          Hồ sơ khách hàng {{ selectedCustomer.fullName }} (#{{ selectedCustomer._id.slice(-6).toUpperCase() }})
+        </span>
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <span class="font-label-md text-body-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-container-high">
+          Cập nhật: Hôm nay, 14:32
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Asymmetric Dual-Grid (4 cols Left, 8 cols Right) -->
+    <div class="grid grid-cols-12 gap-gutter items-start">
+
+      <!-- LEFT COLUMN: HỒ SƠ THƯỢNG KHÁCH (4 cols) -->
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-space-lg">
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container p-space-lg relative overflow-hidden">
+          <!-- Ambient Circular Pottery Watermark -->
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-[#0A2540]/5 rounded-full pointer-events-none"></div>
+
+          <!-- Avatar & Identity Info -->
+          <div class="flex flex-col items-center text-center pb-space-lg">
+            <div class="relative mb-space-md">
+              <div class="w-24 h-24 rounded-full bg-[#0A2540] flex items-center justify-center text-white font-headline-lg text-headline-lg shadow-md font-semibold">
+                {{ getInitials(selectedCustomer.fullName) }}
+              </div>
+              <span *ngIf="selectedCustomer.status === 'active'" class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-[12px] font-bold">check</span>
+              </span>
+              <span *ngIf="selectedCustomer.status === 'blocked'" class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-red-600 ring-4 ring-surface-container-lowest flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-[12px] font-bold">close</span>
+              </span>
+            </div>
+
+            <h2 class="font-headline-lg text-headline-lg text-[#0A2540] tracking-tight truncate font-semibold">
+              {{ selectedCustomer.fullName }}
+            </h2>
+            <span class="text-label-md text-outline mt-0.5 font-medium">_id: {{ selectedCustomer._id }}</span>
+
+            <div class="mt-space-sm flex flex-wrap items-center justify-center gap-space-xs">
+              <span *ngIf="selectedCustomer.status === 'active'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-emerald-50 text-emerald-800 border border-emerald-100">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                Hoạt động
+              </span>
+              <span *ngIf="selectedCustomer.status === 'blocked'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-red-50 text-red-800 border border-red-100">
+                <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                Đã khóa
+              </span>
+              <span *ngIf="selectedCustomer.status === 'inactive'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-gray-100 text-gray-700 border border-gray-200">
+                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                Tạm ngưng
+              </span>
+            </div>
+          </div>
+
+          <!-- Thông tin liên lạc (Email, Số điện thoại, Ngày tạo) -->
+          <div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm mb-space-md">
+            <div class="flex items-start gap-space-sm">
+              <span class="material-symbols-outlined text-[#0A2540] text-xl mt-0.5">mail</span>
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Email</span>
+                <span class="font-body-md text-body-md text-on-surface truncate font-medium">{{ selectedCustomer.email }}</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-space-sm">
+              <span class="material-symbols-outlined text-[#0A2540] text-xl mt-0.5">call</span>
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Số điện thoại</span>
+                <span class="font-body-md text-body-md text-on-surface font-semibold">{{ selectedCustomer.phone }}</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-space-sm">
+              <span class="material-symbols-outlined text-[#0A2540] text-xl mt-0.5">calendar_month</span>
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Ngày tạo (createdAt)</span>
+                <span class="font-body-md text-body-md text-on-surface">{{ formatDate(selectedCustomer.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sổ địa chỉ đã lưu -->
+          <div class="bg-surface-container-lowest rounded-xl border border-surface-container p-space-md mb-space-lg flex flex-col gap-space-sm">
+            <div class="flex items-center justify-between pb-1 border-b border-surface-container">
+              <span class="font-label-sm text-label-sm text-[#0A2540] uppercase font-bold tracking-wider flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">location_on</span> Danh sách địa chỉ đã lưu
+              </span>
+              <span class="text-label-sm text-outline font-semibold">{{ (selectedCustomer.addresses || []).length }} địa chỉ</span>
+            </div>
+            <div class="flex flex-col gap-space-xs pt-1">
+              <div *ngFor="let addr of selectedCustomer.addresses; let i = index" [class.bg-surface-container-low]="addr.isDefault || i === 0" [class.bg-surface-container-low\/60]="!addr.isDefault && i > 0" class="p-2.5 rounded-lg border border-surface-container">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-label-sm text-label-sm font-bold text-on-surface">{{ addr.recipientName || ('Địa chỉ ' + (i + 1)) }}</span>
+                  <span *ngIf="addr.isDefault || i === 0" class="px-2 py-0.5 rounded text-[10px] bg-[#0A2540] text-white font-bold uppercase">Mặc định</span>
+                  <span *ngIf="!addr.isDefault && i > 0" class="px-2 py-0.5 rounded text-[10px] bg-surface-variant text-on-surface-variant font-medium">Phụ</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">{{ addr.detail }}, {{ addr.ward }}, {{ addr.province }}</p>
+              </div>
+              <div *ngIf="!selectedCustomer.addresses || selectedCustomer.addresses.length === 0" class="p-2 text-center text-outline italic text-body-sm">
+                Thượng khách chưa lưu sổ địa chỉ nhận hàng
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút hành động khóa / mở khóa tài khoản -->
+          <div class="flex flex-col sm:flex-row gap-space-sm pt-space-xs">
+            <button (click)="openStatusModal(selectedCustomer)" [class.bg-[#c85a32]]="selectedCustomer.status === 'active'" [class.hover:bg-[#b04b25]]="selectedCustomer.status === 'active'" [class.bg-emerald-600]="selectedCustomer.status === 'blocked'" [class.hover:bg-emerald-700]="selectedCustomer.status === 'blocked'" class="flex-1 h-10 px-4 rounded-xl text-white font-label-md text-label-md flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer" type="button">
+              <span class="material-symbols-outlined text-lg">{{ selectedCustomer.status === 'active' ? 'lock' : 'lock_open' }}</span>
+              <span>{{ selectedCustomer.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: CHỈ SỐ KPI & LỊCH SỬ ĐƠN HÀNG (8 cols) -->
+      <div class="col-span-12 lg:col-span-8 flex flex-col gap-space-lg">
+        
+        <!-- 3 Thẻ KPI Thống kê Khách hàng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+          <!-- Thẻ 1: Số đơn hàng đã đặt -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-container flex flex-col justify-between relative overflow-hidden">
+            <div class="flex items-center justify-between text-on-surface-variant">
+              <span class="font-label-sm text-label-sm uppercase font-semibold">Số đơn hàng đã đặt</span>
+              <span class="p-2 rounded-lg bg-surface-container-low text-[#c85a32] material-symbols-outlined text-xl">receipt_long</span>
+            </div>
+            <div class="mt-space-md">
+              <span class="font-headline-xl text-headline-xl text-[#c85a32] font-bold tracking-tight">{{ customerOrders.length }} đơn</span>
+              <div class="mt-1 flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                <span>Tổng số đơn đã thanh toán &amp; hoàn tất</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thẻ 2: Sản phẩm yêu thích -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-container flex flex-col justify-between relative overflow-hidden">
+            <div class="flex items-center justify-between text-on-surface-variant">
+              <span class="font-label-sm text-label-sm uppercase font-semibold">Sản phẩm yêu thích</span>
+              <span class="p-2 rounded-lg bg-surface-container-low text-error material-symbols-outlined text-xl">favorite</span>
+            </div>
+            <div class="mt-space-md">
+              <span class="font-headline-xl text-headline-xl text-error font-bold tracking-tight">{{ (selectedCustomer.wishlist || []).length || (selectedCustomer.wishlistCount || 0) }} sản phẩm</span>
+              <div class="mt-1 flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                <span>Lưu trong wishlist</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thẻ 3: Trạng thái tài khoản -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-container flex flex-col justify-between relative overflow-hidden">
+            <div class="flex items-center justify-between text-on-surface-variant">
+              <span class="font-label-sm text-label-sm uppercase font-semibold">Trạng thái tài khoản</span>
+              <span class="p-2 rounded-lg bg-surface-container-low text-emerald-700 material-symbols-outlined text-xl">verified_user</span>
+            </div>
+            <div class="mt-space-md">
+              <span *ngIf="selectedCustomer.status === 'active'" class="font-headline-xl text-headline-xl text-emerald-800 font-bold tracking-tight">Hoạt động</span>
+              <span *ngIf="selectedCustomer.status === 'blocked'" class="font-headline-xl text-headline-xl text-red-800 font-bold tracking-tight">Đã khóa</span>
+              <div class="mt-1 flex items-center gap-1 font-label-sm text-label-sm" [class.text-emerald-700]="selectedCustomer.status === 'active'" [class.text-red-700]="selectedCustomer.status === 'blocked'">
+                <span class="material-symbols-outlined text-sm">{{ selectedCustomer.status === 'active' ? 'check_circle' : 'block' }}</span>
+                <span>{{ selectedCustomer.status === 'active' ? 'Cho phép đặt mua bình thường' : 'Đang tạm dừng giao dịch' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng Lịch sử đơn hàng gần đây -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container overflow-hidden">
+          <div class="p-space-lg flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-container-lowest">
+            <div>
+              <h3 class="font-headline-sm text-headline-sm text-[#0A2540] font-semibold">Lịch sử đơn hàng gần đây</h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Danh sách các giao dịch tác phẩm gốm sứ đã thực hiện</p>
+            </div>
+            <div class="flex items-center gap-space-sm">
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-outline text-base">search</span>
+                <input [(ngModel)]="orderFilterQuery" class="h-9 pl-8 pr-3 text-body-sm font-body-sm rounded-lg bg-surface-container-low border border-surface-container focus:outline-none focus:ring-1 focus:ring-[#0A2540] w-44" placeholder="Lọc theo mã đơn..." type="text">
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left overflow-hidden">
+              <thead>
+                <tr class="bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider h-11 border-y border-surface-container">
+                  <th class="px-space-lg py-2.5 font-semibold">Mã đơn</th>
+                  <th class="px-space-md py-2.5 font-semibold">Ngày đặt</th>
+                  <th class="px-space-md py-2.5 font-semibold">Sản phẩm chính</th>
+                  <th class="px-space-md py-2.5 font-semibold text-right">Tổng tiền</th>
+                  <th class="px-space-md py-2.5 font-semibold text-center">Trạng thái</th>
+                  <th class="px-space-lg py-2.5 font-semibold text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
+                <tr *ngFor="let order of filteredCustomerOrders" class="hover:bg-surface-container-low/50 transition-colors h-16">
+                  <td class="px-space-lg py-space-sm">
+                    <a class="font-label-md font-bold text-[#0A2540] hover:underline cursor-pointer" href="javascript:void(0)">
+                      #{{ order.orderCode || order._id.slice(-6).toUpperCase() }}
+                    </a>
+                  </td>
+                  <td class="px-space-md py-space-sm text-body-sm text-on-surface-variant">
+                    {{ formatDate(order.createdAt).split(' - ')[0] }}
+                  </td>
+                  <td class="px-space-md py-space-sm">
+                    <div class="flex items-center gap-space-sm min-w-[220px]">
+                      <img class="w-10 h-10 rounded-lg object-cover shadow-sm shrink-0" [src]="(order.items && order.items[0]?.productId?.image) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBx57GFoYDXbx6XO0cGQM0Nq87o8JQ-kodrpiFWx1Gm2Ggg8Uu9coBUhBHFDkb1knzhfv55yPAkrA-zjXCzH_wOfq-HPIgB2VxLQ6u34p32LPR4bDBErgJCk_PMMvg0aoJW_KNLg0fZMEqd7KrkImaYyptDmvUTdhlgktoH5gzmBYHMu5P9JFFX0aLZNMblcbwW86ag2Bd4_8owSWomnS-VyH6V9uDs0I_803Pe'" alt="Gốm Bát Tràng">
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-label-md text-label-md text-on-surface font-semibold truncate">
+                          {{ (order.items && order.items[0]?.productName) || 'Bình men lam Bát Tràng' }} (x{{ (order.items && order.items[0]?.quantity) || 1 }})
+                        </span>
+                        <span class="font-body-sm text-body-sm text-on-surface-variant">
+                          Lô mộc 2024 • Cao cấp
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-space-md py-space-sm text-right font-label-md font-bold text-[#0A2540]">
+                    {{ formatPrice(order.totalAmount) }}
+                  </td>
+                  <td class="px-space-md py-space-sm text-center">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm" [class.bg-emerald-50]="order.orderStatus === 'completed'" [class.text-emerald-800]="order.orderStatus === 'completed'" [class.border]="true" [class.border-emerald-100]="order.orderStatus === 'completed'" [class.bg-amber-50]="order.orderStatus !== 'completed'" [class.text-amber-800]="order.orderStatus !== 'completed'" [class.border-amber-100]="order.orderStatus !== 'completed'">
+                      <span class="w-2 h-2 rounded-full" [class.bg-emerald-600]="order.orderStatus === 'completed'" [class.bg-amber-600]="order.orderStatus !== 'completed'"></span>
+                      {{ order.orderStatus === 'completed' ? 'Hoàn thành' : 'Chờ xác nhận' }}
+                    </span>
+                  </td>
+                  <td class="px-space-lg py-space-sm text-right">
+                    <button class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" (click)="showToast('Mở chi tiết đơn hàng #' + (order.orderCode || order._id))">
+                      <span>Xem đơn</span>
+                      <span class="material-symbols-outlined text-sm">visibility</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Chân bảng: Hiển thị tổng số đơn & Liên kết xem tất cả -->
+          <div class="px-space-lg py-space-md bg-surface-container-lowest border-t border-surface-container flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+            <span>Hiển thị {{ filteredCustomerOrders.length }} trên tổng số {{ customerOrders.length }} đơn hàng</span>
+            <a href="javascript:void(0)" (click)="showToast('Chuyển sang phân hệ Quản lý đơn hàng')" class="text-[#0A2540] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
+              <span>Xem tất cả lịch sử mua hàng</span>
+              <span class="material-symbols-outlined text-sm">east</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL XÁC NHẬN KHÓA / ĐỔI TRẠNG THÁI (lockModal TỪ BÁT TRÀNG FINAL) -->
+<!-- ============================================================== -->
+<div *ngIf="isStatusModalOpen && customerToChangeStatus" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A2540]/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-surface-container p-space-xl flex flex-col relative animate-in zoom-in-95 duration-150">
+    <!-- Modal Icon & Title -->
+    <div class="flex items-start gap-space-md mb-space-md">
+      <div class="w-12 h-12 rounded-full bg-[#c85a32]/10 text-[#c85a32] flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-2xl font-bold">warning</span>
+      </div>
+      <div class="flex flex-col">
+        <h3 class="font-headline-sm text-headline-sm text-[#0A2540] font-bold">
+          Xác nhận thay đổi trạng thái tài khoản
+        </h3>
+        <span class="text-label-md text-outline mt-0.5">
+          Khách hàng: <strong>{{ customerToChangeStatus.fullName }}</strong> (_id: {{ customerToChangeStatus._id }})
+        </span>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p class="font-body-md text-body-md text-on-surface-variant mb-space-lg leading-relaxed">
+      Bạn có chắc chắn muốn chuyển đổi trạng thái tài khoản này? Khi chuyển sang <strong>Đã khóa</strong>, tài khoản sẽ không thể thực hiện giao dịch hay đăng nhập.
+    </p>
+
+    <!-- State Selector -->
+    <div class="flex flex-col gap-1.5 mb-space-md">
+      <label class="font-label-md text-label-md text-on-surface font-semibold" for="targetStatusSelect">
+        Chọn trạng thái mới <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <select [(ngModel)]="newStatus" id="targetStatusSelect" class="w-full h-11 px-3.5 bg-surface-container-low rounded-lg text-body-md font-body-md text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 appearance-none cursor-pointer">
+          <option value="active">Hoạt động bình thường</option>
+          <option value="blocked">Đã khóa (Khóa quyền truy cập)</option>
+          <option value="inactive">Ngừng hoạt động</option>
+        </select>
+        <span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none">expand_more</span>
+      </div>
+    </div>
+
+    <!-- Notes Textarea -->
+    <div class="flex flex-col gap-1.5 mb-space-xl">
+      <label class="font-label-md text-label-md text-on-surface font-semibold" for="statusNotesInput">
+        Ghi chú của Quản trị viên
+      </label>
+      <textarea [(ngModel)]="statusNote" id="statusNotesInput" class="w-full p-3 bg-surface-container-low rounded-lg text-body-md font-body-md text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 resize-none" placeholder="Nhập lý do thay đổi trạng thái..." rows="2"></textarea>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="flex items-center justify-end gap-space-sm pt-space-xs">
+      <button (click)="closeStatusModal()" class="h-10 px-5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md transition-colors cursor-pointer" type="button">
+        Hủy bỏ
+      </button>
+      <button (click)="confirmStatusChange()" [disabled]="isUpdatingStatus" class="h-10 px-5 rounded-lg bg-[#c85a32] text-white hover:bg-[#b04b25] font-label-md flex items-center gap-1.5 shadow-sm transition-all cursor-pointer" type="button">
+        <span *ngIf="isUpdatingStatus" class="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+        <span *ngIf="!isUpdatingStatus" class="material-symbols-outlined text-lg">check_circle</span>
+        <span>Xác nhận cập nhật</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- TOAST NOTIFICATION POPUP                                        -->
+<!-- ============================================================== -->
+<div *ngIf="isToastVisible" class="fixed bottom-6 right-6 z-50 bg-[#0A2540] text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 transition-all animate-in slide-in-from-bottom-5">
+  <span class="material-symbols-outlined text-emerald-400 text-xl">check_circle</span>
+  <span class="font-body-md text-body-md">{{ toastMessage }}</span>
+</div>
