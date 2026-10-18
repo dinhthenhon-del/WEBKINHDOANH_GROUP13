@@ -1,0 +1,68 @@
+<!-- ============================================================== -->
+<!-- GIAO DIỆN CUSTOMER: DANH SÁCH YÊU THÍCH (WISHLIST - STITCH)     -->
+<!-- ============================================================== -->
+<div class="flex flex-col w-full bg-[#f8f9fa] min-h-screen">
+  <!-- Header Bar -->
+  <section class="w-full bg-[#f3f4f5]/80 py-8 border-b border-[#EBEAE5]">
+    <div class="max-w-[1600px] mx-auto px-4 md:px-12">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] mb-3">
+        <a class="hover:text-[#000f22] cursor-pointer" onclick="dieuHuong('home')">Trang chủ</a>
+        <span>/</span>
+        <span class="text-[#a23e18] font-semibold">Tác phẩm yêu thích</span>
+      </nav>
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#a23e18]/10 text-[#a23e18] font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-widest font-semibold mb-2">
+            <span class="material-symbols-outlined text-sm">favorite</span>
+            Bảo Khố Tuyển Chọn Của Quý Khách
+          </div>
+          <h1 class="font-['Playfair_Display',serif] text-3xl md:text-4xl text-[#000f22] tracking-tight font-semibold">
+            Tuyển Tập Tác Phẩm Yêu Thích
+          </h1>
+          <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#43474d] mt-2 leading-relaxed">
+            Danh sách các bảo vật gốm sứ Bát Tràng quý khách đang lưu tâm và ấp ủ đưa về không gian thưởng lãm.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="bg-white px-4 py-2 rounded-xl shadow-sm border border-[#EBEAE5] text-right">
+            <span class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] block">Số lượng lưu giữ:</span>
+            <span class="font-['Playfair_Display',serif] text-xl font-bold text-[#a23e18]" id="wishlistCount">0 tác phẩm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wishlist Content Body -->
+  <section class="w-full max-w-[1600px] mx-auto px-4 md:px-12 py-10">
+    <!-- Grid danh sách -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="wishlistGrid">
+      <div class="col-span-full py-16 text-center text-[#74777e]">
+        <span class="material-symbols-outlined text-5xl animate-spin text-[#a23e18] mb-3 block">progress_activity</span>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] text-base">Đang tải danh sách tác phẩm yêu thích...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="wishlistEmpty" class="hidden py-24 text-center max-w-md mx-auto">
+      <div class="w-20 h-20 rounded-full bg-[#EBEAE5] flex items-center justify-center text-[#74777e] mx-auto mb-4">
+        <span class="material-symbols-outlined text-4xl">favorite_border</span>
+      </div>
+      <h3 class="font-['Playfair_Display',serif] text-xl font-bold text-[#000f22] mb-2">Chưa có tác phẩm nào được lưu</h3>
+      <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#43474d] mb-6">
+        Quý khách hãy ghé thăm gian hàng để chiêm ngưỡng và thả tim lưu giữ các kiệt tác men lam, men rạn độc bản.
+      </p>
+      <button
+        type="button"
+        onclick="dieuHuong('shop')"
+        class="h-11 px-6 rounded-lg bg-[#000f22] text-white hover:bg-[#10162B] transition-colors font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-sm shadow-sm inline-flex items-center gap-2 cursor-pointer"
+      >
+        <span class="material-symbols-outlined text-lg">explore</span>
+        <span>Khám phá gian hàng di sản</span>
+      </button>
+    </div>
+  </section>
+</div>

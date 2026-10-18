@@ -10,6 +10,24 @@
 
 let currentUser = null;
 
+window.togglePasswordVisibility = function () {
+  const passInput = document.getElementById('collectorPassword');
+  const passIcon = document.getElementById('passwordIcon');
+  if (!passInput || !passIcon) return;
+  passInput.type = passInput.type === 'password' ? 'text' : 'password';
+  passIcon.textContent = passInput.type === 'password' ? 'visibility' : 'visibility_off';
+};
+
+Object.defineProperty(window, 'currentUser', {
+  configurable: true,
+  get: function () {
+    return currentUser;
+  },
+  set: function (user) {
+    currentUser = user;
+  }
+});
+
 try {
   const saved = localStorage.getItem('craftory_user');
   if (saved) currentUser = JSON.parse(saved);
@@ -88,28 +106,28 @@ function initNavbar() {
         <nav class="hidden md:flex items-center gap-space-lg">
           <a class="nav-menu-item font-body-md text-[#b91c1c] font-bold border-b-2 border-[#b91c1c] pb-1 tracking-wide cursor-pointer" id="nav-item-home" onclick="dieuHuong('home', this)">Trang chủ</a>
 
-          <!-- Danh mục sản phẩm (Mega menu 2 cột) -->
+          <!-- Danh mục sản phẩm -->
           <div class="relative group py-6">
-            <a class="inline-flex items-center gap-1 font-body-md text-stone-700 hover:text-primary transition-colors tracking-wide py-2 cursor-pointer">
-              <span>Danh mục sản phẩm</span>
+            <a class="inline-flex items-center gap-1 font-body-md text-stone-700 hover:text-primary transition-colors tracking-wide py-2 cursor-pointer" onclick="dieuHuong('shop')">
+              <span>DANH MỤC SẢN PHẨM</span>
               <span class="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform duration-300">expand_more</span>
             </a>
-            <div class="absolute left-0 top-full hidden group-hover:flex w-[540px] bg-surface-container-lowest rounded-xl shadow-2xl p-6 border border-stone-100 z-50 gap-6 transition-all duration-300">
-              <div class="flex-1">
-                <div class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-100">Xem Toàn Bộ Sản Phẩm</div>
-                <ul class="space-y-2 text-stone-700 font-body-sm">
-                  <li><a class="hover:text-secondary block py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')">Tất cả tuyệt tác gốm</a></li>
-                  <li><a class="hover:text-secondary block py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')">Bình Hút Lộc &amp; Mai Bình</a></li>
-                  <li><a class="hover:text-secondary block py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')">Chóe Rạn &amp; Đĩa Ngũ Long</a></li>
-                  <li><a class="hover:text-secondary block py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')">Trà Cụ Tử Sa &amp; Chén Tống</a></li>
+            <div class="absolute left-1/2 top-full hidden -translate-x-1/2 group-hover:block w-[680px] max-w-[calc(100vw-2rem)] bg-surface-container-lowest rounded-xl shadow-2xl p-6 border border-stone-100 z-50 transition-all duration-300">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="min-w-0 sm:bg-surface-container-low/50 sm:p-4 sm:rounded-lg">
+                <a href="#" data-collections-all class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-200/60 flex justify-between hover:text-primary">
+                  <span>Bộ sưu tập</span><span class="normal-case tracking-normal">Xem tất cả →</span>
+                </a>
+                <ul id="nav-collection-list" class="space-y-2 text-stone-700 font-body-sm max-h-64 overflow-y-auto">
+                  <li class="py-1 text-stone-500">Đang tải bộ sưu tập...</li>
                 </ul>
               </div>
-              <div class="flex-1 bg-surface-container-low/50 p-4 rounded-lg">
-                <div class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-200/60">Bộ Sưu Tập Di Sản</div>
-                <ul class="space-y-2 text-stone-700 font-body-sm">
-                  <li><a class="hover:text-secondary flex items-center justify-between py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')"><span>Men Lam Cổ Điển</span><span class="font-label-sm text-on-surface-variant text-[11px]">Thăng Long</span></a></li>
-                  <li><a class="hover:text-secondary flex items-center justify-between py-1 transition-colors cursor-pointer" onclick="dieuHuong('home')"><span>Men Rạn Hoàng Cung</span><span class="font-label-sm text-on-surface-variant text-[11px]">Chu Đậu</span></a></li>
+              <div class="min-w-0">
+                <div class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-100">Sản phẩm</div>
+                <ul id="nav-product-list" class="space-y-2 text-stone-700 font-body-sm max-h-64 overflow-y-auto">
+                  <li class="py-1 text-stone-500">Đang tải sản phẩm...</li>
                 </ul>
+              </div>
               </div>
             </div>
           </div>
@@ -117,15 +135,20 @@ function initNavbar() {
           <a class="font-body-md text-stone-700 hover:text-primary transition-colors tracking-wide py-2 cursor-pointer" onclick="alert('Phân hệ Thiết kế 2D đang sẵn sàng tích hợp!')">Thiết kế 2D</a>
         </nav>
 
-        <!-- Bên phải: Tìm kiếm, Giỏ hàng, Avatar -->
+        <!-- Bên phải: Tìm kiếm, Wishlist, Giỏ hàng, Avatar -->
         <div class="flex items-center gap-space-md">
-          <button aria-label="Tìm kiếm bảo vật" class="w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="handleSearchPrompt()">
+          <button aria-label="Tìm kiếm bảo vật" class="w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="toggleNavbarSearch()" title="Tìm kiếm tác phẩm" aria-expanded="false" aria-controls="navbar-search-panel">
             <span class="material-symbols-outlined text-[22px]">search</span>
           </button>
 
-          <a aria-label="Bảo khố tuyển chọn" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="requireAuthAction(() => alert('Đang mở giỏ hàng của bạn...'))">
+          <!-- Nút Danh sách yêu thích (Wishlist UC-C10) -->
+          <a aria-label="Bảo vật yêu thích" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors cursor-pointer" onclick="dieuHuong('wishlist')" title="Tác phẩm yêu thích">
+            <span class="material-symbols-outlined text-[22px]">favorite</span>
+          </a>
+
+          <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="requireAuthAction(() => dieuHuong('cart'))" title="Giỏ hàng">
             <span class="material-symbols-outlined text-[22px]">shopping_bag</span>
-            <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-secondary text-on-secondary rounded-full flex items-center justify-center font-label-sm leading-none text-[10px]">0</span>
+            <span id="navbar-cart-count" class="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-secondary text-on-secondary rounded-full flex items-center justify-center font-label-sm leading-none text-[10px]">0</span>
           </a>
 
           <!-- Avatar Tài khoản (Click mở Thông tin cá nhân & Đơn hàng HOẶC Form Đăng nhập) -->
@@ -134,8 +157,98 @@ function initNavbar() {
           </button>
         </div>
       </div>
+      <form id="navbar-search-panel" class="hidden border-t border-gray-100 bg-white px-4 py-3 shadow-md" role="search" onsubmit="submitNavbarSearch(event)">
+        <div class="mx-auto flex max-w-3xl items-center gap-2">
+          <label class="sr-only" for="navbar-search-input">Tìm sản phẩm gốm sứ</label>
+          <input id="navbar-search-input" type="search" name="search" placeholder="Nhập tên sản phẩm hoặc mã SKU..." class="min-w-0 flex-1 rounded-lg border border-[#EBEAE5] bg-[#f8f9fa] px-4 py-2.5 text-sm text-[#000f22] placeholder:text-[#74777e] focus:border-[#0a2540] focus:bg-white focus:outline-none" autocomplete="off">
+          <button type="submit" class="rounded-lg bg-[#0a2540] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#10162B]">Tìm kiếm</button>
+          <button type="button" aria-label="Đóng tìm kiếm" onclick="toggleNavbarSearch(false)" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[#74777e] hover:bg-[#f3f4f5]">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </form>
     </header>
   `;
+
+  loadCatalogMenu();
+}
+
+function escapeMenuText(value) {
+  return String(value || '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+
+function loadCatalogMenu() {
+  const collectionList = document.getElementById('nav-collection-list');
+  const productList = document.getElementById('nav-product-list');
+
+  ApiService.getCollections((err, res) => {
+    if (!collectionList) return;
+    if (err || !res || !res.success || !Array.isArray(res.data)) {
+      collectionList.innerHTML = '<li class="py-1 text-red-700">Không tải được bộ sưu tập.</li>';
+      return;
+    }
+
+    if (res.data.length === 0) {
+      collectionList.innerHTML = '<li class="py-1 text-stone-500">Chưa có bộ sưu tập.</li><li><a href="#" data-collections-all class="text-secondary font-semibold block pt-2">Xem tất cả bộ sưu tập →</a></li>';
+      return;
+    }
+
+    collectionList.innerHTML = res.data.map(collection => `
+      <li><a href="#" data-collection-id="${escapeMenuText(collection._id)}" data-collection-name="${escapeMenuText(collection.name)}" class="hover:text-secondary flex items-center justify-between gap-2 py-1 transition-colors">
+        <span>${escapeMenuText(collection.name)}</span>
+        <span class="text-xs text-stone-500">${collection.productCount || 0}</span>
+      </a></li>
+    `).join('') + `
+      <li><a href="#" data-collections-all class="text-secondary font-semibold block pt-2">Xem tất cả bộ sưu tập →</a></li>
+    `;
+  });
+
+  ApiService.getProducts({ limit: 0, sort: 'newest' }, (err, res) => {
+    if (!productList) return;
+    if (err || !res || !res.success || !Array.isArray(res.data)) {
+      productList.innerHTML = '<li class="py-1 text-red-700">Không tải được sản phẩm.</li>';
+      return;
+    }
+
+    if (res.data.length === 0) {
+      productList.innerHTML = '<li class="py-1 text-stone-500">Chưa có sản phẩm.</li>';
+      return;
+    }
+
+    productList.innerHTML = [
+      ...res.data.map(product => `
+        <li><a href="#" data-product-id="${escapeMenuText(product._id)}" class="hover:text-secondary block py-1 transition-colors" title="${escapeMenuText(product.name)}">
+          <span class="block truncate">${escapeMenuText(product.name)}</span>
+          <span class="text-xs text-stone-500">${Number(product.price || 0).toLocaleString('vi-VN')}₫</span>
+        </a></li>
+      `)
+    ].join('');
+  });
+
+  const menu = collectionList.closest('.absolute');
+  menu.addEventListener('click', event => {
+    const link = event.target.closest('a');
+    if (!link) return;
+    event.preventDefault();
+
+    if (link.hasAttribute('data-collections-all')) {
+      dieuHuong('collections');
+    } else if (link.dataset.collectionId || link.dataset.collectionName) {
+      dieuHuong('collection-detail', null, {
+        collectionId: link.dataset.collectionId,
+        collectionName: link.dataset.collectionName
+      });
+    } else if (link.dataset.productId) {
+      window.selectedProductId = link.dataset.productId;
+      dieuHuong('product-detail', null, link.dataset.productId);
+    }
+  });
 }
 
 /**
@@ -144,25 +257,26 @@ function initNavbar() {
 function updateAvatarState() {
   const avatarIcon = document.getElementById('avatar-icon');
   const avatarBtn = document.getElementById('navbar-avatar-btn');
-  if (!avatarIcon || !avatarBtn) return;
-
-  if (currentUser) {
-    avatarBtn.classList.remove('bg-primary');
-    avatarBtn.classList.add('bg-[#a23e18]');
-    avatarIcon.innerText = currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'account_circle';
-  } else {
-    avatarBtn.classList.remove('bg-[#a23e18]');
-    avatarBtn.classList.add('bg-primary');
-    avatarIcon.innerText = 'person';
+  if (avatarIcon && avatarBtn) {
+    if (currentUser) {
+      avatarBtn.classList.remove('bg-primary');
+      avatarBtn.classList.add('bg-[#a23e18]');
+      avatarIcon.innerText = currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'account_circle';
+    } else {
+      avatarBtn.classList.remove('bg-[#a23e18]');
+      avatarBtn.classList.add('bg-primary');
+      avatarIcon.innerText = 'person';
+    }
   }
+  if (window.CartView) window.CartView.refreshCount();
 }
 
 /**
  * 3. Cơ chế AJAX Kéo phân hệ vào khung (Slide 10 - XMLHttpRequest)
  */
-function dieuHuong(tenPhanHe, element) {
+function dieuHuong(tenPhanHe, element, param) {
   const viewport = document.getElementById('app-viewport');
-  const url = `views/${tenPhanHe}.html`;
+  const url = `views/${tenPhanHe}.html?v=${Date.now()}`;
 
   // Update active state
   if (element) {
@@ -198,6 +312,30 @@ function dieuHuong(tenPhanHe, element) {
           ganSuKienLogin();
         } else if (tenPhanHe === 'register') {
           ganSuKienRegister();
+        } else if (tenPhanHe === 'shop') {
+          if (typeof khoiTaoTrangShop === 'function') {
+            khoiTaoTrangShop(param);
+          }
+        } else if (tenPhanHe === 'collections') {
+          if (typeof khoiTaoTrangBoSuuTap === 'function') {
+            khoiTaoTrangBoSuuTap();
+          }
+        } else if (tenPhanHe === 'collection-detail') {
+          if (typeof khoiTaoChiTietBoSuuTap === 'function') {
+            khoiTaoChiTietBoSuuTap(param);
+          }
+        } else if (tenPhanHe === 'product-detail') {
+          if (typeof khoiTaoTrangProductDetail === 'function') {
+            khoiTaoTrangProductDetail(param);
+          }
+        } else if (tenPhanHe === 'wishlist') {
+          if (typeof khoiTaoTrangWishlist === 'function') {
+            khoiTaoTrangWishlist();
+          }
+        } else if (tenPhanHe === 'cart') {
+          if (typeof CartView !== 'undefined') {
+            CartView.loadCart();
+          }
         } else if (tenPhanHe === 'home') {
           if (window.ProductComponent) {
             if (typeof ProductComponent.loadHomeCollections === 'function') {
@@ -244,7 +382,7 @@ function requireAuthAction(callback) {
  * 6. Logic Form Đăng nhập
  */
 function ganSuKienLogin() {
-  const form = document.querySelector('form');
+  const form = document.getElementById('collectorLoginForm');
   if (!form) return;
 
   form.onsubmit = function (e) {
@@ -253,7 +391,7 @@ function ganSuKienLogin() {
     const password = (document.getElementById('collectorPassword') || form.querySelector('input[type="password"]')).value;
 
     if (!identifier || !password) {
-      alert('Kính xin quý khách nhập đầy đủ Tên đăng nhập/SĐT/Email và Mật khẩu.');
+      showCartNotification('Kính xin quý khách nhập đầy đủ Tên đăng nhập/SĐT/Email và Mật khẩu.', 'warning', 'info');
       return;
     }
 
@@ -262,16 +400,14 @@ function ganSuKienLogin() {
       const errText = document.getElementById('loginErrorText');
       if (err || !res || !res.success) {
         const errMsg = (res && res.message) || err || 'Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.';
-        if (errBox && errText) {
-          errText.innerText = errMsg;
-          errBox.classList.remove('hidden');
-        }
-        alert(errMsg);
+        if (errBox) errBox.classList.add('hidden');
+        showCartNotification(errMsg, 'warning', 'error');
       } else {
         if (errBox) errBox.classList.add('hidden');
         currentUser = res.data;
         localStorage.setItem('craftory_user', JSON.stringify(currentUser));
         updateAvatarState();
+        showCartNotification('Đăng nhập thành công. Xin chào ' + (currentUser.fullName || 'quý khách') + '!', 'success', 'verified');
 
         if (window.pendingAction) {
           const act = window.pendingAction;
@@ -302,7 +438,7 @@ window.autoFillPrivilegeDemo = window.fillSampleAccount;
  * 7. Logic Form Đăng ký (UC-C01)
  */
 function ganSuKienRegister() {
-  const form = document.querySelector('form');
+  const form = document.getElementById('registration-form');
   if (!form) return;
 
   form.onsubmit = function (e) {
@@ -314,24 +450,24 @@ function ganSuKienRegister() {
     const confirmPassword = (document.getElementById('confirm-password') || form.querySelector('input[name="confirm-password"]')).value;
 
     if (!fullName || !email || !phone || !password) {
-      alert('Vui lòng điền đầy đủ các thông tin bắt buộc');
+      showCartNotification('Vui lòng điền đầy đủ các thông tin bắt buộc', 'warning', 'info');
       return;
     }
 
     if (password !== confirmPassword) {
-      alert('Mật khẩu xác nhận không trùng khớp. Kính xin quý khách kiểm tra lại.');
+      showCartNotification('Mật khẩu xác nhận không trùng khớp. Kính xin quý khách kiểm tra lại.', 'warning', 'info');
       return;
     }
 
     ApiService.register({ fullName, email, phone, password }, function (err, res) {
       if (err || !res || !res.success) {
-        alert(err || (res && res.message) || 'Đăng ký thất bại');
+        showCartNotification(err || (res && res.message) || 'Đăng ký thất bại', 'warning', 'error');
       } else {
-        alert('Kính chúc mừng Thượng khách ' + fullName + ' đã gia nhập Hội Quán Gốm Bát Tràng!');
-        currentUser = res.data;
-        localStorage.setItem('craftory_user', JSON.stringify(currentUser));
+        showCartNotification('Kính chúc mừng Thượng khách ' + fullName + ' đã gia nhập Hội Quán Gốm Bát Tràng!', 'success', 'verified');
+        currentUser = null;
+        localStorage.removeItem('craftory_user');
         updateAvatarState();
-        dieuHuong('profile');
+        dieuHuong('login');
       }
     });
   };
@@ -469,13 +605,13 @@ function loadProfileWishlistGrid() {
     html += `
       <div class="bg-porcelain-white rounded-xl border border-biscuit-sand overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <div class="relative h-48 bg-surface-container-low">
-          <img src="${p.image || (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=500'}" class="w-full h-full object-cover" />
+          ${(p.image || (p.images && p.images[0])) ? `<img src="${p.image || p.images[0]}" alt="${p.name || ''}" class="w-full h-full object-cover" />` : '<div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined">image_not_supported</span></div>'}
           <button onclick="handleWishlistToggle('${p._id}')" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-secondary flex items-center justify-center shadow">
             <span class="material-symbols-outlined text-[18px]">close</span>
           </button>
         </div>
         <div class="p-4 flex flex-col gap-1">
-          <span class="text-[11px] font-label-sm text-secondary uppercase font-semibold">${p.collectionName || 'Di Sản 1705'}</span>
+          <span class="text-[11px] font-label-sm text-secondary uppercase font-semibold">${p.collectionName || ''}</span>
           <h4 class="font-headline-sm text-sm text-primary font-bold truncate">${p.name}</h4>
           <span class="text-secondary font-bold text-sm mt-1">${(p.price || 0).toLocaleString()} đ</span>
         </div>
@@ -499,7 +635,27 @@ function handleWishlistToggle(productId) {
   });
 }
 
-function handleSearchPrompt() {
-  const query = prompt('Nhập tên tác phẩm gốm sứ cần tra cứu:');
-  if (query) alert('Đang tìm kiếm tác phẩm: ' + query);
+function toggleNavbarSearch(forceOpen) {
+  const panel = document.getElementById('navbar-search-panel');
+  const toggle = document.querySelector('[aria-controls="navbar-search-panel"]');
+  const input = document.getElementById('navbar-search-input');
+  if (!panel || !toggle) return;
+
+  const isOpen = forceOpen === undefined ? panel.classList.contains('hidden') : forceOpen;
+  panel.classList.toggle('hidden', !isOpen);
+  toggle.setAttribute('aria-expanded', String(isOpen));
+  if (isOpen && input) input.focus();
+}
+
+function submitNavbarSearch(event) {
+  event.preventDefault();
+  const input = document.getElementById('navbar-search-input');
+  const query = input ? input.value.trim() : '';
+  if (!query) {
+    if (input) input.focus();
+    return;
+  }
+
+  toggleNavbarSearch(false);
+  dieuHuong('shop', null, { search: query });
 }

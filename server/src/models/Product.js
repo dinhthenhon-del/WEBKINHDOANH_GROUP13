@@ -16,6 +16,11 @@ const productSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    sourceUrl: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     sku: {
       type: String,
       sparse: true,
@@ -24,6 +29,11 @@ const productSchema = new mongoose.Schema(
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
+      default: null,
+    },
+    collectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Collection',
       default: null,
     },
     slug: {
@@ -75,6 +85,40 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
+    },
+    material: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    size: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    glazeColor: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    firingTemp: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    unit: {
+      type: String,
+      default: 'Chiếc',
+      trim: true,
+    },
+    minStockAlert: {
+      type: Number,
+      default: 2,
+      min: 0,
+    },
+    custom2DEnabled: {
+      type: Boolean,
+      default: false,
     },
   },
   {

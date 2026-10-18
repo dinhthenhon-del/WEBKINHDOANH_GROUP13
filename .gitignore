@@ -18,3 +18,6 @@ dist/
 # Hình ảnh upload thật của Server (chỉ giữ file .gitkeep)
 server/public/uploads/*
 !server/public/uploads/.gitkeep
+
+# Dữ liệu runtime TV2
+server/data/

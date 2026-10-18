@@ -16,6 +16,16 @@ const collectionSchema = new mongoose.Schema(
       sparse: true,
       trim: true,
     },
+    subTitle: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    countText: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     description: {
       type: String,
       default: '',
@@ -23,6 +33,11 @@ const collectionSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
       default: '',
+    },
+    sourceUrl: {
+      type: String,
+      default: '',
+      trim: true,
     },
     status: {
       type: String,
