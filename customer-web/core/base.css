@@ -37,6 +37,14 @@ input, select, textarea {
   line-height: 1.5;
 }
 
+.select-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
+}
+
 /* Bảo toàn tuyệt đối biểu tượng Material Symbols Outlined */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined' !important;
@@ -52,4 +60,3 @@ input, select, textarea {
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
-

@@ -41,12 +41,17 @@ export class ProductList implements OnInit {
   isLoading = false;
   loadError = '';
 
-  // Modal xác nhận ngừng bán / xóa sản phẩm (Stitch Popup)
+  // Modal xác nhận thao tác và thông báo (Stitch Popup)
   isConfirmModalOpen = false;
+  modalMode: 'confirm' | 'notice' = 'confirm';
   targetProduct: ProductItem | null = null;
-  modalAction: 'pause' | 'delete' = 'pause';
+  modalAction: 'pause' | 'delete' | 'stock' = 'pause';
+  stockDelta = 0;
+  modalTitle = '';
+  modalConfirmLabel = '';
   modalLoading = false;
   modalNotice = '';
+  modalCanRetry = false;
 
   ngOnInit(): void {
     this.loadCategories();
@@ -100,6 +105,7 @@ export class ProductList implements OnInit {
           this.totalItems = 0;
           this.totalPages = 1;
           this.loadError = res?.message || 'Máy chủ trả về dữ liệu sản phẩm không hợp lệ.';
+          this.showNoticeModal('Không thể tải sản phẩm', this.loadError, true);
           this.changeDetector.markForCheck();
           return;
         }
@@ -119,6 +125,7 @@ export class ProductList implements OnInit {
         this.totalItems = 0;
         this.totalPages = 1;
         this.loadError = err.error?.message || 'Không thể tải sản phẩm. Hãy kiểm tra backend và kết nối cơ sở dữ liệu rồi thử lại.';
+        this.showNoticeModal('Không thể tải sản phẩm', this.loadError, true);
         this.changeDetector.markForCheck();
         console.error('Lỗi tải sản phẩm:', err);
       }
@@ -166,44 +173,83 @@ export class ProductList implements OnInit {
   // Mở modal xác nhận ngừng bán
   openPauseModal(product: ProductItem): void {
     this.targetProduct = product;
+    this.modalMode = 'confirm';
     this.modalAction = 'pause';
+    this.modalTitle = product.status === 'active' ? 'Xác nhận ngừng bán' : 'Xác nhận mở bán';
+    this.modalConfirmLabel = product.status === 'active' ? 'Xác nhận ngừng bán' : 'Xác nhận mở bán';
     this.modalNotice = `Bạn có chắc chắn muốn chuyển tác phẩm "${product.name}" sang trạng thái Ngừng bán không? Sản phẩm sẽ tạm ẩn khỏi giao diện khách hàng.`;
+    if (product.status !== 'active') {
+      this.modalNotice = `Bạn có chắc chắn muốn mở bán lại tác phẩm "${product.name}" không?`;
+    }
     this.isConfirmModalOpen = true;
   }
 
   // Mở modal xác nhận xóa
   openDeleteModal(product: ProductItem): void {
     this.targetProduct = product;
+    this.modalMode = 'confirm';
     this.modalAction = 'delete';
+    this.modalTitle = 'Xác nhận xóa tác phẩm';
+    this.modalConfirmLabel = 'Xác nhận xóa';
     this.modalNotice = `Bạn có chắc chắn muốn xóa tác phẩm "${product.name}" không?`;
     this.isConfirmModalOpen = true;
+  }
+
+  openStockAdjustModal(product: ProductItem, delta: number): void {
+    if (!product._id || !delta || (delta < 0 && (product.stock || 0) === 0)) return;
+    this.targetProduct = product;
+    this.modalMode = 'confirm';
+    this.modalAction = 'stock';
+    this.stockDelta = delta;
+    this.modalTitle = 'Xác nhận điều chỉnh tồn kho';
+    this.modalConfirmLabel = delta > 0 ? 'Xác nhận tăng' : 'Xác nhận giảm';
+    const nextStock = Math.max(0, (product.stock || 0) + delta);
+    this.modalNotice = `Bạn có chắc chắn muốn ${delta > 0 ? 'tăng' : 'giảm'} tồn kho của "${product.name}" từ ${product.stock || 0} lên ${nextStock} ${product.unit || 'chiếc'} không?`;
+    this.isConfirmModalOpen = true;
+  }
+
+  showNoticeModal(title: string, message: string, canRetry = false): void {
+    this.targetProduct = null;
+    this.modalMode = 'notice';
+    this.modalTitle = title;
+    this.modalNotice = message;
+    this.modalLoading = false;
+    this.modalCanRetry = canRetry;
+    this.isConfirmModalOpen = true;
+  }
+
+  retryProductsLoad(): void {
+    this.closeConfirmModal();
+    this.loadProducts();
   }
 
   closeConfirmModal(): void {
     this.isConfirmModalOpen = false;
     this.targetProduct = null;
     this.modalLoading = false;
+    this.modalCanRetry = false;
   }
 
   // Thực thi thao tác từ modal
   executeModalAction(): void {
-    if (!this.targetProduct || !this.targetProduct._id) return;
+    const targetProduct = this.targetProduct;
+    if (!targetProduct || !targetProduct._id) return;
 
     this.modalLoading = true;
-    const prodId = this.targetProduct._id;
+    const prodId = targetProduct._id;
 
     if (this.modalAction === 'pause') {
-      const nextStatus = this.targetProduct.status === 'active' ? 'inactive' : 'active';
+      const nextStatus = targetProduct.status === 'active' ? 'inactive' : 'active';
       this.productService.updateStatus(prodId, nextStatus).subscribe({
         next: (res) => {
-          this.modalLoading = false;
           this.closeConfirmModal();
           this.loadSummary();
           this.loadProducts();
+          const statusMessage = res?.message || 'Trạng thái sản phẩm đã được cập nhật.';
+          this.showNoticeModal('Đã cập nhật trạng thái', statusMessage);
         },
         error: (err) => {
-          this.modalLoading = false;
-          alert('Lỗi cập nhật trạng thái: ' + (err.error?.message || err.message));
+          this.showNoticeModal('Không thể cập nhật trạng thái', err.error?.message || err.message || 'Vui lòng thử lại.');
         }
       });
     } else if (this.modalAction === 'delete') {
@@ -211,15 +257,31 @@ export class ProductList implements OnInit {
         next: (res) => {
           this.modalLoading = false;
           this.closeConfirmModal();
-          if (res.warning) {
-            alert('Thông báo: ' + res.message + '\n' + res.warning);
-          }
           this.loadSummary();
           this.loadProducts();
+          this.showNoticeModal(res.warning ? 'Đã xóa sản phẩm kèm lưu ý' : 'Đã xóa sản phẩm', [res.message, res.warning].filter(Boolean).join('\n'));
         },
         error: (err) => {
-          this.modalLoading = false;
-          alert('Lỗi thao tác xóa: ' + (err.error?.message || err.message));
+          this.showNoticeModal('Không thể xóa sản phẩm', err.error?.message || err.message || 'Vui lòng thử lại.');
+        }
+      });
+    } else if (this.modalAction === 'stock') {
+      const newStock = Math.max(0, (targetProduct.stock || 0) + this.stockDelta);
+      this.productService.updateStock(prodId, newStock).subscribe({
+        next: (res) => {
+          this.closeConfirmModal();
+          if (res?.data) {
+            targetProduct.stock = res.data.stock;
+            targetProduct.status = res.data.status;
+            this.loadSummary();
+            this.loadProducts();
+            this.showNoticeModal('Đã cập nhật tồn kho', `Tồn kho của sản phẩm đã được cập nhật thành ${res.data.stock} ${res.data.unit || 'chiếc'}.`);
+          } else {
+            this.showNoticeModal('Không thể xác nhận kết quả', 'Máy chủ không trả về tồn kho sau khi cập nhật. Vui lòng tải lại danh sách để kiểm tra.');
+          }
+        },
+        error: (err) => {
+          this.showNoticeModal('Không thể cập nhật tồn kho', err.error?.message || err.message || 'Vui lòng thử lại.');
         }
       });
     }
@@ -233,25 +295,15 @@ export class ProductList implements OnInit {
       next: () => {
         product.status = nextStatus;
         this.loadSummary();
+        this.showNoticeModal('Đã cập nhật trạng thái', 'Trạng thái sản phẩm đã được cập nhật.');
       },
-      error: (err) => alert('Lỗi cập nhật trạng thái: ' + (err.error?.message || err.message))
+      error: (err) => this.showNoticeModal('Không thể cập nhật trạng thái', err.error?.message || err.message || 'Vui lòng thử lại.')
     });
   }
 
   // Tăng/giảm nhanh số lượng tồn kho
   quickStockAdjust(product: ProductItem, delta: number): void {
-    if (!product._id) return;
-    const newStock = Math.max(0, (product.stock || 0) + delta);
-    this.productService.updateStock(product._id, newStock).subscribe({
-      next: (res) => {
-        if (res && res.data) {
-          product.stock = res.data.stock;
-          product.status = res.data.status;
-          this.loadSummary();
-        }
-      },
-      error: (err) => alert('Lỗi cập nhật tồn kho: ' + (err.error?.message || err.message))
-    });
+    this.openStockAdjustModal(product, delta);
   }
 
   // Lấy ảnh hiển thị an toàn

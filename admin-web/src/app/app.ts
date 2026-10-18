@@ -12,6 +12,9 @@ export class App {
   protected readonly title = signal('Bát Tràng Admin');
   private router = inject(Router);
   isAuthPage = false;
+  isFeatureNoticeOpen = false;
+  featureNoticeTitle = '';
+  featureNoticeMessage = '';
   adminName = 'Trưởng ban Quản trị';
   adminEmail = 'admin@gombattrang.vn';
 
@@ -27,6 +30,16 @@ export class App {
 
   checkRoute(url: string) {
     this.isAuthPage = url.includes('/login');
+  }
+
+  showFeatureNotice(title: string, message: string) {
+    this.featureNoticeTitle = title;
+    this.featureNoticeMessage = message;
+    this.isFeatureNoticeOpen = true;
+  }
+
+  closeFeatureNotice() {
+    this.isFeatureNoticeOpen = false;
   }
 
   loadAdminProfile() {

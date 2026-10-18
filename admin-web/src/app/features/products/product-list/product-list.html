@@ -98,7 +98,7 @@
               <option value="">Tất cả danh mục</option>
               <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }} ({{ cat.productCount || 0 }})</option>
             </select>
-            <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-outline pointer-events-none text-lg">expand_more</span>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
           </div>
         </div>
 
@@ -110,7 +110,7 @@
               <option value="active">Đang bán</option>
               <option value="inactive">Ngừng bán</option>
             </select>
-            <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-outline pointer-events-none text-lg">expand_more</span>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
           </div>
         </div>
 
@@ -123,7 +123,7 @@
               <option value="price_desc">Giá giảm dần</option>
               <option value="stock_asc">Tồn kho thấp nhất</option>
             </select>
-            <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-outline pointer-events-none text-lg">swap_vert</span>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
           </div>
         </div>
 
@@ -160,17 +160,6 @@
               <td colspan="9" class="py-12 text-center text-on-surface-variant">
                 <span class="material-symbols-outlined animate-spin text-3xl text-secondary inline-block mb-2">progress_activity</span>
                 <p class="font-body-md">Đang tải danh sách bảo vật gốm sứ...</p>
-              </td>
-            </tr>
-
-            <!-- API Error Row -->
-            <tr *ngIf="!isLoading && loadError">
-              <td colspan="9" class="py-12 text-center text-error">
-                <span class="material-symbols-outlined text-4xl mb-2 inline-block">cloud_off</span>
-                <p class="font-body-md font-medium">{{ loadError }}</p>
-                <button (click)="loadProducts()" class="mt-3 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-[#07192c] cursor-pointer" type="button">
-                  Thử tải lại
-                </button>
               </td>
             </tr>
 
@@ -226,7 +215,7 @@
               <!-- Cột Tồn kho kèm nút chỉnh nhanh -->
               <td class="py-3.5 px-space-md text-center font-mono align-middle">
                 <div class="inline-flex items-center gap-1.5">
-                  <button (click)="quickStockAdjust(p, -1)" class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-high text-xs font-bold text-on-surface flex items-center justify-center cursor-pointer" title="Giảm 1">-</button>
+                  <button (click)="quickStockAdjust(p, -1)" [disabled]="(p.stock || 0) === 0" class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-high text-xs font-bold text-on-surface flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="Giảm 1">-</button>
                   <span [ngClass]="{
                     'text-error font-bold': (p.stock || 0) === 0,
                     'text-secondary font-bold': (p.stock || 0) > 0 && (p.stock || 0) <= 5,
@@ -325,23 +314,21 @@
     <div class="p-6 border-b border-surface-container flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full flex items-center justify-center" [ngClass]="modalAction === 'delete' ? 'bg-error-container text-error' : 'bg-secondary-container text-secondary'">
-          <span class="material-symbols-outlined text-2xl">{{ modalAction === 'delete' ? 'delete_forever' : 'pause_circle' }}</span>
+          <span class="material-symbols-outlined text-2xl">{{ modalMode === 'notice' ? 'info' : modalAction === 'delete' ? 'delete_forever' : modalAction === 'stock' ? 'inventory_2' : 'pause_circle' }}</span>
         </div>
         <div>
-          <h3 class="font-headline-sm text-lg text-primary font-bold">
-            {{ modalAction === 'delete' ? 'Xác nhận xóa tác phẩm' : 'Xác nhận thay đổi trạng thái bán' }}
-          </h3>
-          <span class="text-xs text-on-surface-variant">Mã tác phẩm: {{ targetProduct?.sku || targetProduct?._id }}</span>
+          <h3 class="font-headline-sm text-lg text-primary font-bold">{{ modalTitle }}</h3>
+          <span *ngIf="targetProduct" class="text-xs text-on-surface-variant">Mã tác phẩm: {{ targetProduct.sku || targetProduct._id }}</span>
         </div>
       </div>
-      <button (click)="closeConfirmModal()" class="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-outline cursor-pointer">
+      <button (click)="closeConfirmModal()" [disabled]="modalLoading" aria-label="Đóng thông báo" class="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-outline cursor-pointer disabled:opacity-40">
         <span class="material-symbols-outlined text-lg">close</span>
       </button>
     </div>
 
     <!-- Body Modal -->
     <div class="p-6 space-y-4">
-      <div class="flex items-center gap-4 p-3 bg-surface-container-low rounded-xl">
+      <div *ngIf="targetProduct" class="flex items-center gap-4 p-3 bg-surface-container-low rounded-xl">
         <img *ngIf="targetProduct && getProductImage(targetProduct) as imageUrl" [src]="imageUrl" (error)="onProductImageError($event)" class="w-14 h-14 rounded-lg object-cover border border-surface-variant" />
         <div class="flex flex-col min-w-0">
           <span class="font-bold text-sm text-primary truncate">{{ targetProduct?.name }}</span>
@@ -357,12 +344,18 @@
 
     <!-- Footer Modal Actions -->
     <div class="p-6 bg-surface-container-low border-t border-surface-container flex items-center justify-end gap-3">
-      <button (click)="closeConfirmModal()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors cursor-pointer" type="button">
+      <button *ngIf="modalMode === 'confirm'" (click)="closeConfirmModal()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors cursor-pointer" type="button">
         Hủy bỏ
       </button>
-      <button (click)="executeModalAction()" [disabled]="modalLoading" [ngClass]="modalAction === 'delete' ? 'bg-error hover:bg-red-700' : 'bg-secondary hover:bg-[#852f0e]'" class="px-5 py-2.5 rounded-lg text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-md" type="button">
+      <button *ngIf="modalMode === 'confirm'" (click)="executeModalAction()" [disabled]="modalLoading" [ngClass]="modalAction === 'delete' ? 'bg-error hover:bg-red-700' : 'bg-secondary hover:bg-[#852f0e]'" class="px-5 py-2.5 rounded-lg text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-md" type="button">
         <span *ngIf="modalLoading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
-        <span>{{ modalAction === 'delete' ? 'Xác nhận xóa' : 'Xác nhận đổi trạng thái' }}</span>
+        <span>{{ modalConfirmLabel }}</span>
+      </button>
+      <button *ngIf="modalMode === 'notice' && modalCanRetry" (click)="retryProductsLoad()" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container cursor-pointer" type="button">
+        Thử tải lại
+      </button>
+      <button *ngIf="modalMode === 'notice'" (click)="closeConfirmModal()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-semibold text-xs hover:bg-[#07192c] cursor-pointer" type="button">
+        Đóng
       </button>
     </div>
   </div>

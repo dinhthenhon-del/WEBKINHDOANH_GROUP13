@@ -15,6 +15,19 @@ export class Login {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+  isPasswordHelpOpen = false;
+
+  openPasswordHelp() {
+    this.isPasswordHelpOpen = true;
+  }
+
+  closePasswordHelp() {
+    this.isPasswordHelpOpen = false;
+  }
+
+  closeErrorNotice() {
+    this.errorMessage = '';
+  }
 
   constructor(private router: Router) {
     // Nếu đã đăng nhập từ trước, tự động chuyển vào dashboard quản trị

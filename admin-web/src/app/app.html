@@ -21,7 +21,7 @@
 
       <!-- Navigation Menu -->
       <nav class="px-space-md py-space-md space-y-space-xs flex flex-col">
-        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" onclick="alert('Phân hệ Dashboard đang hoạt động song song')">
+        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" (click)="showFeatureNotice('Dashboard', 'Phân hệ Dashboard đang hoạt động song song.')">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span>Dashboard</span>
         </a>
@@ -30,11 +30,11 @@
           <span class="material-symbols-outlined text-xl">inventory_2</span>
           <span class="font-bold">Sản phẩm &amp; Tồn kho</span>
         </a>
-        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" onclick="alert('Phân hệ Đơn hàng')">
+        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" (click)="showFeatureNotice('Đơn hàng', 'Phân hệ Đơn hàng chưa được kết nối.')">
           <span class="material-symbols-outlined text-xl">receipt_long</span>
           <span>Đơn hàng</span>
         </a>
-        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" onclick="alert('Phân hệ Đổi / Trả hàng')">
+        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" (click)="showFeatureNotice('Đổi / Trả hàng', 'Phân hệ Đổi / Trả hàng chưa được kết nối.')">
           <span class="material-symbols-outlined text-xl">published_with_changes</span>
           <span class="truncate">Đổi / Trả hàng</span>
         </a>
@@ -44,6 +44,21 @@
           <span class="font-bold">Quản lý Khách hàng</span>
         </a>
       </nav>
+    </div>
+
+    <div *ngIf="isFeatureNoticeOpen" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="closeFeatureNotice()">
+      <section role="alertdialog" aria-modal="true" class="w-full max-w-md rounded-2xl border border-surface-container bg-surface-container-lowest p-6 shadow-2xl" (click)="$event.stopPropagation()">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-2xl text-secondary" aria-hidden="true">info</span>
+          <div>
+            <h2 class="font-headline-sm text-lg font-bold text-primary">{{ featureNoticeTitle }}</h2>
+            <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-on-surface-variant">{{ featureNoticeMessage }}</p>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="button" (click)="closeFeatureNotice()" class="rounded-lg bg-primary px-5 py-2.5 text-xs font-semibold text-white hover:bg-[#07192c]">Đóng</button>
+        </div>
+      </section>
     </div>
 
     <!-- Bottom Admin Account Card with Logout Button -->

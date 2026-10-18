@@ -932,6 +932,58 @@ const DetailView = {
 
 const CartView = {
   countRequestId: 0,
+  pendingItemChanges: new Set(),
+
+  changeItem: function (productId, method, quantity) {
+    if (!window.currentUser || !window.currentUser._id) return;
+    if (CartView.pendingItemChanges.has(productId)) return;
+    CartView.pendingItemChanges.add(productId);
+    document.querySelectorAll(`[data-cart-product="${productId}"]`).forEach(control => {
+      control.disabled = true;
+    });
+    const userId = encodeURIComponent(window.currentUser._id);
+    const safeProductId = encodeURIComponent(productId);
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, `${API_BASE}/cart/${userId}/items/${safeProductId}`, true);
+    if (method === 'PATCH') xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      let res;
+      try {
+        res = JSON.parse(xhr.responseText);
+      } catch (error) {
+        CartView.pendingItemChanges.delete(productId);
+        showCartNotification('Không thể đọc phản hồi khi cập nhật giỏ hàng', 'warning');
+        CartView.loadCart();
+        return;
+      }
+      if (xhr.status < 200 || xhr.status >= 300 || !res || !res.success) {
+        CartView.pendingItemChanges.delete(productId);
+        showCartNotification((res && res.message) || 'Không thể cập nhật giỏ hàng', 'warning');
+        CartView.loadCart();
+        return;
+      }
+      CartView.pendingItemChanges.delete(productId);
+      CartView.updateCount(res.data);
+      CartView.loadCart();
+    };
+    xhr.onerror = function () {
+      CartView.pendingItemChanges.delete(productId);
+      showCartNotification('Không thể kết nối máy chủ để cập nhật giỏ hàng', 'warning');
+      CartView.loadCart();
+    };
+    xhr.send(method === 'PATCH' ? JSON.stringify({ quantity }) : null);
+  },
+
+  setQuantity: function (productId, quantity) {
+    const nextQuantity = Number(quantity);
+    if (!Number.isInteger(nextQuantity) || nextQuantity < 1) return;
+    CartView.changeItem(productId, 'PATCH', nextQuantity);
+  },
+
+  removeItem: function (productId) {
+    CartView.changeItem(productId, 'DELETE');
+  },
 
   refreshCount: function () {
     if (!window.currentUser || !window.currentUser._id) {
@@ -980,18 +1032,30 @@ const CartView = {
       }
       list.innerHTML = items.map(item => {
         const product = item.productId;
+        const productId = escapeProductText(product._id);
         const imageUrl = product.image || (product.images && product.images[0]) || '';
-        const subtotal = item.unitPrice * item.quantity;
-        return `<article class="flex gap-4 border-b border-[#EBEAE5] py-5">
+        const unitPrice = item.unitPrice || 0;
+        const subtotal = unitPrice * item.quantity;
+        return `<article class="flex flex-col gap-4 border-b border-[#EBEAE5] py-5 sm:flex-row sm:items-center">
           <div class="h-24 w-20 shrink-0 rounded-lg bg-[#f3f4f5] p-2">${imageUrl ? `<img class="h-full w-full object-contain" src="${escapeProductText(imageUrl)}" alt="${escapeProductText(product.name)}">` : ''}</div>
           <div class="min-w-0 flex-1">
             <h2 class="font-semibold text-[#000f22]">${escapeProductText(product.name)}</h2>
-            <p class="mt-1 text-sm text-[#74777e]">${item.quantity} × ${(item.unitPrice || 0).toLocaleString('vi-VN')}₫</p>
+            <p class="mt-1 text-sm text-[#74777e]">${unitPrice.toLocaleString('vi-VN')}₫ / sản phẩm</p>
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+              <div class="inline-flex h-9 items-center overflow-hidden rounded-lg border border-[#EBEAE5]" aria-label="Điều chỉnh số lượng">
+                <button type="button" data-cart-product="${productId}" onclick="CartView.setQuantity('${productId}', ${item.quantity - 1})" ${item.quantity <= 1 || CartView.pendingItemChanges.has(product._id) ? 'disabled' : ''} aria-label="Giảm số lượng" class="h-full w-9 text-lg text-[#000f22] hover:bg-[#f3f4f5] disabled:cursor-not-allowed disabled:opacity-40">−</button>
+                <span class="min-w-9 text-center text-sm font-semibold" aria-live="polite">${item.quantity}</span>
+                <button type="button" data-cart-product="${productId}" onclick="CartView.setQuantity('${productId}', ${item.quantity + 1})" ${CartView.pendingItemChanges.has(product._id) ? 'disabled' : ''} aria-label="Tăng số lượng" class="h-full w-9 text-lg text-[#000f22] hover:bg-[#f3f4f5] disabled:cursor-not-allowed disabled:opacity-40">+</button>
+              </div>
+              <button type="button" data-cart-product="${productId}" onclick="CartView.removeItem('${productId}')" ${CartView.pendingItemChanges.has(product._id) ? 'disabled' : ''} class="inline-flex items-center gap-1 text-sm font-medium text-[#a23e18] hover:underline disabled:cursor-not-allowed disabled:opacity-40">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>Xóa
+              </button>
+            </div>
           </div>
           <strong class="shrink-0 text-[#a23e18]">${subtotal.toLocaleString('vi-VN')}₫</strong>
         </article>`;
       }).join('');
-      const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+      const total = items.reduce((sum, item) => sum + (item.unitPrice || 0) * item.quantity, 0);
       if (totalEl) totalEl.textContent = `${total.toLocaleString('vi-VN')}₫`;
     });
   }
@@ -1003,8 +1067,97 @@ window.CartView = CartView;
 // WISHLIST VIEW CONTROLLER (Mục yêu thích - UC-C10)
 // ==========================================
 const WishlistView = {
+  quantities: Object.create(null),
+  productsById: Object.create(null),
+
   init: function () {
     this.loadWishlist();
+  },
+
+  setQuantity: function (productId, quantity, stock) {
+    const maxQuantity = Math.max(1, Number(stock) || 1);
+    const requestedQuantity = Math.floor(Number(quantity)) || 1;
+    const nextQuantity = Math.max(1, Math.min(maxQuantity, requestedQuantity));
+    this.quantities[productId] = nextQuantity;
+    const input = document.getElementById(`wishlist-quantity-${productId}`);
+    if (input) input.value = String(nextQuantity);
+    const incrementButton = document.getElementById(`wishlist-increment-${productId}`);
+    if (incrementButton) incrementButton.disabled = nextQuantity >= maxQuantity;
+  },
+
+  changeQuantity: function (productId, delta, stock) {
+    this.setQuantity(productId, (this.quantities[productId] || 1) + delta, stock);
+  },
+
+  addToCart: function (productId) {
+    if (!window.currentUser || !window.currentUser._id) {
+      dieuHuong('login');
+      return;
+    }
+    const product = this.productsById[productId];
+    if (!product || !product._id) return;
+    const quantity = this.quantities[product._id] || 1;
+    ApiService.addToCart(window.currentUser._id, product._id, quantity, function (err, res) {
+      if (err || !res || !res.success) {
+        showCartNotification((res && res.message) || err || 'Không thể thêm sản phẩm vào giỏ hàng', 'warning');
+        return;
+      }
+      CartView.updateCount(res.data);
+      showCartNotification(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+    });
+  },
+
+  removeProduct: function (productId) {
+    if (!window.currentUser || !window.currentUser._id) return;
+    ApiService.toggleWishlist(window.currentUser._id, productId, function (err, res) {
+      if (err || !res || !res.success) {
+        showCartNotification((res && res.message) || err || 'Không thể xóa sản phẩm khỏi yêu thích', 'warning', 'error');
+        return;
+      }
+      window.currentUser = res.data;
+      localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
+      WishlistView.loadWishlist();
+    });
+  },
+
+  renderWishlist: function (items) {
+    const grid = document.getElementById('wishlistGrid');
+    if (!grid) return;
+    this.productsById = Object.create(null);
+    grid.innerHTML = items.map(product => {
+      this.productsById[product._id] = product;
+      const productId = escapeProductText(product._id);
+      const name = escapeProductText(product.name);
+      const imageUrl = product.image || (product.images && product.images[0]) || '';
+      const stock = Math.max(0, Number(product.stock) || 0);
+      const quantity = Math.min(this.quantities[product._id] || 1, Math.max(1, stock));
+      this.quantities[product._id] = quantity;
+      return `<article class="flex flex-col overflow-hidden rounded-xl border border-[#EBEAE5] bg-white shadow-sm">
+        <button type="button" onclick="ProductComponent.viewDetail('${productId}')" class="relative aspect-[4/3] w-full bg-[#f3f4f5] p-4 text-left">
+          ${imageUrl ? `<img src="${escapeProductText(imageUrl)}" alt="${name}" class="h-full w-full object-contain">` : '<span class="material-symbols-outlined flex h-full items-center justify-center text-4xl text-[#74777e]" aria-hidden="true">image_not_supported</span>'}
+        </button>
+        <div class="flex flex-1 flex-col p-4">
+          <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-[#a23e18]">${escapeProductText(product.collectionName || (product.categoryId && product.categoryId.name) || '')}</p>
+          <h2 class="line-clamp-2 min-h-12 font-['Playfair_Display',serif] text-lg font-semibold text-[#000f22]">${name}</h2>
+          <p class="mt-2 text-base font-bold text-[#a23e18]">${(product.price || 0).toLocaleString('vi-VN')}₫</p>
+          <p class="mt-1 text-xs ${stock ? 'text-[#74777e]' : 'text-red-700'}">${stock ? `Còn ${stock} sản phẩm` : 'Tạm hết hàng'}</p>
+          <label class="mt-4 text-xs font-semibold text-[#43474d]" for="wishlist-quantity-${productId}">Số lượng muốn thêm</label>
+          <div class="mt-1 flex h-10 items-center overflow-hidden rounded-lg border border-[#EBEAE5]">
+            <button type="button" onclick="WishlistView.changeQuantity('${productId}', -1, ${stock})" aria-label="Giảm số lượng" class="h-full w-10 text-lg hover:bg-[#f3f4f5]">−</button>
+            <input id="wishlist-quantity-${productId}" type="number" min="1" max="${stock}" value="${quantity}" onchange="WishlistView.setQuantity('${productId}', this.value, ${stock})" class="h-full min-w-0 flex-1 border-x border-[#EBEAE5] text-center text-sm font-semibold focus:outline-none" ${stock ? '' : 'disabled'}>
+            <button id="wishlist-increment-${productId}" type="button" onclick="WishlistView.changeQuantity('${productId}', 1, ${stock})" aria-label="Tăng số lượng" ${quantity >= stock ? 'disabled' : ''} class="h-full w-10 text-lg hover:bg-[#f3f4f5] disabled:cursor-not-allowed disabled:opacity-40">+</button>
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-2">
+            <button type="button" onclick="WishlistView.addToCart('${productId}')" ${stock ? '' : 'disabled'} class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#000f22] px-3 text-sm font-semibold text-white hover:bg-[#10162B] disabled:cursor-not-allowed disabled:opacity-50">
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">shopping_bag</span>Thêm vào giỏ hàng
+            </button>
+            <button type="button" onclick="WishlistView.removeProduct('${productId}')" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-[#EBEAE5] text-sm font-medium text-[#a23e18] hover:bg-[#f8f9fa]">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>Xóa khỏi yêu thích
+            </button>
+          </div>
+        </div>
+      </article>`;
+    }).join('');
   },
 
   loadWishlist: function () {
@@ -1040,7 +1193,11 @@ const WishlistView = {
     }
 
     ApiService.getWishlist(window.currentUser._id, (err, res) => {
-      const items = (res && res.success && res.data) ? res.data : [];
+      if (err || !res || !res.success) {
+        if (grid) grid.innerHTML = `<div class="col-span-full py-12 text-center text-sm text-red-700">${escapeProductText((res && res.message) || err || 'Không thể tải danh sách yêu thích')}</div>`;
+        return;
+      }
+      const items = res.data || [];
 
       if (countEl) countEl.innerText = `${items.length} tác phẩm`;
 
@@ -1049,9 +1206,7 @@ const WishlistView = {
         if (emptyBox) emptyBox.classList.remove('hidden');
       } else {
         if (emptyBox) emptyBox.classList.add('hidden');
-        if (grid) {
-          grid.innerHTML = items.map(p => ProductComponent.renderCard(p)).join('');
-        }
+        WishlistView.renderWishlist(items);
       }
     });
   }

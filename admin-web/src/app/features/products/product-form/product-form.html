@@ -73,7 +73,7 @@
                     <option value="" disabled>-- Chọn danh mục bảo vật --</option>
                     <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
                   </select>
-                  <span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none text-lg">expand_more</span>
+                  <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
                 </div>
                 <p *ngIf="validationErrors['categoryId']" class="text-xs text-error mt-1">{{ validationErrors['categoryId'] }}</p>
               </div>
@@ -106,7 +106,7 @@
                     <option value="">-- Không thuộc bộ sưu tập --</option>
                     <option *ngFor="let collection of collections" [value]="collection.name">{{ collection.name }}</option>
                   </select>
-                  <span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none text-lg">expand_more</span>
+                  <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
                 </div>
               </div>
             </div>
@@ -272,20 +272,6 @@
               <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
             </label>
           </div>
-        </div>
-
-        <!-- 6. LUỒNG ĐỒNG BỘ JSON -> MONGODB (YÊU CẦU 6) -->
-        <div class="bg-surface-container-lowest p-space-md rounded-xl border border-surface-container text-xs text-on-surface-variant space-y-1.5">
-          <div class="flex items-center gap-1.5 font-bold text-primary">
-            <span class="material-symbols-outlined text-base text-emerald-600">sync_alt</span>
-            <span>Quy trình ghi đồng bộ dữ liệu:</span>
-          </div>
-          <p class="text-[11px] leading-relaxed text-outline">
-            1. Form Angular submit dữ liệu.<br/>
-            2. Express Backend ghi nguyên tử vào file <code class="font-mono text-secondary">products_runtime.json</code>.<br/>
-            3. Đọc dữ liệu từ file và đồng bộ cập nhật MongoDB.<br/>
-            4. Trả về kết quả xác thực cho Admin.
-          </p>
         </div>
 
       </div>

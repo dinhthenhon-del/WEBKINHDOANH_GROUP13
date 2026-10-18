@@ -115,9 +115,9 @@ function initNavbar() {
             <div class="absolute left-1/2 top-full hidden -translate-x-1/2 group-hover:block w-[680px] max-w-[calc(100vw-2rem)] bg-surface-container-lowest rounded-xl shadow-2xl p-6 border border-stone-100 z-50 transition-all duration-300">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div class="min-w-0 sm:bg-surface-container-low/50 sm:p-4 sm:rounded-lg">
-                <a href="#" data-collections-all class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-200/60 flex justify-between hover:text-primary">
-                  <span>Bộ sưu tập</span><span class="normal-case tracking-normal">Xem tất cả →</span>
-                </a>
+                <div class="font-label-sm text-secondary uppercase tracking-widest font-bold mb-3 pb-2 border-b border-stone-200/60">
+                  Bộ sưu tập
+                </div>
                 <ul id="nav-collection-list" class="space-y-2 text-stone-700 font-body-sm max-h-64 overflow-y-auto">
                   <li class="py-1 text-stone-500">Đang tải bộ sưu tập...</li>
                 </ul>
