@@ -144,5 +144,74 @@ const ApiService = {
       }
     };
     xhr.send();
+  },
+
+  // 8. Đánh giá sản phẩm (UC-C08 - Thành viên 5)
+  createReview: function (data, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/reviews`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 201 || xhr.status === 200 ? null : (res.message || 'Lỗi gửi đánh giá'), res);
+        } catch (e) {
+          callback('Lỗi kết nối máy chủ khi gửi đánh giá', null);
+        }
+      }
+    };
+    xhr.send(JSON.stringify(data));
+  },
+
+  getReviewsByProduct: function (productId, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `${API_BASE}/reviews/product/${productId}`, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 200 ? null : res.message, res);
+        } catch (e) {
+          callback('Lỗi tải đánh giá sản phẩm', null);
+        }
+      }
+    };
+    xhr.send();
+  },
+
+  // 9. Yêu cầu đổi trả hàng (UC-A05 - Thành viên 5)
+  createReturnRequest: function (data, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/returns`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 201 || xhr.status === 200 ? null : (res.message || 'Lỗi gửi yêu cầu đổi trả'), res);
+        } catch (e) {
+          callback('Lỗi kết nối máy chủ khi gửi yêu cầu đổi trả', null);
+        }
+      }
+    };
+    xhr.send(JSON.stringify(data));
+  },
+
+  getReturnRequestsByUser: function (userId, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `${API_BASE}/returns/user/${userId}`, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 200 ? null : res.message, res);
+        } catch (e) {
+          callback('Lỗi tải yêu cầu đổi trả', null);
+        }
+      }
+    };
+    xhr.send();
   }
 };
+

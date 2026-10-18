@@ -119,6 +119,8 @@ app.get('/api/categories', async (req, res) => {
 // ==========================================
 const Account = require('./models/Account');
 const Order = require('./models/Order');
+const Review = require('./models/Review');
+const ReturnRequest = require('./models/ReturnRequest');
 
 // 1. API Đăng ký tài khoản khách hàng (UC-C01)
 app.post('/api/auth/register', async (req, res) => {
@@ -432,8 +434,239 @@ app.put('/api/admin/customers/:id/status', async (req, res) => {
   }
 });
 
+// ==========================================
+// THÀNH VIÊN 5: MODULE ĐỔI TRẢ, ĐÁNH GIÁ & DASHBOARD (UC-C08, UC-A05, UC-A06)
+// ==========================================
+
+// --- I. ĐÁNH GIÁ SẢN PHẨM (UC-C08) ---
+// 1. Tạo đánh giá mới (Kiểm tra nếu có orderId thì đơn phải COMPLETED)
+app.post('/api/reviews', async (req, res) => {
+  try {
+    const { accountId, productId, orderId, rating, comment } = req.body;
+
+    if (!accountId || !productId || !rating) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp accountId, productId và số sao rating' });
+    }
+
+    if (orderId) {
+      const order = await Order.findById(orderId);
+      if (order && order.status !== 'completed' && order.status !== 'COMPLETED') {
+        return res.status(400).json({ success: false, message: 'Chỉ được đánh giá tác phẩm khi đơn hàng đã hoàn tất (Completed)' });
+      }
+    }
+
+    const newReview = new Review({
+      accountId,
+      productId,
+      orderId: orderId || null,
+      rating: Number(rating),
+      comment: (comment || '').trim()
+    });
+
+    await newReview.save();
+    res.status(201).json({ success: true, message: 'Gửi đánh giá thành công', data: newReview });
+  } catch (error) {
+    console.error('Lỗi gửi đánh giá:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 2. Lấy danh sách đánh giá theo sản phẩm + tính sao trung bình (cho TV2 hiển thị product-detail)
+app.get('/api/reviews/product/:productId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ productId: req.params.productId })
+      .populate('accountId', 'fullName email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0
+      ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
+      : 5.0;
+
+    res.status(200).json({
+      success: true,
+      data: reviews,
+      stats: {
+        totalReviews,
+        averageRating: Number(averageRating)
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi lấy đánh giá sản phẩm:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. Lấy toàn bộ đánh giá (quản trị)
+app.get('/api/reviews', async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate('accountId', 'fullName email')
+      .populate('productId', 'name image price')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.status(200).json({ success: true, data: reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// --- II. YÊU CẦU ĐỔI / TRẢ HÀNG (UC-A05) ---
+// 1. Khách gửi yêu cầu đổi trả
+app.post('/api/returns', async (req, res) => {
+  try {
+    const { orderId, accountId, type, reason, evidenceImages, items } = req.body;
+
+    if (!orderId || !accountId || !reason) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mã đơn hàng, tài khoản và lý do đổi trả' });
+    }
+
+    let returnItems = items;
+    if (!returnItems || !returnItems.length) {
+      const order = await Order.findById(orderId).lean();
+      if (order && order.items && order.items.length) {
+        returnItems = order.items.map(it => ({
+          productId: it.productId,
+          quantity: it.quantity || 1,
+          reason: reason
+        }));
+      } else {
+        const sampleProd = await Product.findOne().lean();
+        returnItems = [{ productId: sampleProd ? sampleProd._id : '670000000000000000000001', quantity: 1, reason }];
+      }
+    }
+
+    const newReturn = new ReturnRequest({
+      orderId,
+      accountId,
+      type: type || 'return',
+      reason: reason.trim(),
+      evidenceImages: evidenceImages || [],
+      items: returnItems,
+      status: 'pending'
+    });
+
+    await newReturn.save();
+    res.status(201).json({ success: true, message: 'Đã tiếp nhận yêu cầu đổi trả thành công', data: newReturn });
+  } catch (error) {
+    console.error('Lỗi gửi yêu cầu đổi trả:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 2. Lấy danh sách đổi trả của một tài khoản khách hàng
+app.get('/api/returns/user/:userId', async (req, res) => {
+  try {
+    const returns = await ReturnRequest.find({ accountId: req.params.userId })
+      .populate('orderId')
+      .populate('items.productId')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.status(200).json({ success: true, data: returns });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. Lấy tất cả yêu cầu đổi trả (phía Admin)
+app.get('/api/returns', async (req, res) => {
+  try {
+    const returns = await ReturnRequest.find()
+      .populate('accountId', 'fullName email phone')
+      .populate('orderId')
+      .populate('items.productId')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.status(200).json({ success: true, data: returns });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 4. Admin duyệt hoặc từ chối yêu cầu đổi trả
+app.put('/api/returns/:id/status', async (req, res) => {
+  try {
+    const { status, rejectionReason, processedBy } = req.body;
+
+    if (!status || !['pending', 'approved', 'rejected', 'completed'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái đổi trả không hợp lệ' });
+    }
+
+    if (status === 'rejected' && (!rejectionReason || !rejectionReason.trim())) {
+      return res.status(400).json({ success: false, message: 'Bắt buộc phải nhập lý do từ chối (E1)' });
+    }
+
+    const returnReq = await ReturnRequest.findById(req.params.id);
+    if (!returnReq) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu đổi trả' });
+    }
+
+    returnReq.status = status;
+    returnReq.processedAt = new Date();
+    if (processedBy) returnReq.processedBy = processedBy;
+    if (status === 'rejected') {
+      returnReq.rejectionReason = rejectionReason.trim();
+    }
+
+    // Nếu Duyệt đổi trả: Hoàn lại số lượng tồn kho (stock + quantity)
+    if (status === 'approved') {
+      for (const item of returnReq.items) {
+        if (item.productId) {
+          await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity || 1 } });
+        }
+      }
+    }
+
+    await returnReq.save();
+    res.status(200).json({
+      success: true,
+      message: `Đã ${status === 'approved' ? 'duyệt' : (status === 'rejected' ? 'từ chối' : 'cập nhật')} yêu cầu đổi trả`,
+      data: returnReq
+    });
+  } catch (error) {
+    console.error('Lỗi cập nhật trạng thái đổi trả:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// --- III. DASHBOARD THỐNG KÊ QUẢN TRỊ (UC-A06) ---
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    // 1. Doanh thu: tổng totalAmount của các Order có status === 'completed'
+    const completedOrders = await Order.find({ status: { $in: ['completed', 'COMPLETED'] } }).select('totalAmount').lean();
+    const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+    // 2. Đơn chờ xử lý: số Order có status === 'pending'
+    const pendingOrdersCount = await Order.countDocuments({ status: { $in: ['pending', 'PENDING'] } });
+
+    // 3. Cảnh báo hết hàng: số Product có stock === 0 hoặc stock <= 5
+    const lowStockCount = await Product.countDocuments({ stock: { $lte: 5 } });
+
+    // 4. Tổng khách hàng: số Account có role === 'customer'
+    const totalCustomersCount = await Account.countDocuments({ role: 'customer' });
+
+    // 5. Yêu cầu đổi trả chờ duyệt
+    const pendingReturnsCount = await ReturnRequest.countDocuments({ status: 'pending' });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        pendingOrdersCount,
+        lowStockCount,
+        totalCustomersCount,
+        pendingReturnsCount
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi lấy thống kê dashboard:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // 7. KHỞI ĐỘNG SERVER
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server Backend đang chạy tại http://localhost:${PORT}`);
-});
+});

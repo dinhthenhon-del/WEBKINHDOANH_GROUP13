@@ -1,4 +1,16 @@
-<div class="flex flex-col w-full">
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif]">
+<!-- Phong cách Phông chữ Đồng Bộ Trang Chủ: Playfair Display (Serif) & Plus Jakarta Sans (Sans-serif) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+  #modal-return h3, #modal-review h3, .font-playfair, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif !important;
+  }
+  #modal-return, #modal-review, #modal-return input, #modal-return select, #modal-return textarea, #modal-return button,
+  #modal-review input, #modal-review select, #modal-review textarea, #modal-review button {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+</style>
+
 <!-- Toast Alert Containers -->
 <div class="fixed top-24 right-6 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none transition-all duration-300" id="toast-container">
 <!-- Success Toast -->
@@ -204,8 +216,9 @@
 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 <div>
 <span class="font-label-sm text-label-sm text-outline uppercase">Mã đơn giám tuyển</span>
-<p class="font-title-md text-title-md text-primary font-bold">#MG-2025-9921</p>
+<p class="font-title-md text-title-md text-primary font-bold cursor-pointer hover:text-secondary flex items-center gap-1" onclick="dieuHuong('order-detail')" title="Bấm xem chi tiết đơn hàng">#MG-2025-9921 <span class="material-symbols-outlined text-[15px]">open_in_new</span></p>
 </div>
+
 <span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
 <div>
 <span class="font-label-sm text-label-sm text-outline uppercase">Ngày đặt phôi</span>
@@ -296,8 +309,9 @@
 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 <div>
 <span class="font-label-sm text-label-sm text-outline uppercase">Mã đơn giám tuyển</span>
-<p class="font-title-md text-title-md text-primary font-bold">#MG-2025-8899</p>
+<p class="font-title-md text-title-md text-primary font-bold cursor-pointer hover:text-secondary flex items-center gap-1" onclick="dieuHuong('order-detail')" title="Bấm xem chi tiết đơn hàng">#MG-2025-8899 <span class="material-symbols-outlined text-[15px]">open_in_new</span></p>
 </div>
+
 <span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
 <div>
 <span class="font-label-sm text-label-sm text-outline uppercase">Ngày bàn giao tận gia</span>
@@ -408,18 +422,23 @@
 <div class="flex flex-wrap items-center gap-2.5 ml-auto">
 <!-- PDF Certificate Download -->
 
+<button class="px-3.5 py-2.5 rounded bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm font-medium flex items-center gap-1.5 cursor-pointer" onclick="dieuHuong('order-detail')">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="">Chi tiết đơn</span>
+</button>
 <!-- Review Works Button -->
-<button class="px-3.5 py-2.5 rounded bg-surface-container-lowest text-primary border border-biscuit-sand hover:border-primary transition-all font-title-md text-body-sm font-medium flex items-center gap-1.5 shadow-xs" onclick="openReviewModal('Bình Gốm Men Lam &amp; Bộ Trà Tử Sa')">
+<button class="px-3.5 py-2.5 rounded bg-surface-container-lowest text-primary border border-biscuit-sand hover:border-primary transition-all font-title-md text-body-sm font-medium flex items-center gap-1.5 shadow-xs cursor-pointer" onclick="openReviewModal('Bình Gốm Men Lam &amp; Bộ Trà Tử Sa')">
 <span class="material-symbols-outlined text-amber-500 text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 <span class="">Đánh giá tác phẩm</span>
 </button>
 <!-- Return / Exchange Request Button (Exclusively on Completed) -->
-<button class="px-4 py-2.5 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold flex items-center gap-1.5 shadow-sm" onclick="openReturnModal('MG-2025-8899')">
+<button class="px-4 py-2.5 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer" onclick="openReturnModal('MG-2025-8899')">
 <span class="material-symbols-outlined text-[18px]">published_with_changes</span>
 <span class="">Yêu cầu đổi trả</span>
 </button>
 </div>
 </div>
+
 </div>
 </article>
 <!-- ==========================================
@@ -516,30 +535,30 @@
 <!-- =========================================================================
        MODAL 1: RETURN / EXCHANGE FORM (Phiếu Đề Nghị Đổi Trả Gốm Sứ Thượng Phẩm)
        ========================================================================= -->
-<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity" id="modal-return">
+<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity font-['Plus_Jakarta_Sans',sans-serif]" id="modal-return">
 <div class="bg-porcelain-white rounded-xl shadow-2xl border border-biscuit-sand max-w-2xl w-full max-h-[92vh] overflow-y-auto transform transition-transform animate-in fade-in zoom-in-95 duration-200">
 <!-- Modal Header -->
 <div class="p-6 bg-surface-container-low border-b border-biscuit-sand flex items-center justify-between sticky top-0 z-10">
 <div>
 <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">Chính Sách Bảo Toàn Tinh Hoa</span>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-bold mt-0.5">
+<h3 class="font-['Playfair_Display',serif] text-2xl text-primary font-bold mt-1">
             Phiếu Đề Nghị Đổi Trả Tác Phẩm Gốm Sứ
           </h3>
-<p class="font-body-sm text-[13px] text-on-surface-variant" id="modal-return-order-subtitle">Đơn hàng #MG-2025-8899</p>
+<p class="font-body-sm text-[13px] text-on-surface-variant mt-0.5" id="modal-return-order-subtitle">Đơn hàng #MG-2025-8899</p>
 </div>
-<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors" onclick="closeReturnModal()">
+<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors cursor-pointer" onclick="closeReturnModal()">
 <span class="material-symbols-outlined text-[20px]">close</span>
 </button>
 </div>
 <!-- Modal Body -->
-<form class="p-6 flex flex-col gap-5" id="return-form" onsubmit="submitReturnForm(event)">
+<form class="p-6 flex flex-col gap-5 font-['Plus_Jakarta_Sans',sans-serif]" id="return-form" onsubmit="submitReturnForm(event)">
 <!-- 1. Select Product to Return -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-body-sm text-primary font-semibold flex items-center gap-1">
-<span class="">Chọn tác phẩm gốm sứ cần đổi trả</span>
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Chọn tác phẩm gốm sứ cần đổi trả</span>
 <span class="text-secondary">*</span>
 </label>
-<select class="w-full bg-porcelain-white text-primary text-body-sm p-3 rounded border border-celadon-mist focus:outline-none focus:border-primary transition-colors" id="return-product-select" required="">
+<select class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif]" id="return-product-select" required="">
 <option value="Bình Gốm Men Lam Cá Chép Vượt Vũ Môn">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn - Bản phục dựng cổ pháp (6.800.000₫)</option>
 <option value="Bộ Trà Tử Sa Men Ngọc Hoàng Gia">Bộ Trà Tử Sa Men Ngọc Hoàng Gia (4.250.000₫)</option>
 <option value="Toàn bộ đơn hàng">Đổi trả toàn bộ đơn hàng (2 tác phẩm)</option>
@@ -547,49 +566,49 @@
 </div>
 <!-- 2. Return Reason Selector -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-body-sm text-primary font-semibold flex items-center gap-1">
-<span class="">Nguyên nhân đề nghị thẩm định &amp; đổi trả</span>
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Nguyên nhân đề nghị thẩm định &amp; đổi trả</span>
 <span class="text-secondary">*</span>
 </label>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-<label class="flex items-start gap-2.5 p-3 rounded border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
 <input checked="" class="mt-1 accent-primary" name="return_reason" type="radio" value="Nứt rạn men ngoài ý muốn trong quá trình vận chuyển">
-<span class="font-body-sm text-[13px] text-on-surface">Nứt rạn men ngoài ý muốn trong quá trình vận chuyển</span>
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Nứt rạn men ngoài ý muốn trong quá trình vận chuyển</span>
 </label>
-<label class="flex items-start gap-2.5 p-3 rounded border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
 <input class="mt-1 accent-primary" name="return_reason" type="radio" value="Họa tiết không đúng với bản thiết kế 2D đã duyệt">
-<span class="font-body-sm text-[13px] text-on-surface">Họa tiết không đúng với bản thiết kế 2D đã duyệt</span>
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Họa tiết không đúng với bản thiết kế 2D đã duyệt</span>
 </label>
-<label class="flex items-start gap-2.5 p-3 rounded border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
 <input class="mt-1 accent-primary" name="return_reason" type="radio" value="Lỗi cốt gốm (bong bóng khí lò nung hoặc cong vênh)">
-<span class="font-body-sm text-[13px] text-on-surface">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
 </label>
-<label class="flex items-start gap-2.5 p-3 rounded border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
 <input class="mt-1 accent-primary" name="return_reason" type="radio" value="Khác">
-<span class="font-body-sm text-[13px] text-on-surface">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
 </label>
 </div>
 </div>
 <!-- 3. Detail description -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-body-sm text-primary font-semibold flex items-center justify-between">
-<span class="">Mô tả chi tiết khiếm khuyết hoặc nguyện vọng đổi tác phẩm</span>
-<span class="text-outline text-label-sm font-normal">Tùy chọn</span>
+<label class="font-title-md text-sm text-primary font-semibold flex items-center justify-between">
+<span>Mô tả chi tiết khiếm khuyết hoặc nguyện vọng đổi tác phẩm</span>
+<span class="text-outline text-xs font-normal">Tùy chọn</span>
 </label>
-<textarea class="w-full bg-porcelain-white text-primary text-body-sm p-3 rounded border border-celadon-mist focus:outline-none focus:border-primary transition-colors" id="return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="3"></textarea>
+<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="3"></textarea>
 </div>
 <!-- 4. Upload photo / unboxing video evidence -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-body-sm text-primary font-semibold flex items-center gap-1">
-<span class="">Bằng chứng thị giác (Ảnh chụp vết nứt hoặc video khui hòm gỗ)</span>
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Bằng chứng thị giác (Ảnh chụp vết nứt hoặc video khui hòm gỗ)</span>
 <span class="text-secondary">*</span>
 </label>
 <div class="border-2 border-dashed border-biscuit-sand hover:border-primary/50 rounded-lg p-5 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('file-upload').click()">
 <input accept="image/*,video/*" class="hidden" id="file-upload" multiple="" onchange="handleFileSelect(this)" type="file">
 <div class="flex flex-col items-center justify-center gap-1">
 <span class="material-symbols-outlined text-3xl text-on-surface-variant">photo_library</span>
-<p class="font-title-md text-body-sm text-primary font-medium mt-1">Bấm để tải ảnh chụp chi tiết hoặc video</p>
-<p class="font-label-sm text-label-sm text-outline">Hỗ trợ JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
+<p class="font-title-md text-sm text-primary font-medium mt-1">Bấm để tải ảnh chụp chi tiết hoặc video</p>
+<p class="font-label-sm text-xs text-outline">Hỗ trợ JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
 </div>
 <div class="mt-3 flex flex-wrap gap-2 justify-center hidden" id="file-preview-list"></div>
 </div>
@@ -603,12 +622,12 @@
 </div>
 <!-- Modal Actions -->
 <div class="flex items-center justify-end gap-3 pt-4 border-t border-biscuit-sand">
-<button class="px-5 py-2.5 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-title-md text-body-sm transition-colors" onclick="closeReturnModal()" type="button">
+<button class="px-5 py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-title-md text-sm transition-colors cursor-pointer" onclick="closeReturnModal()" type="button">
             Hủy thao tác
           </button>
-<button class="px-6 py-2.5 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold shadow-md flex items-center gap-2" type="submit">
+<button class="px-6 py-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer" type="submit">
 <span class="material-symbols-outlined text-[18px]">send</span>
-<span class="">Gửi Yêu Cầu Đổi Trả</span>
+<span>Gửi Yêu Cầu Đổi Trả</span>
 </button>
 </div>
 </form>
@@ -617,71 +636,71 @@
 <!-- =========================================================================
        MODAL 2: REVIEW ARTWORK FORM (Đánh Giá Tác Phẩm Gốm Sứ)
        ========================================================================= -->
-<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity" id="modal-review">
+<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity font-['Plus_Jakarta_Sans',sans-serif]" id="modal-review">
 <div class="bg-porcelain-white rounded-xl shadow-2xl border border-biscuit-sand max-w-lg w-full max-h-[92vh] overflow-y-auto transform transition-transform animate-in fade-in zoom-in-95 duration-200">
 <!-- Modal Header -->
 <div class="p-6 bg-surface-container-low border-b border-biscuit-sand flex items-center justify-between">
 <div>
 <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">Cảm Nhận Nhà Sưu Tập</span>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-bold mt-0.5">
+<h3 class="font-['Playfair_Display',serif] text-2xl text-primary font-bold mt-1">
             Đánh Giá Tác Phẩm Gốm Sứ
           </h3>
-<p class="font-body-sm text-[13px] text-on-surface-variant" id="modal-review-target">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn</p>
+<p class="font-body-sm text-[13px] text-on-surface-variant mt-0.5" id="modal-review-target">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn</p>
 </div>
-<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors" onclick="closeReviewModal()">
+<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors cursor-pointer" onclick="closeReviewModal()">
 <span class="material-symbols-outlined text-[20px]">close</span>
 </button>
 </div>
 <!-- Review Form -->
-<form class="p-6 flex flex-col gap-5" onsubmit="submitReviewForm(event)">
+<form class="p-6 flex flex-col gap-5 font-['Plus_Jakarta_Sans',sans-serif]" onsubmit="submitReviewForm(event)">
 <!-- 5-Star Ceramic Rating -->
 <div class="flex flex-col items-center justify-center p-4 bg-surface-container-low/40 rounded-lg border border-biscuit-sand">
-<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-2">Độ hoàn thiện &amp; Hồn gốm thủ công</span>
+<span class="font-label-sm text-xs text-outline uppercase tracking-wider mb-2 font-medium">Độ hoàn thiện &amp; Hồn gốm thủ công</span>
 <div class="flex items-center gap-2" id="star-rating-container">
-<button class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="1" onclick="setStarRating(1)" type="button">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="1" onclick="setStarRating(1)" type="button">
 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 </button>
-<button class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="2" onclick="setStarRating(2)" type="button">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="2" onclick="setStarRating(2)" type="button">
 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 </button>
-<button class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="3" onclick="setStarRating(3)" type="button">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="3" onclick="setStarRating(3)" type="button">
 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 </button>
-<button class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="4" onclick="setStarRating(4)" type="button">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="4" onclick="setStarRating(4)" type="button">
 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 </button>
-<button class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="5" onclick="setStarRating(5)" type="button">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="5" onclick="setStarRating(5)" type="button">
 <span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
 </button>
 </div>
-<span class="font-title-md text-title-md text-primary font-semibold mt-2" id="rating-text">Tuyệt tác Hoàng Gia (5/5 Sao)</span>
+<span class="font-title-md text-sm text-primary font-semibold mt-2" id="rating-text">Tuyệt tác Hoàng Gia (5/5 Sao)</span>
 </div>
 <!-- Glaze & Stroke Critique Feedback -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-body-sm text-primary font-semibold">
+<label class="font-title-md text-sm text-primary font-semibold">
             Cảm nhận về chất men, nét vẽ tay &amp; độ đanh tiếng chuông gốm:
           </label>
-<textarea class="w-full bg-porcelain-white text-primary text-body-sm p-3 rounded border border-celadon-mist focus:outline-none focus:border-primary transition-colors" id="review-content" placeholder="Chia sẻ cảm xúc khi bài trí tác phẩm trong không gian tư gia, độ sâu của lớp men lam hoặc cốt đất nung củi..." required="" rows="4"></textarea>
+<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="review-content" placeholder="Chia sẻ cảm xúc khi bài trí tác phẩm trong không gian tư gia, độ sâu của lớp men lam hoặc cốt đất nung củi..." required="" rows="4"></textarea>
 </div>
 <div class="flex flex-col gap-1.5">
-<span class="font-title-md text-body-sm text-primary font-semibold">Tải ảnh tác phẩm thực tế tại tư gia (nếu có):</span>
+<span class="font-title-md text-sm text-primary font-semibold">Tải ảnh tác phẩm thực tế tại tư gia (nếu có):</span>
 <div class="flex items-center gap-3">
-<button class="px-4 py-2 rounded bg-surface-container-high hover:bg-surface-container-highest text-primary font-title-md text-body-sm flex items-center gap-1.5 transition-colors" onclick="document.getElementById('review-photo-input').click()" type="button">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary font-title-md text-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="document.getElementById('review-photo-input').click()" type="button">
 <span class="material-symbols-outlined text-[18px]">add_a_photo</span>
-<span class="">Đính kèm hình ảnh</span>
+<span>Đính kèm hình ảnh</span>
 </button>
-<span class="font-label-sm text-label-sm text-outline" id="review-photo-label">Chưa chọn ảnh</span>
+<span class="font-label-sm text-xs text-outline" id="review-photo-label">Chưa chọn ảnh</span>
 <input accept="image/*" class="hidden" id="review-photo-input" onchange="handleReviewPhotoSelect(this)" type="file">
 </div>
 </div>
 <!-- Submit Review -->
 <div class="flex items-center justify-end gap-3 pt-3 border-t border-biscuit-sand">
-<button class="px-5 py-2.5 rounded text-on-surface-variant hover:text-primary transition-colors font-title-md text-body-sm" onclick="closeReviewModal()" type="button">
+<button class="px-5 py-2.5 rounded-lg text-on-surface-variant hover:text-primary transition-colors font-title-md text-sm cursor-pointer" onclick="closeReviewModal()" type="button">
             Đóng
           </button>
-<button class="px-6 py-2.5 rounded bg-primary text-on-primary hover:bg-primary-container transition-all font-title-md text-body-sm font-semibold shadow-md flex items-center gap-2" type="submit">
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all font-title-md text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer" type="submit">
 <span class="material-symbols-outlined text-[18px]">verified</span>
-<span class="">Gửi Đánh Giá Di Sản</span>
+<span>Gửi Đánh Giá Di Sản</span>
 </button>
 </div>
 </form>
@@ -826,6 +845,22 @@
     function submitReturnForm(e) {
       e.preventDefault();
       closeReturnModal();
+
+      const reasonRadio = document.querySelector('input[name="return_reason"]:checked');
+      const reasonVal = reasonRadio ? reasonRadio.value : 'Yêu cầu thẩm định & đổi trả';
+      const descVal = document.getElementById('return-description') ? document.getElementById('return-description').value : '';
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
+        ApiService.createReturnRequest({
+          orderId: '670000000000000000000001',
+          accountId: currentUser._id,
+          type: 'return',
+          reason: reasonVal + (descVal ? ': ' + descVal : '')
+        }, function(err, res) {
+          console.log('Return request API result:', err, res);
+        });
+      }
+
       showToast(
         'toast-success',
         '✅ Tiếp nhận yêu cầu đổi trả thành công!',
@@ -843,6 +878,19 @@
     function submitReviewForm(e) {
       e.preventDefault();
       closeReviewModal();
+      const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value : '';
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReview && typeof currentUser !== 'undefined' && currentUser) {
+        ApiService.createReview({
+          accountId: currentUser._id,
+          productId: '670000000000000000000001',
+          rating: currentRating,
+          comment: commentVal
+        }, function(err, res) {
+          console.log('Review API result:', err, res);
+        });
+      }
+
       showToast(
         'toast-success',
         'Khắc ghi đánh giá thành công',
@@ -877,7 +925,6 @@
 
     // Order status filter logic
     function setOrderFilter(status, btnElement) {
-      // Toggle button styles
       const buttons = document.querySelectorAll('.order-filter-btn');
       buttons.forEach(btn => {
         btn.className = 'order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50';
@@ -928,5 +975,26 @@
         emptyState.classList.add('hidden');
       }
     }
+
+    // Gắn toàn bộ hàm lên window để luôn có thể gọi từ inline onclick
+    window.setStarRating = setStarRating;
+    window.openReturnModal = openReturnModal;
+    window.closeReturnModal = closeReturnModal;
+    window.openReviewModal = openReviewModal;
+    window.closeReviewModal = closeReviewModal;
+    window.showToast = showToast;
+    window.hideToast = hideToast;
+    window.submitReturnForm = submitReturnForm;
+    window.submitReviewForm = submitReviewForm;
+    window.cancelPendingOrder = cancelPendingOrder;
+    window.triggerPendingCancelSuccess = triggerPendingCancelSuccess;
+    window.triggerCompletedCancelError = triggerCompletedCancelError;
+    window.triggerCancelledOrderClick = triggerCancelledOrderClick;
+    window.downloadHeritageCertificate = downloadHeritageCertificate;
+    window.handleFileSelect = handleFileSelect;
+    window.handleReviewPhotoSelect = handleReviewPhotoSelect;
+    window.setOrderFilter = setOrderFilter;
+    window.filterOrdersBySearch = filterOrdersBySearch;
   </script>
+
 </div>

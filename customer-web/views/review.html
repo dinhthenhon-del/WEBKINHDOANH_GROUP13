@@ -1,0 +1,285 @@
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif]">
+<!-- Phong cách Phông chữ Đồng Bộ Trang Chủ: Playfair Display (Serif) & Plus Jakarta Sans (Sans-serif) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+  .font-playfair, .font-serif, h1, h2, h3, h4, .font-headline-lg, .font-headline-md, .font-headline-sm {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif !important;
+  }
+  .font-sans, form, input, select, textarea, button, label, p {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+  }
+</style>
+
+<!-- Top Curatorial Banner & Breadcrumb Tracker -->
+<section class="w-full bg-surface-container-low py-space-md">
+<div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+<nav aria-label="Đường dẫn trang" class="flex items-center flex-wrap gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" onclick="dieuHuong('home')" style="cursor:pointer">Trang chủ</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" onclick="dieuHuong('profile')" style="cursor:pointer">Tài khoản &amp; Lịch sử đơn hàng</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface">Đơn hàng #MG-8924</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary font-semibold">Đánh giá ngự phẩm</span>
+</nav>
+</div>
+</section>
+<!-- Editorial Salutation Header -->
+<section class="w-full bg-surface py-space-xl">
+<div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+<div class="max-w-3xl space-y-space-sm">
+<div class="inline-flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm tracking-widest uppercase text-secondary font-semibold">Tri Ân Thượng Khách • Ghi Dấu Cảm Nhận Ngự Phẩm</span>
+</div>
+<h1 class="font-['Playfair_Display',serif] text-headline-lg text-primary font-bold">Hồi Âm Giám Tuyển Độc Bản</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+            Mỗi lời nhận xét của quý khách là nguồn cảm hứng vô giá để các nghệ nhân Bát Tràng tiếp tục gìn giữ và thăng hoa hồn cốt gốm sứ hoàng gia. Xin dành ít phút chia sẻ cảm nhận về tác phẩm vừa cập bến dinh thự.
+          </p>
+</div>
+<!-- Order Summary Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[26px]">inventory_2</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-primary">Đơn hàng #MG-8924</span>
+<span class="bg-surface-container-high text-primary font-label-sm text-label-sm px-2 py-0.5 rounded-full uppercase">Đã bàn giao</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ngày nhận: 24/10/2024 • Bảo hiểm an toàn 100%</p>
+<p class="font-label-sm text-label-sm text-secondary font-medium flex items-center gap-1 pt-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Hòm gỗ long não khảm nhung nguyên phong
+            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Curation Canvas: Left Artifact Selector & Right Appraisal Form -->
+<section class="w-full pb-space-xl">
+<div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- Left Column: Artifact Manifest (5 cols) -->
+<aside class="lg:col-span-5 space-y-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant">Danh mục thụ hưởng (02 Tác phẩm)</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Đang đánh giá 1/2</span>
+</div>
+<!-- Active Artifact 1 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low transition-all">
+<div class="flex gap-space-md items-center">
+<img class="w-20 h-24 object-cover rounded-lg shadow-sm shrink-0" data-alt="Classic Vietnamese cobalt blue porcelain vase titled Binh Hut Loc Men Lam Dai Viet Co Dien standing majestically on raw silk fabric under directional museum spot lighting, rich lapis-lazuli brushstrokes depicting imperial cloud dragons, matte ivory ceramic pedestal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqOdqz1-HKX4LgeteyRDE4Sb6BVL0k0tWYvoxdrve1pSIL9_YADEudMVrs9uBW2UT2A8thaghN0oPSWtqrzRIbyXiDAojLxTLDeQ2lTO2R-N_DLfkLiRBcGkFVEWpukodvFwTEL56UMU3-ROSWxrgJ7psXjDAiRTBqA7x3fIfLLlnHuSroWmKRw910sWdv1GmtLuoGILVPqBU7fhXDTNU9jP0DpfGU_9SS5fS8SVDU1iciEeYE50eH">
+<div class="space-y-1 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-secondary font-semibold">Tác phẩm chính</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">• Mã MG-1705</span>
+</div>
+<h3 class="font-['Playfair_Display',serif] text-lg sm:text-xl text-primary font-bold truncate">Bình Hút Lộc Men Lam Đại Việt Cổ Điển</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Cao 52cm • Nung lò bầu củi 1.380°C • Khắc ấn triện</p>
+</div>
+</div>
+</div>
+<!-- Inactive Artifact 2 -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest opacity-70 hover:opacity-100 transition-opacity">
+<div class="flex gap-space-md items-center">
+<img class="w-20 h-24 object-cover rounded-lg shadow-sm shrink-0" data-alt="Artisanal Vietnamese ceramic tea set called Bo Chen Tra Kham Ngoc Thuy Truc Lien Hoa with zisha clay body and celadon crackle jade glaze interior, steaming golden tea liquor, arranged on natural slate stone tray." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN6ZlPzep9teyDbznzoIPY46H12G88tzWj_xvN_r4i0v9tTtFzw9irjxnN71V1Lj6wHGGwJbK_KGqbGTq48jlBAN1Dl4Wfeh_4BigcMg9puFiHmBhAG-sL2xbPlRLt6-byMBCcblM8OQkAwZpAgnVnevLpUcVVP-k2zeLbwbsonzHhYuuOrx2cxCj2s34Dv9eCauGdrT-b7lGo222lcOLa4pUCw5Gv2J2xt0Tf2flOn2RUDH4PGlpp">
+<div class="space-y-1 min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-medium">Bộ đi kèm</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">• Mã MG-2088</span>
+</div>
+<h3 class="font-['Playfair_Display',serif] text-base sm:text-lg text-primary font-bold truncate">Bộ Chén Trà Khảm Ngọc Thủy Trúc Liên Hoa</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Cốt sa tử sa lót men ngọc • 06 chén ngự dụng</p>
+<button class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold hover:underline pt-1 cursor-pointer" type="button">
+                    Chuyển sang đánh giá bộ này →
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Collector's Charter Card -->
+<div class="bg-primary text-on-primary p-space-md rounded-xl space-y-space-sm">
+<div class="flex items-center gap-space-xs text-secondary-container">
+<span class="material-symbols-outlined text-[20px]">stars</span>
+<span class="font-label-sm text-label-sm tracking-widest uppercase font-semibold">Đặc quyền hội viên Bát Tràng Di Sản</span>
+</div>
+<h4 class="font-['Playfair_Display',serif] text-xl font-bold">Ghi Danh Sổ Vàng Nghệ Nhân</h4>
+<p class="font-body-sm text-body-sm text-primary-fixed-dim leading-relaxed">
+              Sau khi thẩm định và gửi cảm nghĩ, danh tính cùng góc nhìn của quý thượng khách sẽ được đính kèm vào hồ sơ lưu trữ niên giám tác phẩm tại Phòng trưng bày Tràng Tiền.
+            </p>
+<div class="p-space-xs bg-primary-container rounded-lg flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">workspace_premium</span>
+<p class="font-label-sm text-label-sm text-surface-container-highest">
+                Tặng 01 Bộ Thẻ Hương Trầm Ngự Chế &amp; Ưu tiên đăng ký Lễ Khai Lò Bầu mùa đông 2024.
+              </p>
+</div>
+</div>
+</aside>
+<!-- Right Column: Formal Curator Feedback Form (7 cols) -->
+<main class="lg:col-span-7">
+<form class="bg-surface-container-lowest p-space-md md:p-space-lg rounded-xl shadow-sm space-y-space-lg font-['Plus_Jakarta_Sans',sans-serif]" id="collectorReviewForm">
+<!-- Metadata Identifiers (Collection Reviews Schema) -->
+<div class="p-space-sm bg-surface-container-low rounded-xl border border-biscuit-sand flex flex-wrap items-center justify-between gap-space-sm">
+  <div class="flex items-center gap-space-xs">
+    <span class="material-symbols-outlined text-secondary text-[20px]">verified_user</span>
+    <div class="flex flex-col">
+      <span class="font-label-sm text-xs uppercase tracking-wider text-on-surface-variant font-medium">Tài khoản đánh giá</span>
+      <span class="font-title-md text-sm text-primary font-bold">#TK-8839 • Hội viên Thượng khách</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-space-xs">
+    <span class="material-symbols-outlined text-secondary text-[20px]">inventory_2</span>
+    <div class="flex flex-col">
+      <span class="font-label-sm text-xs uppercase tracking-wider text-on-surface-variant font-medium">Mã đơn hàng</span>
+      <span class="font-title-md text-sm text-primary font-bold">#MG-8924</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-space-xs">
+    <span class="material-symbols-outlined text-secondary text-[20px]">auto_awesome</span>
+    <div class="flex flex-col">
+      <span class="font-label-sm text-xs uppercase tracking-wider text-on-surface-variant font-medium">Tác phẩm</span>
+      <span class="font-title-md text-sm text-primary font-bold">MG-1705 (Bình Hút Lộc)</span>
+    </div>
+  </div>
+</div>
+
+<!-- Field: rating (1 - 5 stars) -->
+<div class="space-y-space-xs pb-space-sm border-b border-biscuit-sand/70">
+  <div class="flex items-center justify-between">
+    <label class="block font-title-lg text-base sm:text-lg text-primary font-bold">1. Đánh giá chất lượng ngự phẩm (rating)</label>
+    <span class="font-label-sm text-xs text-secondary font-bold uppercase tracking-wider">Bắt buộc</span>
+  </div>
+  <p class="font-body-sm text-sm text-on-surface-variant">Mức độ hài lòng tổng thể về chất gốm sứ, nước men lam và độ hoàn thiện tác phẩm.</p>
+  <div class="pt-space-sm flex items-center flex-wrap gap-space-md">
+    <div class="flex items-center gap-1.5" id="starRatingContainer">
+      <button aria-label="1 sao" class="text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-val="1" onclick="selectReviewRating(1)" type="button">
+        <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+      </button>
+      <button aria-label="2 sao" class="text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-val="2" onclick="selectReviewRating(2)" type="button">
+        <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+      </button>
+      <button aria-label="3 sao" class="text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-val="3" onclick="selectReviewRating(3)" type="button">
+        <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+      </button>
+      <button aria-label="4 sao" class="text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-val="4" onclick="selectReviewRating(4)" type="button">
+        <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+      </button>
+      <button aria-label="5 sao" class="text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-val="5" onclick="selectReviewRating(5)" type="button">
+        <span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+      </button>
+    </div>
+    <div class="bg-surface-container px-3 py-1.5 rounded-full">
+      <span class="font-title-md text-sm text-secondary font-bold" id="starRatingLabel">5/5 • Tuyệt Tác Ngự Phẩm Cung Đình</span>
+    </div>
+  </div>
+</div>
+
+<!-- Field: comment -->
+<div class="space-y-space-sm pt-space-xs">
+  <div class="flex items-center justify-between">
+    <label class="block font-title-lg text-base sm:text-lg text-primary font-bold" for="reviewComment">2. Nhận xét &amp; cảm nhận chi tiết (comment)</label>
+    <span class="font-label-sm text-xs text-secondary font-bold uppercase tracking-wider">Bắt buộc</span>
+  </div>
+  <p class="font-body-sm text-sm text-on-surface-variant">
+    Chia sẻ cảm nhận về sắc men lam, độ tinh xảo nét vẽ hoàng gia, quy cách đóng gói hòm gỗ bảo hộ và cảm xúc khi an vị tác phẩm.
+  </p>
+  <textarea class="w-full bg-surface-container-low text-primary p-space-md rounded-lg font-['Plus_Jakarta_Sans',sans-serif] text-sm sm:text-base leading-relaxed focus:outline-none focus:bg-surface-container-lowest shadow-sm border border-biscuit-sand focus:border-secondary transition-all" id="reviewComment" name="comment" rows="5" required="">Khi mở lớp nhung lụa đầu tiên, cảm giác chạm vào cốt sứ dày đanh và tiếng gõ trong veo tựa tiếng chuông chùa đã hoàn toàn chinh phục tôi. Nước men lam chìm sâu thăm thẳm dưới lớp men thủy tinh bóng mờ kinh điển. Ấn triện son đỏ và hồ sơ nguồn gốc được đóng hòm gỗ vô cùng uy nghiêm.</textarea>
+  <div class="flex items-center justify-between text-on-surface-variant font-label-sm text-xs pt-1">
+    <span>Tối thiểu 30 ký tự để được chứng nhận lưu trữ</span>
+    <span id="charCountLabel">Đã nhập: 326 ký tự</span>
+  </div>
+</div>
+
+<!-- Action Buttons and Audit Footer -->
+<div class="pt-space-md border-t border-biscuit-sand/70 space-y-space-sm">
+  <div class="flex flex-col sm:flex-row items-center gap-space-md">
+    <button class="w-full sm:w-auto flex-1 bg-secondary hover:bg-on-secondary-fixed-variant text-on-secondary py-3.5 px-space-lg rounded-lg font-title-md text-sm sm:text-base font-bold tracking-wider uppercase shadow-md transition-all flex items-center justify-center gap-space-sm cursor-pointer" type="submit">
+      <span class="material-symbols-outlined text-[20px]">verified</span>
+      <span>Gửi Đánh Giá Sản Phẩm</span>
+    </button>
+    <a class="w-full sm:w-auto bg-surface-container hover:bg-surface-container-high text-primary py-3.5 px-space-md rounded-lg font-title-md text-sm uppercase tracking-wider text-center transition-colors cursor-pointer" onclick="dieuHuong('profile')">
+      Quay lại đơn hàng
+    </a>
+  </div>
+  <p class="font-label-sm text-xs text-on-surface-variant text-center leading-relaxed">
+    Bản ghi đánh giá sẽ được lưu trữ chuẩn hóa theo cấu trúc reviews (accountId, productId, orderId, rating, comment, createdAt) và xác thực bởi Minh Gốm Bát Tràng 1705.
+  </p>
+</div>
+</form>
+
+<script>
+window.selectedReviewRating = 5;
+const reviewRatingDesc = {
+  1: '1/5 • Cần Cải Thiện Chất Lượng',
+  2: '2/5 • Đạt Mức Tiêu Chuẩn Cơ Bản',
+  3: '3/5 • Hài Lòng Cốt Gốm Bát Tràng',
+  4: '4/5 • Thượng Phẩm Tinh Xảo Tuyệt Mỹ',
+  5: '5/5 • Tuyệt Tác Ngự Phẩm Cung Đình'
+};
+
+window.selectReviewRating = function(stars) {
+  window.selectedReviewRating = stars;
+  const container = document.getElementById('starRatingContainer');
+  if (container) {
+    const btns = container.querySelectorAll('button');
+    btns.forEach((btn, idx) => {
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (idx < stars) {
+        btn.classList.add('text-amber-500');
+        btn.classList.remove('text-outline-variant');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+      } else {
+        btn.classList.remove('text-amber-500');
+        btn.classList.add('text-outline-variant');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+      }
+    });
+  }
+  const label = document.getElementById('starRatingLabel');
+  if (label) {
+    label.innerText = reviewRatingDesc[stars] || (stars + '/5');
+  }
+};
+
+// Form submission binding
+document.getElementById('collectorReviewForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const comment = document.getElementById('reviewComment')?.value || '';
+  if (typeof ApiService !== 'undefined' && ApiService.createReview) {
+    ApiService.createReview({
+      accountId: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.id || currentUser.accountId) : 'TK-8839'),
+      productId: 'MG-1705',
+      orderId: 'MG-8924',
+      rating: window.selectedReviewRating || 5,
+      comment: comment
+    }, function(err, res) {
+      console.log('Review API result:', err, res);
+      alert('✨ CẢM TẠ QUÝ KHÁCH ĐÃ LƯU LẠI CẢM NHẬN ĐỘC BẢN!\n\nĐánh giá chất men hoàng gia và nét vẽ của quý khách đã được lưu truyền vào tuyển tập Nhà Sưu Tầm Minh Gốm 1705.');
+      if (typeof dieuHuong === 'function') {
+        dieuHuong('profile');
+      }
+    });
+  } else {
+    alert('✨ CẢM TẠ QUÝ KHÁCH ĐÃ LƯU LẠI CẢM NHẬN ĐỘC BẢN!\n\nĐánh giá chất men hoàng gia và nét vẽ của quý khách đã được lưu truyền vào tuyển tập Nhà Sưu Tầm Minh Gốm 1705.');
+    if (typeof dieuHuong === 'function') {
+      dieuHuong('profile');
+    }
+  }
+});
+
+// Char count listener
+document.getElementById('reviewComment')?.addEventListener('input', function() {
+  const lbl = document.getElementById('charCountLabel');
+  if (lbl) {
+    lbl.innerText = 'Đã nhập: ' + this.value.length + ' ký tự';
+  }
+});
+</script>
