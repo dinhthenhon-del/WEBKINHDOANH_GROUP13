@@ -1,0 +1,187 @@
+<!-- ============================================================== -->
+<!-- GIAO DIỆN CUSTOMER: TOÀN BỘ SẢN PHẨM & BỘ LỌC (STITCH)           -->
+<!-- ============================================================== -->
+<div class="flex flex-col w-full bg-[#f8f9fa] min-h-screen">
+  <!-- Top Archival Bar / Breadcrumb & Title Section -->
+  <section class="w-full bg-[#f3f4f5]/80 py-8 border-b border-[#EBEAE5]">
+    <div class="max-w-[1600px] mx-auto px-4 md:px-12">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] mb-3">
+        <a class="hover:text-[#000f22] cursor-pointer" onclick="dieuHuong('home')">Trang chủ</a>
+        <span>/</span>
+        <span class="text-[#a23e18] font-semibold">Gian hàng di sản</span>
+      </nav>
+
+      <!-- Main Header Layout -->
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EBEAE5]/80 text-[#a23e18] font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-widest font-semibold mb-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#a23e18]"></span>
+            Kho Tàng Di Sản Bát Tràng
+          </div>
+          <h1 class="font-['Playfair_Display',serif] text-3xl md:text-4xl text-[#000f22] tracking-tight font-semibold">
+            Toàn Bộ Tác Phẩm Gốm Sứ Thủ Công
+          </h1>
+          <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm md:text-base text-[#43474d] mt-2 leading-relaxed">
+            Tuyển tác gốm sứ độc bản, được nghệ nhân chuốt tay kỳ công trên bàn xoay, tôi luyện qua ngọn lửa nung củi truyền thống trên 1.300°C với lớp men khoáng tự nhiên.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-[#EBEAE5]">
+            <span class="material-symbols-outlined text-[#a23e18]">verified</span>
+            <div class="flex flex-col">
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] text-[#74777e] uppercase font-semibold">Chứng thư ấn</span>
+              <span class="font-['Playfair_Display',serif] text-sm text-[#000f22] font-bold">Haute Porcelain 1705</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Catalog Body -->
+  <section class="w-full max-w-[1600px] mx-auto px-4 md:px-12 py-8">
+    <!-- Filter Bar & Control Ribbon -->
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6 border border-[#EBEAE5]">
+      <!-- Search Input row -->
+      <div class="mb-4">
+        <div class="relative w-full">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74777e] text-xl">search</span>
+          <input
+            id="shopSearchInput"
+            type="text"
+            placeholder="Tìm theo tên tuyệt tác, mã SKU, dáng bình hoặc họa tiết..."
+            class="w-full pl-11 pr-24 py-2.5 rounded-lg bg-[#f8f9fa] border border-[#EBEAE5] text-sm text-[#000f22] placeholder:text-[#74777e] focus:outline-none focus:border-[#0a2540] focus:bg-white transition-all shadow-inner"
+            onkeyup="if(event.key === 'Enter') ShopView.triggerSearch()"
+          />
+          <button
+            type="button"
+            onclick="ShopView.triggerSearch()"
+            class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-[#0a2540] text-white rounded text-xs font-semibold hover:bg-[#10162B] transition-colors"
+          >
+            Tìm kiếm
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
+        <!-- Filter 1: Dòng Men -->
+        <div class="relative">
+          <label class="block font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-wider text-[#43474d] mb-1 font-semibold">Dòng Men Cổ</label>
+          <div class="relative">
+            <select
+              id="filterGlaze"
+              onchange="ShopView.onFilterChange()"
+              class="w-full bg-[#f3f4f5] text-[#000f22] font-['Plus_Jakarta_Sans',sans-serif] text-sm rounded-lg py-2.5 px-3 pr-8 appearance-none focus:outline-none focus:bg-white border border-transparent focus:border-[#0a2540] transition-all cursor-pointer"
+            >
+              <option value="all">Tất cả dòng men</option>
+              <option value="men-lam">Men lam cổ hoàng cung</option>
+              <option value="men-ngoc">Men ngọc bích thiền định</option>
+              <option value="men-ran">Men rạn gia truyền</option>
+              <option value="men-hoa-bien">Men hỏa biến độc bản</option>
+              <option value="men-moc">Men mộc đất nung</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[#74777e] pointer-events-none text-lg">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Filter 2: Danh Mục Sản Phẩm -->
+        <div class="relative">
+          <label class="block font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-wider text-[#43474d] mb-1 font-semibold">Danh Mục Tác Phẩm</label>
+          <div class="relative">
+            <select
+              id="filterCategory"
+              onchange="ShopView.onFilterChange()"
+              class="w-full bg-[#f3f4f5] text-[#000f22] font-['Plus_Jakarta_Sans',sans-serif] text-sm rounded-lg py-2.5 px-3 pr-8 appearance-none focus:outline-none focus:bg-white border border-transparent focus:border-[#0a2540] transition-all cursor-pointer"
+            >
+              <option value="all">Tất cả danh mục</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[#74777e] pointer-events-none text-lg">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Filter 3: Mức Giá -->
+        <div class="relative">
+          <label class="block font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-wider text-[#43474d] mb-1 font-semibold">Mức Giá (VNĐ)</label>
+          <div class="relative">
+            <select
+              id="filterPrice"
+              onchange="ShopView.onFilterChange()"
+              class="w-full bg-[#f3f4f5] text-[#000f22] font-['Plus_Jakarta_Sans',sans-serif] text-sm rounded-lg py-2.5 px-3 pr-8 appearance-none focus:outline-none focus:bg-white border border-transparent focus:border-[#0a2540] transition-all cursor-pointer"
+            >
+              <option value="all">Tất cả tầm giá</option>
+              <option value="p1">Dưới 500.000₫</option>
+              <option value="p2">500.000₫ - 2.000.000₫</option>
+              <option value="p3">2.000.000₫ - 5.000.000₫</option>
+              <option value="p4">Trên 5.000.000₫</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[#74777e] pointer-events-none text-lg">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Sắp Xếp (Sort) -->
+        <div class="relative">
+          <label class="block font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-wider text-[#43474d] mb-1 font-semibold">Sắp Xếp Theo</label>
+          <div class="relative">
+            <select
+              id="sortCatalog"
+              onchange="ShopView.onFilterChange()"
+              class="w-full bg-[#f3f4f5] text-[#000f22] font-['Plus_Jakarta_Sans',sans-serif] text-sm font-medium rounded-lg py-2.5 px-3 pr-8 appearance-none focus:outline-none focus:bg-white border border-transparent focus:border-[#0a2540] transition-all cursor-pointer"
+            >
+              <option value="newest" selected>Mới nhất</option>
+              <option value="price-asc">Giá: Thấp đến Cao</option>
+              <option value="price-desc">Giá: Cao đến Thấp</option>
+              <option value="rating">Đánh giá cao nhất</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[#74777e] pointer-events-none text-lg">sort</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Chips Row -->
+    <div class="flex flex-wrap items-center justify-between gap-3 py-2 mb-6" id="filterChipsRow">
+      <div class="flex flex-wrap items-center gap-2" id="activeChipsList">
+        <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase text-[#74777e] tracking-wider font-semibold mr-1">Đang lọc:</span>
+        <span id="chipsContainer" class="flex flex-wrap items-center gap-2"></span>
+        <button
+          id="clearAllFilters"
+          type="button"
+          onclick="ShopView.resetAllFilters()"
+          class="hidden items-center gap-1 text-[#a23e18] hover:text-[#6f2000] font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-wider font-bold ml-2 px-2 py-1 rounded hover:bg-[#a23e18]/10 transition-colors"
+        >
+          <span>Xóa tất cả</span>
+          <span class="material-symbols-outlined text-sm">refresh</span>
+        </button>
+      </div>
+
+      <!-- Result Counter Display -->
+      <div class="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#43474d]">
+        Hiển thị <span class="font-bold text-[#000f22]" id="resultCount">0</span> tác phẩm phù hợp
+      </div>
+    </div>
+
+    <!-- Product Grid (Standard 4-Column Luxury Presentation matching Stitch) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="productGrid">
+      <!-- Loading Skeleton ban đầu -->
+      <div class="col-span-full py-16 text-center text-[#74777e]">
+        <span class="material-symbols-outlined text-5xl animate-spin text-[#a23e18] mb-3 block">progress_activity</span>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] text-base">Đang tải tuyệt tác gốm sứ từ kho di sản...</p>
+      </div>
+    </div>
+
+    <!-- Minimalist Pagination Section -->
+    <div class="mt-12 pt-6 border-t border-[#EBEAE5] flex flex-col sm:flex-row items-center justify-between gap-4" id="paginationContainer">
+      <div class="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#43474d]" id="paginationSummary">
+        Trang <span class="font-semibold text-[#000f22]" id="currentPageText">1</span> trên <span class="font-semibold text-[#000f22]" id="totalPagesText">1</span>
+      </div>
+
+      <!-- Pagination Buttons -->
+      <nav aria-label="Phân trang danh mục" class="flex items-center gap-1.5" id="paginationButtons">
+        <!-- Render động qua JS -->
+      </nav>
+    </div>
+  </section>
+</div>

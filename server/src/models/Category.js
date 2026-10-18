@@ -17,6 +17,16 @@ const categorySchema = new mongoose.Schema(
       sparse: true,
       trim: true,
     },
+    subTitle: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    countText: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     description: {
       type: String,
       default: '',

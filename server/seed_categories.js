@@ -1,79 +1,111 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: __dirname + '/.env' });
 
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://dinhthenhon_db_user:dinhthenhongmail.com@ac-1u1pbza-shard-00-00.y2hcyuo.mongodb.net:27017,ac-1u1pbza-shard-00-01.y2hcyuo.mongodb.net:27017,ac-1u1pbza-shard-00-02.y2hcyuo.mongodb.net:27017/?ssl=true&replicaSet=atlas-13eeom-shard-0&authSource=admin&appName=craftory-ecommerce-cluster';
+const MONGO_URI = process.env.MONGODB_URI;
+// Xem trước: node seed_categories.js
+// Ghi DB sau khi lead đồng ý: node seed_categories.js --apply
+const APPLY = process.argv.includes('--apply');
+const CONFIRM_DB = process.argv.find((arg) => arg.startsWith('--confirm-db='))?.split('=')[1];
 
 /**
- * =========================================================================
- * MODULE: QUẢN LÝ DANH MỤC & BỘ SƯU TẬP (CATEGORIES)
- * File: server/seed_categories.js
- * Thành viên phụ trách Module Danh mục chỉnh sửa và quản lý tại file này.
- * Chạy lệnh: node seed_categories.js
- * =========================================================================
+ * Danh mục thực tế: dựa trên các loại sản phẩm bán tại minhlong.com.
+ * Các ảnh đại diện là ảnh sản phẩm thực thuộc danh mục, không phải ảnh AI.
+ * Chạy trước các file khác.
  */
 const sampleCategories = [
   {
-    name: 'Dòng Men Lam Thăng Long',
-    slug: 'dong-men-lam-thang-long',
-    description: 'Bình Tỳ Bà, Chóe Rạn Bát Tiên, Đĩa Ngũ Trảo biểu trưng cho thanh cao và uy quyền vương triều.',
-    subTitle: 'Men Lam Cổ Điển Đại Việt',
-    countText: '28 Tác phẩm',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDEyQDma_vp1oeH0lH8Ve4CG6iuW_nL0OGYJwRWJ6W2kgKbJrW6Vjn1V8EiCYSWUTAmqoFc5oFycqoSoUj9aTVh889cScGGaJNPd7wVJqhG7XPToe_YADnOQP2C-nJeDq0lP6T8qGJLOEDmibPCBDJT9_qxa520rCpV6ZvbZK45ctSz0_aUEmYhkEnesjB9zTO1B0N7-nmgugEu6ZQOqa46apO6Q1vLGccoj4xis0O5oWIHEEnCPEIY',
-    status: 'active'
+    "name": "Bộ đồ ăn",
+    "slug": "bo-do-an",
+    "description": "Các bộ bàn ăn nguyên set được bán trên website Minh Long.",
+    "imageUrl": "https://cdn.hstatic.net/products/200000532849/22566-sm-01_aa73737a1c7645e4b210c11bf1d16dbd.png",
+    "status": "active"
   },
   {
-    name: 'Cốt Đất Chu Đậu',
-    slug: 'cot-dat-chu-dau',
-    description: 'Lọ Lộc Bình tam tầng, Bát Hương mực chu sa với mạng rạn chân chim tự nhiên nung lò củi.',
-    subTitle: 'Men Rạn Hoàng Cung',
-    countText: '19 Tác phẩm',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDiVxKVk8AOWAcuEQrZLvxlRTgZ4OWU0b4-BQncRChb_2LjbeBEJ3zNyLVjmlxE4aLD5OT3W-uFXTaGBz50BFZyK2EB7SDOm9CW7um6iTivKtCVRlHO7yidMpj7b8-Lmr6ZQIQ4JrhStQzHUPn2hTIoVtDar85r4Lv7SwLozLXD740Ra136lXQFYLGsZEL97l0mFSD6nKflfe2sxEf43Z_eqkzjf-c_yauEh4uLri6VU8DiDqVp7Tb0',
-    status: 'active'
+    "name": "Bộ trà / Cà phê",
+    "slug": "bo-tra-ca-phe",
+    "description": "Bộ trà và bộ cà phê bán theo set.",
+    "imageUrl": "https://product.hstatic.net/200000532849/product/bo-tra-08-l-camellia-chi-vang_01803801403-sm-01_91287cb9ecf04533a0adb34470db02be.png",
+    "status": "active"
   },
   {
-    name: 'Trà Cụ Đạo Vị',
-    slug: 'tra-cu-dao-vi',
-    description: 'Ấm Thủy Trúc Liên Hoa, Chén Tống Tràng Tiền giữ trọn hương mộc trà trong từng giọt nước.',
-    subTitle: 'Trà Cụ Tử Sa Men Ngọc',
-    countText: '34 Tác phẩm',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDyZhDD54YfNt_v736yZ1UOPno-0djkyudoxs6kWONiy_EQE4GYDJ8saePVl79kx4xzCEZE5ACUtaaI7r6qnm7WrBjOMmXfQzQdpghlH9fBo5n16WKDBxoZ_S-6gvwti-WPkFa08poNxntbD9GI4ETTAuBtRcYyZL8-FyylNdskbgv1CnY6wp-jw_LDFHWIICerXYdyM84HGUXwwEycXCWzWrkPmz5CRpvA5RjsHbjkmUJ3bw8oeSxY',
-    status: 'active'
+    "name": "Chén / Bát",
+    "slug": "chen-bat",
+    "description": "Chén cơm và chén chấm bán lẻ.",
+    "imageUrl": "https://cdn.hstatic.net/products/200000532849/031106566-sm-01_fdbf99b5baa44db5b31ee7faa5a03bd2.png",
+    "status": "active"
   },
   {
-    name: 'Ngự Phẩm Dát Vàng',
-    slug: 'ngu-pham-dat-vang',
-    description: 'Bình Ngũ Phúc Kim Long, Mai Bình dát vàng quỳ thủ công thể hiện khí phách tôn quý tột bậc.',
-    subTitle: 'Gốm Điêu Khắc Dát Vàng 24K',
-    countText: '12 Độc bản',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCFGqd-VhYUE2T8CvEVImp4wt5wuGREtjZyEto51RhClwd8Dj92m6B6nQbuRemb1svP9hNa0_ZqWtiwsIemZKbkOEv7tVJPYAjWxZWC8WMFD_HJSGfXUMN5mexvGDC_W4eTfgjI8v9sV014e1mRjhZw8-Z3gkoa8dXFOCK2ow-NMxdFdmqaRSupH4xd6L4Ul2NCGUo96uPJ0GEt1taVHU1sYtl9wVnt5VeQMFkMCQjkSCWDuFADWvKD',
-    status: 'active'
+    "name": "Dĩa",
+    "slug": "dia",
+    "description": "Dĩa ăn, dĩa sâu lòng và dĩa lót chén, tách.",
+    "imageUrl": "https://product.hstatic.net/200000532849/product/dia-ao-16-cm-daisy-trang_041621000-sm-01_25ce74d4feaf4aaeb9fa743ce93b7400.png",
+    "status": "active"
+  },
+  {
+    "name": "Tô / Thố",
+    "slug": "to-tho",
+    "description": "Tô và thố có nắp.",
+    "imageUrl": "https://cdn.hstatic.net/products/200000532849/avatar__70__72c8ba9d1e294ff3a6a34931f548c63d.png",
+    "status": "active"
+  },
+  {
+    "name": "Bình trà",
+    "slug": "binh-tra",
+    "description": "Bình trà riêng lẻ.",
+    "imageUrl": "https://product.hstatic.net/200000532849/product/binh-tra-05-l-nap-camellia-chi-vang_015038014-sm-01_60a345976a3a4a0ba88c18fd28013223.png",
+    "status": "active"
+  },
+  {
+    "name": "Bình",
+    "slug": "binh",
+    "description": "Các loại bình gốm sứ.",
+    "imageUrl": "",
+    "status": "active"
+  },
+  {
+    "name": "Tách trà",
+    "slug": "tach-tra",
+    "description": "Tách trà riêng lẻ.",
+    "imageUrl": "https://cdn.hstatic.net/products/200000532849/avatar__3__72e0102a18e142ac862d23e658bde886.png",
+    "status": "active"
   }
 ];
 
-async function seedCategories() {
+async function seed() {
   try {
+    if (!APPLY) {
+      console.log('🔍 DRY RUN (chưa ghi MongoDB):');
+      console.log(`Có ${sampleCategories.length} bản ghi category dự kiến nạp`);
+      sampleCategories.forEach((item) => console.log(` • ${item.name}`));
+      console.log('Chỉ chạy với --apply sau khi xác nhận đúng DB và lead cho phép.');
+      return;
+    }
+    if (!MONGO_URI) throw new Error('Thiếu MONGODB_URI trong server/.env');
     await mongoose.connect(MONGO_URI);
-    console.log('✅ [Module Categories] Đã kết nối MongoDB Atlas!');
-
+    if (!CONFIRM_DB) {
+      throw new Error('Cần xác nhận database bằng --confirm-db=TEN_DATABASE trước khi ghi dữ liệu');
+    }
+    if (CONFIRM_DB !== mongoose.connection.name) {
+      throw new Error(`Database xác nhận "${CONFIRM_DB}" không khớp database đang kết nối "${mongoose.connection.name}"`);
+    }
     const Category = require('./src/models/Category');
-
+    let created = 0, updated = 0;
     for (const item of sampleCategories) {
-      const existing = await Category.findOne({ name: item.name });
+      const existing = await Category.findOne({ slug: item.slug });
       if (!existing) {
         await Category.create(item);
-        console.log(`➕ Đã tạo danh mục: ${item.name}`);
+        created++;
       } else {
         await Category.updateOne({ _id: existing._id }, { $set: item });
-        console.log(`🔄 Đã cập nhật danh mục: ${item.name}`);
+        updated++;
       }
     }
-
-    console.log('🎉 Hoàn thành seed dữ liệu Module Danh mục!');
-    process.exit(0);
-  } catch (err) {
-    console.error('❌ Lỗi seed categories:', err);
-    process.exit(1);
+    console.log(`✅ Category: tạo mới ${created}, cập nhật ${updated}`);
+  } catch (error) {
+    console.error(`❌ Seed Category thất bại:`, error.message);
+    process.exitCode = 1;
+  } finally {
+    if (mongoose.connection.readyState) await mongoose.disconnect();
   }
 }
-
-seedCategories();
+seed();

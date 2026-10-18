@@ -1,9 +1,96 @@
 /**
  * customer-web/core/products.js
- * Quản lý tập trung Component Thẻ Sản Phẩm & Render Danh Sách Sản Phẩm
- * Mọi thay đổi về giao diện item sản phẩm (thêm trường, đổi nút bấm, đổi phong cách hiển thị)
- * đều được thực hiện tập trung duy nhất tại file này.
+ * Quản lý tập trung Component Sản Phẩm, Danh Mục, Gian Hàng (Shop), Chi Tiết Sản Phẩm & Wishlist
+ * Tuân thủ 100% bản thiết kế Stitch Customer (Haute Porcelain 1705)
  */
+
+// Helper kiểm tra sản phẩm có trong wishlist hiện tại không
+function isProductInWishlist(productId) {
+  try {
+    if (!window.currentUser || !window.currentUser.wishlist) return false;
+    const wl = window.currentUser.wishlist;
+    return wl.some(item => (typeof item === 'string' ? item : item._id) === productId);
+  } catch (e) {
+    return false;
+  }
+}
+
+function escapeProductText(value) {
+  return String(value || '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+function showCartNotification(message, type = 'success', iconName = 'shopping_bag') {
+  let notification = document.getElementById('cart-action-notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'cart-action-notification';
+    notification.setAttribute('role', 'status');
+    notification.setAttribute('aria-live', 'polite');
+    notification.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,15,34,.48);backdrop-filter:blur(3px);';
+
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'alertdialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'app-notification-message');
+    dialog.style.cssText = 'display:flex;align-items:flex-start;gap:1rem;width:min(28rem,100%);padding:1.5rem;background:#fff;border:1px solid #ebeae5;border-top:4px solid #a23e18;border-radius:1rem;box-shadow:0 24px 70px rgba(0,15,34,.3);color:#000f22;font:500 15px/1.6 sans-serif;';
+
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.textContent = iconName;
+    icon.style.color = '#a23e18';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.style.fontSize = '1.75rem';
+
+    const content = document.createElement('div');
+    content.style.cssText = 'display:flex;flex:1;flex-direction:column;gap:.75rem;';
+    const text = document.createElement('p');
+    text.id = 'app-notification-message';
+    text.dataset.notificationMessage = 'true';
+    text.style.margin = '0';
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.textContent = 'Đóng';
+    closeButton.style.cssText = 'align-self:flex-end;border:0;border-radius:.5rem;background:#000f22;color:#fff;font:600 13px/1.2 sans-serif;cursor:pointer;padding:.65rem 1rem;';
+    closeButton.addEventListener('click', () => notification.remove());
+    content.append(text, closeButton);
+
+    const dialogClose = () => notification.remove();
+    notification.addEventListener('click', event => {
+      if (event.target === notification) dialogClose();
+    });
+    dialog.addEventListener('click', event => event.stopPropagation());
+    dialog.append(icon, content);
+    notification.appendChild(dialog);
+    document.body.appendChild(notification);
+  }
+
+  notification.querySelector('[role="alertdialog"]').style.borderTopColor = type === 'warning' ? '#b91c1c' : '#a23e18';
+  notification.querySelector('.material-symbols-outlined').textContent = iconName;
+  notification.querySelector('[data-notification-message]').textContent = message;
+  notification.querySelector('.material-symbols-outlined').style.color = type === 'warning' ? '#b91c1c' : '#a23e18';
+  notification.querySelector('button').focus();
+}
+
+window.alert = function (message) {
+  showCartNotification(String(message), 'warning', 'info');
+};
+
+window.showToast = function (typeId, title, message) {
+  const isWarning = typeId === 'toast-warning';
+  showCartNotification(`${title}: ${message}`, isWarning ? 'warning' : 'success', isWarning ? 'warning' : 'verified');
+};
+
+window.hideToast = function () {
+  const notification = document.getElementById('cart-action-notification');
+  if (notification) notification.remove();
+};
 
 const ProductComponent = {
   /**
@@ -15,74 +102,85 @@ const ProductComponent = {
     if (!product) return '';
 
     const id = product._id || '';
-    const name = product.name || 'Tác phẩm Gốm Sứ Hoàng Gia';
+    const name = product.name || '';
     const price = (product.price || 0).toLocaleString('vi-VN') + '₫';
-    const collection = product.collectionName || product.category || 'Di Sản Ngự Chế 1705';
-    const sku = product.sku || (id ? 'BG-' + id.slice(-4).toUpperCase() : 'BG-1705');
-    const desc = product.description || 'Chế tác thủ công từ cốt đất phù sa sông Hồng, nung củi liên tục 72 giờ tại nhiệt độ 1.380°C.';
-    const imageUrl = product.image || (product.images && product.images[0]) || 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600';
-    const stock = typeof product.stock === 'number' ? product.stock : 10;
-    
+    const collection = product.collectionName || (product.categoryId && product.categoryId.name) || '';
+    const sku = product.sku || '';
+    const desc = product.description || '';
+    const imageUrl = product.image || (product.images && product.images[0]) || '';
+    const image = imageUrl
+      ? `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" src="${escapeProductText(imageUrl)}" alt="${escapeProductText(name)}" onclick="ProductComponent.viewDetail('${id}')" onerror="this.hidden=true; this.nextElementSibling.hidden=false" /><div hidden class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#74777e] text-xs"><span class="material-symbols-outlined text-3xl">image_not_supported</span><span>Ảnh sản phẩm không tải được</span></div>`
+      : '<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#74777e] text-xs"><span class="material-symbols-outlined text-3xl">image_not_supported</span><span>Chưa có ảnh sản phẩm đã xác minh</span></div>';
+    const stock = typeof product.stock === 'number' ? product.stock : 0;
+    const inWishlist = isProductInWishlist(id);
+
     // Badge trạng thái góc trên thẻ
-    let badgeText = 'Nung Củi Độc Bản';
-    let badgeClass = 'bg-secondary text-on-secondary';
+    let badgeText = 'Còn hàng';
+    let badgeClass = 'bg-[#a23e18] text-white';
     if (stock <= 0) {
       badgeText = 'Tạm hết hàng';
       badgeClass = 'bg-stone-500 text-white';
     } else if (stock <= 3) {
-      badgeText = `Chỉ còn ${stock} tác phẩm`;
-      badgeClass = 'bg-primary text-on-primary';
+      badgeText = `Sắp hết hàng: ${stock}`;
+      badgeClass = 'bg-[#000f22] text-white';
     }
 
+    const heartColorClass = inWishlist ? 'text-[#b91c1c]' : 'text-stone-400 hover:text-[#a23e18]';
+    const heartIcon = inWishlist ? 'favorite' : 'favorite_border';
+
     return `
-      <div class="group flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100" data-product-id="${id}">
+      <div class="product-card group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[#EBEAE5] cursor-pointer" data-product-id="${id}">
         <!-- Ảnh đại diện tác phẩm -->
-        <div class="relative aspect-[4/5] w-full overflow-hidden bg-surface-container-high">
-          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-               src="${imageUrl}" 
-               alt="${name}" 
-               onerror="this.src='https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600'" />
+        <div class="relative aspect-[4/5] w-full overflow-hidden bg-[#f3f4f5]">
+          ${image}
           
           <!-- Badge góc trên phải -->
-          <div class="absolute top-space-sm right-space-sm px-2.5 py-1 rounded font-label-sm uppercase tracking-wider text-[11px] shadow-sm ${badgeClass}">
+          <div class="absolute top-3 right-3 px-2.5 py-1 rounded font-['Plus_Jakarta_Sans',sans-serif] uppercase tracking-wider text-[11px] shadow-sm font-semibold ${badgeClass}">
             ${badgeText}
           </div>
 
-          <!-- Nút thả tim yêu thích nhanh -->
-          <button onclick="ProductComponent.toggleFavorite('${id}', this)" 
+          <!-- Nút thả tim yêu thích nhanh (UC-C10) -->
+          <button onclick="event.stopPropagation(); ProductComponent.toggleFavorite('${id}', this)"
                   title="Lưu vào danh sách yêu thích"
-                  class="absolute top-space-sm left-space-sm w-8 h-8 rounded-full bg-white/80 hover:bg-white text-secondary flex items-center justify-center shadow transition-all hover:scale-110 cursor-pointer">
-            <span class="material-symbols-outlined text-[18px]">favorite</span>
+                  class="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow transition-all hover:scale-110 cursor-pointer ${heartColorClass}">
+            <span class="material-symbols-outlined text-[18px]">${heartIcon}</span>
           </button>
         </div>
 
         <!-- Thông tin chi tiết sản phẩm -->
-        <div class="p-space-md flex flex-col flex-1 justify-between">
-          <div>
-            <span class="font-label-sm text-secondary uppercase font-semibold text-[11px] tracking-wider block mb-1">
+        <div class="p-4 flex flex-col flex-1 justify-between">
+          <div onclick="ProductComponent.viewDetail('${id}')">
+            <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[#a23e18] uppercase font-semibold text-[11px] tracking-wider block mb-1">
               ${collection} • Mã ${sku}
             </span>
-            <h3 class="font-title-md text-primary group-hover:text-secondary transition-colors mb-space-xs font-bold line-clamp-1">
+            <h3 class="font-['Playfair_Display',serif] text-base text-[#000f22] group-hover:text-[#a23e18] transition-colors mb-1.5 font-bold line-clamp-1">
               ${name}
             </h3>
-            <p class="font-body-sm text-on-surface-variant mb-space-md line-clamp-2 text-xs leading-relaxed">
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] mb-3 line-clamp-2 leading-relaxed">
               ${desc}
             </p>
           </div>
 
           <div>
             <!-- Giá tiền niêm yết -->
-            <div class="flex items-baseline justify-between mb-space-md pt-space-sm shadow-[0_-1px_0_rgba(10,37,64,0.06)]">
-              <span class="font-headline-sm text-secondary font-bold text-lg">${price}</span>
-              <span class="font-label-sm text-on-surface-variant text-xs">Kèm chứng thư ấn</span>
+            <div class="flex items-baseline justify-between mb-3 pt-2 border-t border-[#EBEAE5]/60">
+              <span class="font-['Playfair_Display',serif] text-[#a23e18] font-bold text-lg">${price}</span>
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[#74777e] text-xs">${product.unit || ''}</span>
             </div>
 
             <!-- Nút hành động -->
-            <button onclick="ProductComponent.viewDetail('${id}')" 
-                    class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded bg-primary text-on-primary font-title-md hover:bg-deep-indigo-night transition-all duration-300 shadow-sm group-hover:bg-secondary cursor-pointer">
-              <span>Khám phá ngay</span>
-              <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">east</span>
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="event.stopPropagation(); ProductComponent.viewDetail('${id}')"
+                      class="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-[#000f22] text-[#000f22] hover:bg-[#000f22] hover:text-white transition-all text-xs font-semibold cursor-pointer">
+                <span>Thưởng lãm</span>
+                <span class="material-symbols-outlined text-sm">east</span>
+              </button>
+              <button onclick="event.stopPropagation(); ProductComponent.quickAddToCart('${id}')"
+                      class="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-[#000f22] text-white hover:bg-[#10162B] transition-all text-xs font-semibold shadow-sm cursor-pointer">
+                <span class="material-symbols-outlined text-sm">shopping_bag</span>
+                <span>Chọn</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -91,118 +189,165 @@ const ProductComponent = {
 
   /**
    * 2. Template sinh thẻ Bộ Sưu Tập / Dòng Men (Collection Card Component)
-   * @param {Object} item - Dữ liệu danh mục
-   * @returns {string} HTML string của thẻ bộ sưu tập
    */
-  renderCategoryCard: function (item) {
+  renderCategoryCard: function (item, isCollection = false) {
     if (!item) return '';
-    const title = item.name || 'Bộ Sưu Tập Di Sản';
-    const sub = item.subTitle || item.category || 'Men Lam Cổ Điển';
-    const desc = item.description || 'Chóe Rạn Bát Tiên, Đĩa Ngũ Trảo biểu trưng cho thanh cao và uy quyền vương triều.';
-    const count = item.countText || item.count || '12+ Tác phẩm';
-    const img = item.imageUrl || item.image || 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600';
+    const title = escapeProductText(item.name || '');
+    const sub = escapeProductText(item.subTitle || item.category || item.name || '');
+    const desc = escapeProductText(item.description || '');
+    const count = escapeProductText(
+      typeof item.productCount === 'number'
+        ? `${item.productCount} sản phẩm`
+        : (item.countText || '')
+    );
+    const imageUrl = item.imageUrl || item.image || '';
+    const img = imageUrl
+      ? `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="${escapeProductText(imageUrl)}" alt="${title}" onerror="this.hidden=true; this.nextElementSibling.hidden=false" /><div hidden class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#74777e] text-xs"><span class="material-symbols-outlined text-3xl">image_not_supported</span><span>Ảnh bộ sưu tập không tải được</span></div>`
+      : '<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#74777e] text-xs"><span class="material-symbols-outlined text-3xl">image_not_supported</span><span>Chưa có ảnh bộ sưu tập đã xác minh</span></div>';
+    const filterAttributes = isCollection
+      ? `data-collection-id="${escapeProductText(item._id || '')}" data-collection-name="${title}" onclick="ProductComponent.openCollection(this.dataset.collectionId, this.dataset.collectionName)"`
+      : `data-category-id="${escapeProductText(item._id || '')}" data-category-name="${title}" onclick="ProductComponent.filterByCategory(this.dataset.categoryId, this.dataset.categoryName)"`;
 
     return `
-      <a class="group relative flex flex-col bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer" 
-         onclick="ProductComponent.filterByCategory('${title}')">
-        <div class="relative aspect-[4/5] w-full overflow-hidden bg-surface-container-high">
-          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-               src="${img}" 
-               alt="${title}" />
-          <div class="absolute top-space-sm left-space-sm px-2.5 py-1 rounded bg-deep-indigo-night/85 backdrop-blur-md text-porcelain-white font-label-sm tracking-widest uppercase text-[11px]">
+      <div class="group relative flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[#EBEAE5] cursor-pointer"
+           ${filterAttributes}>
+        <div class="relative aspect-[4/5] w-full overflow-hidden bg-[#f3f4f5]">
+          ${img}
+          <div class="absolute top-3 left-3 px-2.5 py-1 rounded bg-[#10162B]/85 backdrop-blur-md text-white font-['Plus_Jakarta_Sans',sans-serif] tracking-widest uppercase text-[11px] font-semibold">
             ${count}
           </div>
         </div>
-        <div class="p-space-md flex flex-col flex-1 justify-between bg-surface-container-lowest">
+        <div class="p-4 flex flex-col flex-1 justify-between bg-white">
           <div>
-            <span class="font-label-sm text-secondary uppercase tracking-wider block mb-1 text-[11px] font-semibold">${title}</span>
-            <h3 class="font-title-lg text-primary group-hover:text-secondary transition-colors mb-2 text-base font-bold">${sub}</h3>
-            <p class="font-body-sm text-on-surface-variant line-clamp-2 text-xs leading-relaxed">${desc}</p>
+            <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[#a23e18] uppercase tracking-wider block mb-1 text-[11px] font-bold">${title}</span>
+            <h3 class="font-['Playfair_Display',serif] text-base text-[#000f22] group-hover:text-[#a23e18] transition-colors mb-2 font-bold">${sub}</h3>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] line-clamp-2 leading-relaxed">${desc}</p>
           </div>
-          <div class="mt-space-md flex items-center justify-between font-label-sm text-on-surface-variant group-hover:text-primary pt-space-sm shadow-[0_-1px_0_rgba(10,37,64,0.06)] text-xs font-semibold">
+          <div class="mt-3 flex items-center justify-between font-['Plus_Jakarta_Sans',sans-serif] text-[#74777e] group-hover:text-[#000f22] pt-2 border-t border-[#EBEAE5]/60 text-xs font-semibold">
             <span>Khám phá tuyển tập</span>
-            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
           </div>
         </div>
-      </a>
+      </div>
     `;
   },
 
   /**
    * 2.1. Nạp danh mục / bộ sưu tập thực tế từ MongoDB Atlas vào trang chủ
-   * @param {string} containerId - ID container của grid bộ sưu tập
    */
   loadHomeCollections: function (containerId = 'home-collections-grid') {
     const grid = document.getElementById(containerId);
     if (!grid) return;
 
-    ApiService.getCategories(function (err, res) {
-      if (!err && res && res.success && res.data && res.data.length > 0) {
-        grid.innerHTML = res.data.slice(0, 4).map(c => ProductComponent.renderCategoryCard(c)).join('');
+    grid.innerHTML = '<div class="col-span-full py-10 text-center text-[#74777e]">Đang tải bộ sưu tập...</div>';
+    ApiService.getCollections(function (err, res) {
+      if (err || !res || !res.success || !Array.isArray(res.data)) {
+        grid.innerHTML = '<div class="col-span-full py-10 text-center text-red-700">Không tải được bộ sưu tập. Vui lòng kiểm tra kết nối máy chủ.</div>';
+        return;
       }
+
+      if (res.data.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-10 text-center text-[#74777e]">Chưa có bộ sưu tập đã xác minh trong cơ sở dữ liệu.</div>';
+        return;
+      }
+
+      grid.innerHTML = res.data.slice(0, 4).map(collection => ProductComponent.renderCategoryCard(collection, true)).join('');
     });
+  },
+
+  loadAllCollections: function (containerId = 'collection-catalog-grid') {
+    const grid = document.getElementById(containerId);
+    if (!grid) return;
+
+    grid.innerHTML = '<div class="col-span-full py-10 text-center text-[#74777e]">Đang tải bộ sưu tập...</div>';
+    ApiService.getCollections((err, res) => {
+      if (err || !res || !res.success || !Array.isArray(res.data)) {
+        grid.innerHTML = '<div class="col-span-full py-10 text-center text-red-700">Không tải được bộ sưu tập. Vui lòng kiểm tra kết nối máy chủ.</div>';
+        return;
+      }
+      if (res.data.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-10 text-center text-[#74777e]">Chưa có bộ sưu tập đã xác minh trong cơ sở dữ liệu.</div>';
+        return;
+      }
+
+      grid.innerHTML = res.data.map(collection => ProductComponent.renderCategoryCard(collection, true)).join('');
+    });
+  },
+
+  openCollection: function (collectionId, collectionName) {
+    dieuHuong('collection-detail', null, { collectionId, collectionName });
   },
 
   /**
    * 3. Nạp danh sách sản phẩm bán chạy nhất từ MongoDB Atlas vào giao diện
-   * @param {string} containerId - ID của container chứa grid sản phẩm
-   * @param {number} limit - Số lượng sản phẩm hiển thị (mặc định 4 sản phẩm bán chạy nhất)
    */
   loadFeaturedProducts: function (containerId = 'home-featured-products-grid', limit = 4) {
     const grid = document.getElementById(containerId);
     if (!grid) return;
 
-    // Loading skeleton nhẹ
     grid.innerHTML = `
-      <div class="col-span-full py-12 text-center text-on-surface-variant">
-        <span class="material-symbols-outlined text-4xl animate-spin text-secondary mb-2 block">progress_activity</span>
-        <p class="font-body-md">Đang tuyển chọn 4 tác phẩm ngự tác bán chạy nhất...</p>
+      <div class="col-span-full py-12 text-center text-[#74777e]">
+        <span class="material-symbols-outlined text-4xl animate-spin text-[#a23e18] mb-2 block">progress_activity</span>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm">Đang tuyển chọn 4 tác phẩm ngự tác bán chạy nhất...</p>
       </div>
     `;
 
-    ApiService.getProducts(function (err, res) {
+    ApiService.getProducts({ limit: 12 }, function (err, res) {
       if (err || !res || !res.success || !res.data || res.data.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-on-surface-variant">
+          <div class="col-span-full py-12 text-center text-[#74777e]">
             <span class="material-symbols-outlined text-4xl text-stone-400 mb-2 block">inventory_2</span>
-            <p class="font-body-md">Hiện chưa có tác phẩm nào được đăng tải.</p>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm">Chưa có sản phẩm đã xác minh trong cơ sở dữ liệu.</p>
           </div>
         `;
         return;
       }
 
-      // Lọc bỏ các sản phẩm rác/không có tên đầy đủ nếu có
-      let allProducts = res.data.filter(p => p && p.name && p.name.length > 2);
-
-      // Sắp xếp ưu tiên: Sản phẩm bán chạy (theo soldCount hoặc lượt mua), sau đó đến còn hàng và độ tinh xảo
-      allProducts.sort((a, b) => {
-        const soldA = a.soldCount || (a.name.includes('Bình hoa men rạn') ? 25 : (a.name.includes('ấm chén') ? 18 : 5));
-        const soldB = b.soldCount || (b.name.includes('Bình hoa men rạn') ? 25 : (b.name.includes('ấm chén') ? 18 : 5));
-        return soldB - soldA;
-      });
-
-      // Chỉ chọn đúng 4 sản phẩm bán chạy nhất theo yêu cầu
-      const top4Products = allProducts.slice(0, limit);
-      grid.innerHTML = top4Products.map(p => ProductComponent.renderCard(p)).join('');
+      let allProducts = res.data.filter(p => p && p.name);
+      const topProducts = allProducts.slice(0, limit);
+      grid.innerHTML = topProducts.map(p => ProductComponent.renderCard(p)).join('');
     });
   },
 
   /**
-   * 4. Xử lý khi nhấn nút Lưu yêu thích (Wishlist)
+   * 4. Xử lý khi nhấn nút Lưu yêu thích (Wishlist - UC-C10)
    */
   toggleFavorite: function (productId, btnEl) {
     if (typeof requireAuthAction === 'function') {
       requireAuthAction(function () {
-        if (!currentUser || !currentUser._id) return;
-        ApiService.toggleWishlist(currentUser._id, productId, function (err, res) {
-          if (!err && res.success) {
-            currentUser = res.data;
-            localStorage.setItem('craftory_user', JSON.stringify(currentUser));
+        if (!window.currentUser || !window.currentUser._id) return;
+        ApiService.toggleWishlist(window.currentUser._id, productId, function (err, res) {
+          if (!err && res && res.success) {
+            window.currentUser = res.data;
+            localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
+
+            const isNowInWl = isProductInWishlist(productId);
             if (btnEl) {
-              btnEl.classList.toggle('text-red-600');
-              btnEl.classList.toggle('text-secondary');
+              const icon = btnEl.querySelector('.material-symbols-outlined');
+              if (icon) {
+                icon.innerText = isNowInWl ? 'favorite' : 'favorite_border';
+              }
+              if (isNowInWl) {
+                btnEl.classList.remove('text-stone-400');
+                btnEl.classList.add('text-[#b91c1c]');
+              } else {
+                btnEl.classList.remove('text-[#b91c1c]');
+                btnEl.classList.add('text-stone-400');
+              }
             }
-            alert('Đã cập nhật danh sách tác phẩm yêu thích của Thượng khách!');
+
+            showCartNotification(
+              isNowInWl ? 'Đã thêm sản phẩm vào yêu thích' : 'Đã xóa sản phẩm khỏi yêu thích',
+              'success',
+              isNowInWl ? 'favorite' : 'favorite_border'
+            );
+
+            // Nếu đang ở màn hình wishlist, refresh lại view
+            if (window.WishlistView && typeof WishlistView.loadWishlist === 'function' && document.getElementById('wishlistGrid')) {
+              WishlistView.loadWishlist();
+            }
+          } else {
+            alert((res && res.message) || err || 'Lỗi khi cập nhật danh sách yêu thích');
           }
         });
       });
@@ -210,19 +355,794 @@ const ProductComponent = {
   },
 
   /**
-   * 5. Xử lý xem chi tiết tác phẩm
+   * 5. Xử lý xem chi tiết tác phẩm (UC-C03)
    */
   viewDetail: function (productId) {
-    alert('Kính mời thượng khách thưởng lãm chi tiết tác phẩm mã: ' + productId);
+    window.selectedProductId = productId;
+    dieuHuong('product-detail', null, productId);
+  },
+
+  /**
+   * 5.1. Thêm nhanh vào giỏ hàng
+   */
+  quickAddToCart: function (productId) {
+    requireAuthAction(function () {
+      ApiService.addToCart(window.currentUser._id, productId, 1, function (err, res) {
+        if (err || !res || !res.success) {
+          showCartNotification((res && res.message) || err || 'Không thể thêm sản phẩm vào giỏ hàng', 'warning');
+          return;
+        }
+        if (window.CartView) window.CartView.updateCount(res.data);
+        showCartNotification('Đã thêm sản phẩm vào giỏ hàng thành công!');
+      });
+    });
   },
 
   /**
    * 6. Lọc theo danh mục
    */
-  filterByCategory: function (categoryName) {
-    alert('Đang mở bộ sưu tập: ' + categoryName);
+  filterByCategory: function (categoryId, categoryName) {
+    window.selectedCategoryFilter = { id: categoryId, name: categoryName };
+    dieuHuong('shop', null, { categoryId });
+  },
+
+  filterByCollection: function (collectionId, collectionName) {
+    dieuHuong('shop', null, { collectionId, collectionName });
   }
 };
 
-// Đăng ký toàn cục để các view có thể gọi trực tiếp
+// ==========================================
+// SHOP VIEW CONTROLLER (Gian hàng & Bộ lọc)
+// ==========================================
+const ShopView = {
+  currentPage: 1,
+  limit: 12,
+  currentFilters: {
+    search: '',
+    categoryId: 'all',
+    collectionId: '',
+    collectionName: '',
+    glaze: 'all',
+    price: 'all',
+    sort: 'newest'
+  },
+
+  init: function (initialParams = {}) {
+    this.currentPage = 1;
+    this.currentFilters = {
+      search: initialParams.search || '',
+      categoryId: initialParams.categoryId || 'all',
+      collectionId: initialParams.collectionId || '',
+      collectionName: initialParams.collectionName || '',
+      glaze: initialParams.glaze || 'all',
+      price: initialParams.price || 'all',
+      sort: 'newest'
+    };
+
+    // Điền dữ liệu tìm kiếm nếu có
+    const searchInput = document.getElementById('shopSearchInput');
+    if (searchInput && this.currentFilters.search) {
+      searchInput.value = this.currentFilters.search;
+    }
+
+    // Nạp danh mục động vào dropdown
+    this.loadCategoriesDropdown();
+
+    // Nạp sản phẩm
+    this.fetchProducts();
+  },
+
+  loadCategoriesDropdown: function () {
+    const select = document.getElementById('filterCategory');
+    if (!select) return;
+
+    ApiService.getCategories((err, res) => {
+      if (!err && res && res.success && res.data) {
+        let html = '<option value="all">Tất cả danh mục</option>';
+        res.data.forEach(c => {
+          const isSelected = this.currentFilters.categoryId === c._id ? 'selected' : '';
+          html += `<option value="${c._id}" ${isSelected}>${c.name} (${c.productCount || 0})</option>`;
+        });
+        select.innerHTML = html;
+      }
+    });
+  },
+
+  triggerSearch: function () {
+    const input = document.getElementById('shopSearchInput');
+    this.currentFilters.search = input ? input.value.trim() : '';
+    this.currentPage = 1;
+    this.fetchProducts();
+  },
+
+  onFilterChange: function () {
+    const glazeEl = document.getElementById('filterGlaze');
+    const catEl = document.getElementById('filterCategory');
+    const priceEl = document.getElementById('filterPrice');
+    const sortEl = document.getElementById('sortCatalog');
+
+    this.currentFilters.glaze = glazeEl ? glazeEl.value : 'all';
+    this.currentFilters.categoryId = catEl ? catEl.value : 'all';
+    this.currentFilters.price = priceEl ? priceEl.value : 'all';
+    this.currentFilters.sort = sortEl ? sortEl.value : 'newest';
+
+    this.currentPage = 1;
+    this.fetchProducts();
+  },
+
+  resetAllFilters: function () {
+    this.currentFilters = {
+      search: '',
+      categoryId: 'all',
+      collectionId: '',
+      collectionName: '',
+      glaze: 'all',
+      price: 'all',
+      sort: 'newest'
+    };
+
+    const s = document.getElementById('shopSearchInput'); if (s) s.value = '';
+    const g = document.getElementById('filterGlaze'); if (g) g.value = 'all';
+    const c = document.getElementById('filterCategory'); if (c) c.value = 'all';
+    const p = document.getElementById('filterPrice'); if (p) p.value = 'all';
+    const st = document.getElementById('sortCatalog'); if (st) st.value = 'newest';
+
+    this.currentPage = 1;
+    this.fetchProducts();
+  },
+
+  fetchProducts: function () {
+    const grid = document.getElementById('productGrid');
+    if (!grid) return;
+
+    grid.innerHTML = `
+      <div class="col-span-full py-16 text-center text-[#74777e]">
+        <span class="material-symbols-outlined text-4xl animate-spin text-[#a23e18] mb-2 block">progress_activity</span>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm">Đang tải sản phẩm theo điều kiện lọc...</p>
+      </div>
+    `;
+
+    // Xây dựng params query
+    const params = {
+      page: this.currentPage,
+      limit: this.limit,
+      sort: this.currentFilters.sort
+    };
+
+    if (this.currentFilters.search) params.search = this.currentFilters.search;
+    if (this.currentFilters.categoryId !== 'all') params.categoryId = this.currentFilters.categoryId;
+    if (this.currentFilters.collectionId) params.collectionId = this.currentFilters.collectionId;
+    else if (this.currentFilters.collectionName) params.collectionName = this.currentFilters.collectionName;
+    if (this.currentFilters.glaze !== 'all') params.glaze = this.currentFilters.glaze;
+
+    // Khoảng giá
+    if (this.currentFilters.price === 'p1') {
+      params.maxPrice = 500000;
+    } else if (this.currentFilters.price === 'p2') {
+      params.minPrice = 500000;
+      params.maxPrice = 2000000;
+    } else if (this.currentFilters.price === 'p3') {
+      params.minPrice = 2000000;
+      params.maxPrice = 5000000;
+    } else if (this.currentFilters.price === 'p4') {
+      params.minPrice = 5000000;
+    }
+
+    ApiService.getProducts(params, (err, res) => {
+      this.updateFilterChips();
+
+      if (err || !res || !res.success || !res.data || res.data.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-20 text-center max-w-md mx-auto">
+            <span class="material-symbols-outlined text-5xl text-stone-400 mb-3 block">search_off</span>
+            <h3 class="font-['Playfair_Display',serif] text-xl font-bold text-[#000f22] mb-1">Không tìm thấy tác phẩm phù hợp (E1)</h3>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] mb-4">
+              Không có sản phẩm nào đáp ứng các điều kiện tìm kiếm/lọc hiện tại. Quý khách vui lòng thử thay đổi từ khóa hoặc đặt lại bộ lọc.
+            </p>
+            <button onclick="ShopView.resetAllFilters()" class="px-4 py-2 rounded-lg bg-[#000f22] text-white text-xs font-semibold hover:bg-[#10162B] transition-colors">
+              Xóa bộ lọc tìm kiếm
+            </button>
+          </div>
+        `;
+        const countEl = document.getElementById('resultCount');
+        if (countEl) countEl.innerText = '0';
+        this.renderPagination({ total: 0, page: 1, limit: this.limit, totalPages: 1 });
+        return;
+      }
+
+      // Đổ danh sách sản phẩm
+      grid.innerHTML = res.data.map(p => ProductComponent.renderCard(p)).join('');
+
+      // Cập nhật số lượng
+      const countEl = document.getElementById('resultCount');
+      if (countEl) countEl.innerText = (res.pagination && res.pagination.total) || res.data.length;
+
+      // Cập nhật phân trang
+      if (res.pagination) {
+        this.renderPagination(res.pagination);
+      }
+    });
+  },
+
+  updateFilterChips: function () {
+    const container = document.getElementById('chipsContainer');
+    const clearBtn = document.getElementById('clearAllFilters');
+    if (!container) return;
+
+    const chips = [];
+
+    if (this.currentFilters.search) {
+      chips.push({ label: `Tìm kiếm: "${this.currentFilters.search}"`, key: 'search' });
+    }
+    if (this.currentFilters.glaze !== 'all') {
+      const gEl = document.getElementById('filterGlaze');
+      const text = gEl && gEl.selectedOptions[0] ? gEl.selectedOptions[0].text : this.currentFilters.glaze;
+      chips.push({ label: `Dòng men: ${text}`, key: 'glaze' });
+    }
+    if (this.currentFilters.categoryId !== 'all') {
+      const cEl = document.getElementById('filterCategory');
+      const text = cEl && cEl.selectedOptions[0] ? cEl.selectedOptions[0].text : 'Danh mục';
+      chips.push({ label: `Danh mục: ${text}`, key: 'category' });
+    }
+    if (this.currentFilters.collectionName) {
+      chips.push({ label: `Bộ sưu tập: ${this.currentFilters.collectionName}`, key: 'collection' });
+    }
+    if (this.currentFilters.price !== 'all') {
+      const pEl = document.getElementById('filterPrice');
+      const text = pEl && pEl.selectedOptions[0] ? pEl.selectedOptions[0].text : 'Mức giá';
+      chips.push({ label: `Giá: ${text}`, key: 'price' });
+    }
+
+    if (chips.length > 0) {
+      container.innerHTML = chips.map(c => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBEAE5]/80 text-[#000f22] font-['Plus_Jakarta_Sans',sans-serif] text-xs font-medium">
+          <span>${c.label}</span>
+          <button onclick="ShopView.removeChip('${c.key}')" class="hover:text-[#a23e18] flex items-center justify-center">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </span>
+      `).join('');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+    } else {
+      container.innerHTML = '<span class="text-xs text-[#74777e] italic">Tất cả tác phẩm đang mở bán</span>';
+      if (clearBtn) clearBtn.classList.add('hidden');
+    }
+  },
+
+  removeChip: function (key) {
+    if (key === 'search') {
+      this.currentFilters.search = '';
+      const s = document.getElementById('shopSearchInput'); if (s) s.value = '';
+    } else if (key === 'glaze') {
+      this.currentFilters.glaze = 'all';
+      const g = document.getElementById('filterGlaze'); if (g) g.value = 'all';
+    } else if (key === 'category') {
+      this.currentFilters.categoryId = 'all';
+      const c = document.getElementById('filterCategory'); if (c) c.value = 'all';
+    } else if (key === 'collection') {
+      this.currentFilters.collectionId = '';
+      this.currentFilters.collectionName = '';
+    } else if (key === 'price') {
+      this.currentFilters.price = 'all';
+      const p = document.getElementById('filterPrice'); if (p) p.value = 'all';
+    }
+    this.currentPage = 1;
+    this.fetchProducts();
+  },
+
+  renderPagination: function (pagination) {
+    const nav = document.getElementById('paginationButtons');
+    const curText = document.getElementById('currentPageText');
+    const totText = document.getElementById('totalPagesText');
+    if (!nav) return;
+
+    const { page, totalPages } = pagination;
+    if (curText) curText.innerText = page;
+    if (totText) totText.innerText = totalPages;
+
+    if (totalPages <= 1) {
+      nav.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    // Previous button
+    if (page > 1) {
+      html += `
+        <button onclick="ShopView.goToPage(${page - 1})" class="w-9 h-9 rounded-lg border border-[#EBEAE5] bg-white text-[#000f22] hover:bg-[#f3f4f5] flex items-center justify-center text-sm font-semibold cursor-pointer">
+          <span class="material-symbols-outlined text-base">chevron_left</span>
+        </button>
+      `;
+    }
+
+    // Page buttons
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === page) {
+        html += `
+          <span class="w-9 h-9 rounded-lg bg-[#000f22] text-white flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-sm font-bold shadow-sm">
+            ${i}
+          </span>
+        `;
+      } else if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) {
+        html += `
+          <button onclick="ShopView.goToPage(${i})" class="w-9 h-9 rounded-lg border border-[#EBEAE5] bg-white text-[#000f22] hover:bg-[#f3f4f5] flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-sm font-medium cursor-pointer">
+            ${i}
+          </button>
+        `;
+      } else if (i === page - 2 || i === page + 2) {
+        html += `<span class="w-6 text-center text-[#74777e]">...</span>`;
+      }
+    }
+
+    // Next button
+    if (page < totalPages) {
+      html += `
+        <button onclick="ShopView.goToPage(${page + 1})" class="w-9 h-9 rounded-lg border border-[#EBEAE5] bg-white text-[#000f22] hover:bg-[#f3f4f5] flex items-center justify-center text-sm font-semibold cursor-pointer">
+          <span class="material-symbols-outlined text-base">chevron_right</span>
+        </button>
+      `;
+    }
+
+    nav.innerHTML = html;
+  },
+
+  goToPage: function (p) {
+    this.currentPage = p;
+    this.fetchProducts();
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  }
+};
+
+// ==========================================
+// PRODUCT DETAIL CONTROLLER (Chi tiết sản phẩm)
+// ==========================================
+const DetailView = {
+  currentProduct: null,
+  quantity: 1,
+
+  init: function (productId) {
+    const loading = document.getElementById('detailLoading');
+    const content = document.getElementById('detailContent');
+    const related = document.getElementById('relatedSection');
+
+    if (loading) loading.classList.remove('hidden');
+    if (content) content.classList.add('hidden');
+    if (related) related.classList.add('hidden');
+
+    this.quantity = 1;
+    const qtyInput = document.getElementById('detailQtyInput');
+    if (qtyInput) qtyInput.value = '1';
+
+    if (!productId) {
+      alert('Không xác định được mã tác phẩm!');
+      dieuHuong('shop');
+      return;
+    }
+
+    ApiService.getProductById(productId, (err, res) => {
+      if (loading) loading.classList.add('hidden');
+
+      if (err || !res || !res.success || !res.data) {
+        alert('Tác phẩm hiện không khả dụng hoặc đã ngừng bán (E2)');
+        dieuHuong('shop');
+        return;
+      }
+
+      this.currentProduct = res.data;
+      this.renderProduct(this.currentProduct, res.related || []);
+
+      if (content) {
+        content.classList.remove('hidden');
+        content.classList.add('grid');
+      }
+      if (related) related.classList.remove('hidden');
+    });
+  },
+
+  renderProduct: function (p, relatedList) {
+    // Breadcrumbs
+    const bc = document.getElementById('detailBreadcrumbTitle');
+    if (bc) bc.innerText = p.name;
+
+    // Title & SKU
+    const titleEl = document.getElementById('detailTitle');
+    if (titleEl) titleEl.innerText = p.name;
+    const skuEl = document.getElementById('detailSku');
+    if (skuEl) skuEl.innerText = `Mã SP: ${p.sku || 'SP-' + p._id.slice(-4).toUpperCase()}`;
+
+    // Category & Edition tags
+    const catTag = document.getElementById('detailCategoryTag');
+    if (catTag) catTag.innerText = (p.categoryId && p.categoryId.name) || p.collectionName || '';
+
+    // Price
+    const priceEl = document.getElementById('detailPrice');
+    if (priceEl) priceEl.innerText = (p.price || 0).toLocaleString('vi-VN') + ' đ';
+
+    // Stock
+    const stockEl = document.getElementById('detailStockStatus');
+    const btnAdd = document.getElementById('btnAddToCart');
+    const alertEl = document.getElementById('detailStockAlert');
+
+    const stock = typeof p.stock === 'number' ? p.stock : 0;
+    if (stock <= 0) {
+      if (stockEl) stockEl.innerText = 'Tạm hết hàng';
+      if (alertEl) alertEl.innerText = '(Hết hàng)';
+      if (btnAdd) {
+        btnAdd.disabled = true;
+        btnAdd.classList.add('opacity-50', 'cursor-not-allowed');
+        btnAdd.innerText = 'Tạm hết hàng';
+      }
+    } else {
+      if (stockEl) stockEl.innerText = `Tồn kho ghi nhận: ${stock}`;
+      if (alertEl) alertEl.innerText = `(Còn ${stock})`;
+      if (btnAdd) {
+        btnAdd.disabled = false;
+        btnAdd.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnAdd.innerHTML = '<span class="material-symbols-outlined text-xl">shopping_bag</span><span>Thêm vào giỏ chế tác</span>';
+      }
+    }
+
+    // Story / Description
+    const descEl = document.getElementById('detailDesc');
+    if (descEl) descEl.innerText = p.description || 'Chưa có mô tả được xác minh.';
+
+    // Specifications
+    const sizeEl = document.getElementById('detailSpecSize');
+    if (sizeEl) sizeEl.innerText = p.size || 'Chưa có thông tin';
+    const glazeEl = document.getElementById('detailSpecGlaze');
+    if (glazeEl) glazeEl.innerText = p.glazeColor || 'Chưa có thông tin';
+    const matEl = document.getElementById('detailSpecMaterial');
+    if (matEl) matEl.innerText = p.material || 'Chưa có thông tin';
+    const tempEl = document.getElementById('detailSpecTemp');
+    if (tempEl) tempEl.innerText = p.firingTemp || 'Chưa có thông tin';
+
+    // Ratings
+    const ratingEl = document.getElementById('detailRatingScore');
+    if (ratingEl) ratingEl.innerText = Number(p.averageRating || 0).toFixed(1);
+    const reviewEl = document.getElementById('detailReviewCount');
+    if (reviewEl) reviewEl.innerText = p.reviewCount ? `(${p.reviewCount} đánh giá)` : '(Chưa có đánh giá)';
+    const stars = document.getElementById('detailStarGroup');
+    if (stars) stars.hidden = !p.reviewCount;
+    if (ratingEl) ratingEl.hidden = !p.reviewCount;
+
+    // Custom 2D Section
+    const customSection = document.getElementById('custom2DSection');
+    if (customSection) {
+      if (p.custom2DEnabled) {
+        customSection.classList.remove('hidden');
+      } else {
+        customSection.classList.add('hidden');
+      }
+    }
+
+    // Wishlist Heart State
+    this.updateWishlistButton();
+
+    // Gallery images
+    const images = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
+    if (images.length === 0 && p.image) images.push(p.image);
+    const mainImg = document.getElementById('detailMainImage');
+    const mainImgUnavailable = document.getElementById('detailImageUnavailable');
+    if (mainImg) {
+      mainImg.hidden = images.length === 0;
+      if (mainImgUnavailable) mainImgUnavailable.hidden = images.length > 0;
+      if (images.length > 0) {
+        mainImg.src = images[0];
+        mainImg.onerror = function () {
+          mainImg.hidden = true;
+          if (mainImgUnavailable) mainImgUnavailable.hidden = false;
+        };
+      }
+      mainImg.alt = p.name;
+    }
+
+    const thumbsContainer = document.getElementById('detailThumbsContainer');
+    if (thumbsContainer) {
+      thumbsContainer.innerHTML = images.map((imgUrl, idx) => `
+        <button
+          type="button"
+          onclick="DetailView.switchImage('${imgUrl}', this)"
+          class="gallery-thumb-btn w-16 h-20 md:w-20 md:h-24 rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm cursor-pointer ${idx === 0 ? 'border-[#000f22] opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}"
+        >
+          <img class="w-full h-full object-cover" src="${imgUrl}" alt="Ảnh ${idx + 1}" />
+        </button>
+      `).join('');
+    }
+
+    // Related Products Grid
+    const relatedGrid = document.getElementById('relatedProductsGrid');
+    if (relatedGrid && relatedList.length > 0) {
+      relatedGrid.innerHTML = relatedList.map(item => ProductComponent.renderCard(item)).join('');
+    }
+  },
+
+  switchImage: function (imgUrl, btnEl) {
+    const mainImg = document.getElementById('detailMainImage');
+    if (mainImg) mainImg.src = imgUrl;
+
+    document.querySelectorAll('.gallery-thumb-btn').forEach(btn => {
+      btn.classList.remove('border-[#000f22]', 'opacity-100');
+      btn.classList.add('border-transparent', 'opacity-60');
+    });
+    if (btnEl) {
+      btnEl.classList.remove('border-transparent', 'opacity-60');
+      btnEl.classList.add('border-[#000f22]', 'opacity-100');
+    }
+  },
+
+  increaseQty: function () {
+    if (!this.currentProduct) return;
+    const maxStock = this.currentProduct.stock || 0;
+    if (this.quantity >= maxStock) {
+      alert(`Số lượng sản phẩm trong kho không đủ (chỉ còn ${maxStock} chiếc)`);
+      return;
+    }
+    this.quantity += 1;
+    const input = document.getElementById('detailQtyInput');
+    if (input) input.value = this.quantity;
+  },
+
+  decreaseQty: function () {
+    if (this.quantity > 1) {
+      this.quantity -= 1;
+      const input = document.getElementById('detailQtyInput');
+      if (input) input.value = this.quantity;
+    }
+  },
+
+  addToCart: function () {
+    if (!this.currentProduct) return;
+    const product = this.currentProduct;
+    requireAuthAction(function () {
+      ApiService.addToCart(window.currentUser._id, product._id, DetailView.quantity, function (err, res) {
+        if (err || !res || !res.success) {
+          showCartNotification((res && res.message) || err || 'Không thể thêm sản phẩm vào giỏ hàng', 'warning');
+          return;
+        }
+        if (window.CartView) window.CartView.updateCount(res.data);
+        showCartNotification(`Đã thêm sản phẩm "${product.name}" vào giỏ hàng thành công!`);
+      });
+    });
+  },
+
+  toggleFavorite: function () {
+    if (!this.currentProduct) return;
+    const btn = document.getElementById('btnDetailFavorite');
+    ProductComponent.toggleFavorite(this.currentProduct._id, btn);
+    setTimeout(() => this.updateWishlistButton(), 300);
+  },
+
+  updateWishlistButton: function () {
+    if (!this.currentProduct) return;
+    const inWishlist = isProductInWishlist(this.currentProduct._id);
+    const icon = document.getElementById('detailHeartIcon');
+    const btn = document.getElementById('btnDetailFavorite');
+    if (icon) icon.innerText = inWishlist ? 'favorite' : 'favorite_border';
+    if (btn) {
+      if (inWishlist) {
+        btn.classList.add('text-[#b91c1c]');
+        btn.classList.remove('text-[#a23e18]');
+      } else {
+        btn.classList.remove('text-[#b91c1c]');
+        btn.classList.add('text-[#a23e18]');
+      }
+    }
+  }
+};
+
+const CartView = {
+  countRequestId: 0,
+
+  refreshCount: function () {
+    if (!window.currentUser || !window.currentUser._id) {
+      CartView.updateCount({ items: [] });
+      return;
+    }
+    const requestId = ++CartView.countRequestId;
+    ApiService.getCart(window.currentUser._id, function (err, res) {
+      if (err || !res || !res.success) {
+        console.error('Lỗi tải số lượng giỏ hàng:', err || (res && res.message));
+        return;
+      }
+      if (requestId === CartView.countRequestId) CartView.updateCount(res.data);
+    });
+  },
+
+  updateCount: function (cart) {
+    CartView.countRequestId += 1;
+    const count = (cart && cart.items || []).reduce((total, item) => total + (item.quantity || 0), 0);
+    const countEl = document.getElementById('navbar-cart-count');
+    if (countEl) countEl.textContent = String(count);
+  },
+
+  loadCart: function () {
+    const list = document.getElementById('cartItems');
+    const totalEl = document.getElementById('cartTotal');
+    const emptyEl = document.getElementById('cartEmpty');
+    if (!list) return;
+    if (!window.currentUser || !window.currentUser._id) {
+      list.innerHTML = '<p class="py-12 text-center text-[#74777e]">Vui lòng đăng nhập để xem giỏ hàng.</p>';
+      return;
+    }
+    list.innerHTML = '<p class="py-12 text-center text-[#74777e]">Đang tải giỏ hàng...</p>';
+    ApiService.getCart(window.currentUser._id, function (err, res) {
+      if (err || !res || !res.success) {
+        list.innerHTML = `<p class="py-12 text-center text-red-700">${escapeProductText((res && res.message) || err || 'Không thể tải giỏ hàng')}</p>`;
+        return;
+      }
+      const items = (res.data && res.data.items || []).filter(item => item.productId);
+      CartView.updateCount(res.data);
+      if (emptyEl) emptyEl.hidden = items.length > 0;
+      if (!items.length) {
+        list.innerHTML = '';
+        if (totalEl) totalEl.textContent = '0₫';
+        return;
+      }
+      list.innerHTML = items.map(item => {
+        const product = item.productId;
+        const imageUrl = product.image || (product.images && product.images[0]) || '';
+        const subtotal = item.unitPrice * item.quantity;
+        return `<article class="flex gap-4 border-b border-[#EBEAE5] py-5">
+          <div class="h-24 w-20 shrink-0 rounded-lg bg-[#f3f4f5] p-2">${imageUrl ? `<img class="h-full w-full object-contain" src="${escapeProductText(imageUrl)}" alt="${escapeProductText(product.name)}">` : ''}</div>
+          <div class="min-w-0 flex-1">
+            <h2 class="font-semibold text-[#000f22]">${escapeProductText(product.name)}</h2>
+            <p class="mt-1 text-sm text-[#74777e]">${item.quantity} × ${(item.unitPrice || 0).toLocaleString('vi-VN')}₫</p>
+          </div>
+          <strong class="shrink-0 text-[#a23e18]">${subtotal.toLocaleString('vi-VN')}₫</strong>
+        </article>`;
+      }).join('');
+      const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+      if (totalEl) totalEl.textContent = `${total.toLocaleString('vi-VN')}₫`;
+    });
+  }
+};
+
+window.CartView = CartView;
+
+// ==========================================
+// WISHLIST VIEW CONTROLLER (Mục yêu thích - UC-C10)
+// ==========================================
+const WishlistView = {
+  init: function () {
+    this.loadWishlist();
+  },
+
+  loadWishlist: function () {
+    const grid = document.getElementById('wishlistGrid');
+    const emptyBox = document.getElementById('wishlistEmpty');
+    const countEl = document.getElementById('wishlistCount');
+
+    if (!window.currentUser || !window.currentUser._id) {
+      if (grid) {
+        grid.innerHTML = `
+          <div class="col-span-full py-20 text-center">
+            <span class="material-symbols-outlined text-5xl text-[#a23e18] mb-3 block">lock</span>
+            <h3 class="font-['Playfair_Display',serif] text-xl font-bold text-[#000f22] mb-2">Yêu cầu đăng nhập</h3>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#74777e] mb-4">
+              Kính xin quý khách đăng nhập để mở xem danh sách tác phẩm gốm sứ đã lưu giữ.
+            </p>
+            <button onclick="dieuHuong('login')" class="px-5 py-2.5 rounded-lg bg-[#000f22] text-white text-xs font-semibold hover:bg-[#10162B]">
+              Đăng nhập ngay
+            </button>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    if (grid) {
+      grid.innerHTML = `
+        <div class="col-span-full py-16 text-center text-[#74777e]">
+          <span class="material-symbols-outlined text-4xl animate-spin text-[#a23e18] mb-2 block">progress_activity</span>
+          <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm">Đang tải danh sách tác phẩm yêu thích...</p>
+        </div>
+      `;
+    }
+
+    ApiService.getWishlist(window.currentUser._id, (err, res) => {
+      const items = (res && res.success && res.data) ? res.data : [];
+
+      if (countEl) countEl.innerText = `${items.length} tác phẩm`;
+
+      if (items.length === 0) {
+        if (grid) grid.innerHTML = '';
+        if (emptyBox) emptyBox.classList.remove('hidden');
+      } else {
+        if (emptyBox) emptyBox.classList.add('hidden');
+        if (grid) {
+          grid.innerHTML = items.map(p => ProductComponent.renderCard(p)).join('');
+        }
+      }
+    });
+  }
+};
+
+const CollectionDetailView = {
+  init: function (selection = {}) {
+    const title = document.getElementById('collectionDetailTitle');
+    const breadcrumb = document.getElementById('collectionDetailBreadcrumb');
+    const subtitle = document.getElementById('collectionDetailDescription');
+    const image = document.getElementById('collectionDetailImage');
+    const grid = document.getElementById('collectionProductsGrid');
+    const count = document.getElementById('collectionDetailCount');
+    const name = selection.collectionName || '';
+
+    if (!grid) return;
+    grid.innerHTML = '<div class="col-span-full py-12 text-center text-[#74777e]">Đang tải sản phẩm của bộ sưu tập...</div>';
+
+    ApiService.getCollections((collectionError, collectionResponse) => {
+      if (collectionError || !collectionResponse || !collectionResponse.success || !Array.isArray(collectionResponse.data)) {
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không tải được thông tin bộ sưu tập.</div>';
+        return;
+      }
+
+      const collection = collectionResponse.data.find(item =>
+        (selection.collectionId && item._id === selection.collectionId) ||
+        (name && item.name.toLocaleLowerCase() === name.toLocaleLowerCase())
+      );
+      const resolvedName = (collection && collection.name) || name;
+      if (!resolvedName) {
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không xác định được bộ sưu tập.</div>';
+        return;
+      }
+
+      if (title) title.textContent = resolvedName;
+      if (breadcrumb) breadcrumb.textContent = resolvedName;
+      if (subtitle) subtitle.textContent = (collection && collection.description) || `Các tác phẩm thuộc bộ sưu tập ${resolvedName}.`;
+      if (image) {
+        image.hidden = !(collection && (collection.imageUrl || collection.image));
+        if (collection && (collection.imageUrl || collection.image)) image.src = collection.imageUrl || collection.image;
+        image.onerror = function () {
+          image.hidden = true;
+        };
+        image.alt = resolvedName;
+      }
+      if (count) count.textContent = `${collection && collection.productCount ? collection.productCount : 0} tác phẩm`;
+
+      const params = { limit: 0, source: 'verified' };
+      if (collection && collection._id) params.collectionId = collection._id;
+      else params.collectionName = resolvedName;
+
+      ApiService.getProducts(params, (productError, productResponse) => {
+        if (productError || !productResponse || !productResponse.success || !Array.isArray(productResponse.data)) {
+          grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không tải được sản phẩm thuộc bộ sưu tập.</div>';
+          return;
+        }
+        if (count) count.textContent = `${productResponse.pagination ? productResponse.pagination.total : productResponse.data.length} tác phẩm`;
+        grid.innerHTML = productResponse.data.length
+          ? productResponse.data.map(product => ProductComponent.renderCard(product)).join('')
+          : '<div class="col-span-full py-12 text-center text-[#74777e]">Bộ sưu tập này chưa có sản phẩm đã xác minh trong cơ sở dữ liệu.</div>';
+      });
+    });
+  }
+};
+
+// ==========================================
+// CÁC HÀM KHỞI TẠO TƯƠNG ỨNG KHI ĐIỀU HƯỚNG VIEW
+// ==========================================
+window.khoiTaoTrangShop = function (param) {
+  ShopView.init(param || {});
+};
+
+window.khoiTaoTrangProductDetail = function (param) {
+  const prodId = param || window.selectedProductId;
+  DetailView.init(prodId);
+};
+
+window.khoiTaoTrangWishlist = function () {
+  WishlistView.init();
+};
+
+window.khoiTaoTrangBoSuuTap = function () {
+  ProductComponent.loadAllCollections();
+};
+
+window.khoiTaoChiTietBoSuuTap = function (selection) {
+  CollectionDetailView.init(selection || {});
+};
+
 window.ProductComponent = ProductComponent;
+window.ShopView = ShopView;
+window.DetailView = DetailView;
+window.WishlistView = WishlistView;
+window.CollectionDetailView = CollectionDetailView;

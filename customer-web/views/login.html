@@ -32,7 +32,7 @@
 </div>
 
 <!-- Strict 2-field form -->
-<form class="flex flex-col gap-space-md" id="collectorLoginForm" onsubmit="event.preventDefault(); handleCollectorLogin();">
+<form class="flex flex-col gap-space-md" id="collectorLoginForm">
 <!-- Trường 1: Tên đăng nhập -->
 <div class="flex flex-col gap-space-xs">
 <label class="font-title-md text-title-md text-primary flex items-center justify-between" for="collectorUsername">
@@ -165,92 +165,4 @@
 
 </div>
 </section>
-<!-- Interactive JavaScript logic (Pure Vanilla) -->
-<script>
-    function togglePasswordVisibility() {
-      const passInput = document.getElementById('collectorPassword');
-      const passIcon = document.getElementById('passwordIcon');
-      if (!passInput || !passIcon) return;
-
-      if (passInput.type === 'password') {
-        passInput.type = 'text';
-        passIcon.textContent = 'visibility_off';
-      } else {
-        passInput.type = 'password';
-        passIcon.textContent = 'visibility';
-      }
-    }
-
-    function autoFillPrivilegeDemo() {
-      const userField = document.getElementById('collectorUsername');
-      const passField = document.getElementById('collectorPassword');
-      if (userField && passField) {
-        userField.value = '0918345678';
-        passField.value = '123456';
-        userField.focus();
-      }
-    }
-
-    function handleCollectorLogin() {
-      const username = document.getElementById('collectorUsername').value.trim();
-      const password = document.getElementById('collectorPassword').value;
-      const errBox = document.getElementById('loginErrorMessage');
-      const errText = document.getElementById('loginErrorText');
-
-      if (errBox) errBox.classList.add('hidden');
-
-      if (!username || !password) {
-        if (errBox && errText) {
-          errText.innerText = 'Kính xin quý khách nhập đầy đủ Tên đăng nhập và Mật khẩu.';
-          errBox.classList.remove('hidden');
-        } else {
-          alert('Kính xin thượng khách nhập đầy đủ Tên đăng nhập (Email / SĐT) và Mật khẩu.');
-        }
-        return;
-      }
-
-      // Visual feedback on login action
-      const btn = document.querySelector('#collectorLoginForm button[type="submit"]');
-      const originalHTML = btn ? btn.innerHTML : '';
-      if (btn) {
-        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span class="font-title-md text-title-md uppercase tracking-wider">Đang xác thực bảo ấn...</span>';
-        btn.disabled = true;
-      }
-
-      ApiService.login({ emailOrPhone: username, password }, function(err, res) {
-        if (err || !res || !res.success) {
-          const errMsg = (res && res.message) || err || 'Đăng nhập không thành công. Kính xin quý khách kiểm tra lại tài khoản hoặc mật khẩu.';
-          if (errBox && errText) {
-            errText.innerText = errMsg;
-            errBox.classList.remove('hidden');
-          }
-          alert(errMsg);
-          if (btn) {
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-          }
-        } else {
-          currentUser = res.data;
-          localStorage.setItem('craftory_user', JSON.stringify(currentUser));
-          updateAvatarState();
-
-          if (btn) {
-            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">verified</span><span class="font-title-md text-title-md uppercase tracking-wider">Đăng nhập thành công!</span>';
-            btn.classList.remove('bg-secondary');
-            btn.classList.add('bg-primary');
-          }
-
-          setTimeout(() => {
-            if (window.pendingAction) {
-              const act = window.pendingAction;
-              window.pendingAction = null;
-              act();
-            } else {
-              dieuHuong('profile');
-            }
-          }, 400);
-        }
-      });
-    }
-  </script>
 </div>

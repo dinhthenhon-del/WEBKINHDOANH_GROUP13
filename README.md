@@ -56,7 +56,15 @@ Mở một Terminal mới, chuyển vào thư mục server và chạy lệnh sta
 cd server
 npm start
 ```
-*(Server sẽ bắt đầu chạy và kết nối Database)*
+*(Server cần kết nối MongoDB qua biến `MONGODB_URI` trong file `server/.env`. Không chia sẻ hoặc đưa file này lên Git.)*
+
+Các file seed chạy không tham số chỉ xem trước, không ghi MongoDB. API danh mục sản phẩm chỉ trả dữ liệu có nguồn trang Minh Long, ảnh CDN hợp lệ và liên kết danh mục/bộ sưu tập; nếu database chưa được seed, Customer/Admin sẽ hiển thị danh sách trống thay vì sản phẩm cũ hoặc ảnh thay thế. Để nạp dữ liệu, xác nhận đúng tên database trong MongoDB và chạy từ thư mục `server` theo thứ tự:
+```bash
+node seed_categories.js --apply --confirm-db=TEN_DATABASE
+node seed_collections.js --apply --confirm-db=TEN_DATABASE
+node seed_products.js --apply --confirm-db=TEN_DATABASE
+```
+*(Thay `TEN_DATABASE` bằng đúng tên database trong MongoDB. Ba seed script cần `--apply --confirm-db=TEN_DATABASE` để ghi; seed sản phẩm yêu cầu danh mục và bộ sưu tập đã tồn tại để gắn đúng `categoryId`, `collectionId` và `collectionName`, đồng thời xử lý SKU có sẵn theo quy tắc trong script. Giá là snapshot từ lần cập nhật seed; stock là dữ liệu kiểm thử, không phải tồn kho thật của Minh Long. Không chạy lệnh `--apply` nếu chưa được chủ sở hữu database cho phép.)*
 
 **2. Chạy Frontend (Admin Web):**
 Mở một Terminal mới, chuyển vào thư mục admin-web và chạy:
@@ -70,6 +78,7 @@ npm start
 - Trong trình soạn thảo VS Code, mở thư mục `customer-web`.
 - Chuột phải vào file `index.html` và chọn **"Open with Live Server"**.
 - Trình duyệt sẽ tự động bật lên hiển thị trang web của khách hàng.
+- Từ menu **Danh mục sản phẩm**, chọn một sản phẩm để mở chi tiết; chọn **Xem tất cả bộ sưu tập** để mở danh sách, rồi chọn một bộ sưu tập để xem các sản phẩm thuộc bộ đó. API backend phải đang chạy.
 
 ---
 

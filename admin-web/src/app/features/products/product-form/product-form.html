@@ -1,1 +1,393 @@
-<p>product-form works!</p>
+<div class="max-w-[1440px] mx-auto p-space-xl">
+  <div class="flex flex-col w-full space-y-space-lg">
+
+    <!-- Top Headline & Action Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pb-space-md border-b border-surface-container">
+      <div class="flex flex-col space-y-space-xs">
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-outline text-xs font-medium">
+          <a routerLink="/products" class="hover:text-primary transition-colors cursor-pointer">Sản phẩm &amp; Tồn kho</a>
+          <span>/</span>
+          <span class="text-secondary font-semibold">{{ isEditMode ? 'Chỉnh sửa tác phẩm' : 'Thêm mới tác phẩm' }}</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight leading-tight">
+          {{ isEditMode ? 'Chỉnh sửa tác phẩm gốm sứ' : 'Thêm mới tác phẩm gốm sứ' }}
+        </h1>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-1 leading-normal">
+          Nhập thông số chế tác thủ công, giá niêm yết và đính kèm ảnh từ nguồn đã xác minh
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-space-sm">
+        <button (click)="onCancel()" class="px-5 h-10 rounded-lg border border-surface-variant bg-surface-container-low hover:bg-surface-container text-on-surface font-semibold text-xs transition-colors cursor-pointer" type="button">
+          Hủy bỏ
+        </button>
+        <button (click)="onSubmit()" [disabled]="isSubmitting" class="inline-flex items-center gap-space-xs px-6 h-10 rounded-lg bg-secondary text-white hover:bg-[#852f0e] font-semibold text-xs transition-all shadow-md disabled:opacity-50 cursor-pointer" type="button">
+          <span *ngIf="isSubmitting" class="material-symbols-outlined animate-spin text-base">progress_activity</span>
+          <span *ngIf="!isSubmitting" class="material-symbols-outlined text-base">save</span>
+          <span>{{ isEditMode ? 'Lưu cập nhật' : 'Hoàn tất & Lưu tác phẩm' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Form Grid (2 Columns) -->
+    <form (ngSubmit)="onSubmit()" class="product-form-grid">
+
+      <!-- LEFT COLUMN: THÔNG TIN SẢN PHẨM & KHO (8 COLS) -->
+      <div class="product-form-main space-y-space-lg">
+
+        <!-- 1. THÔNG TIN CƠ BẢN -->
+        <div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm border border-surface-container space-y-space-md">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
+            <span class="material-symbols-outlined text-secondary text-xl">draw</span>
+            <h2 class="font-headline-sm text-lg text-primary font-bold">Thông tin cơ bản</h2>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Tên sản phẩm -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Tên tác phẩm gốm sứ <span class="text-error">*</span>
+              </label>
+              <input [(ngModel)]="product.name" name="name" type="text" placeholder="Nhập tên tác phẩm" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" [ngClass]="{'border-error': validationErrors['name']}" />
+              <p *ngIf="validationErrors['name']" class="text-xs text-error mt-1">{{ validationErrors['name'] }}</p>
+            </div>
+
+            <!-- SKU & Danh mục -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                  Mã định danh SKU <span class="text-error">*</span>
+                </label>
+                <input [(ngModel)]="product.sku" name="sku" type="text" placeholder="Nhập mã SKU" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-mono text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all uppercase" [ngClass]="{'border-error': validationErrors['sku']}" />
+                <p *ngIf="validationErrors['sku']" class="text-xs text-error mt-1">{{ validationErrors['sku'] }}</p>
+              </div>
+
+              <div>
+                <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                  Danh mục phân loại <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                  <select [(ngModel)]="product.categoryId" name="categoryId" class="w-full h-11 px-3.5 pr-8 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer" [ngClass]="{'border-error': validationErrors['categoryId']}">
+                    <option value="" disabled>-- Chọn danh mục bảo vật --</option>
+                    <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+                  </select>
+                  <span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none text-lg">expand_more</span>
+                </div>
+                <p *ngIf="validationErrors['categoryId']" class="text-xs text-error mt-1">{{ validationErrors['categoryId'] }}</p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                URL nguồn sản phẩm <span class="text-error">*</span>
+              </label>
+              <input [(ngModel)]="product.sourceUrl" name="sourceUrl" type="url" (ngModelChange)="syncSourceUrl($event)" placeholder="https://..." class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+              <p class="text-xs text-outline mt-1">Có thể nhập link trang sản phẩm hoặc link ảnh.</p>
+              <p *ngIf="validationErrors['sourceUrl']" class="text-xs text-error mt-1">{{ validationErrors['sourceUrl'] }}</p>
+            </div>
+
+            <!-- Dòng men & Bộ sưu tập -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                  Dòng men ngự chế cổ truyền
+                </label>
+                <input [(ngModel)]="product.glazeColor" name="glazeColor" type="text" placeholder="Chỉ nhập thông tin có trên nguồn" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+              </div>
+
+              <div>
+                <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                  Bộ sưu tập
+                </label>
+                <div class="relative">
+                  <select [(ngModel)]="product.collectionName" name="collectionName" class="w-full h-11 px-3.5 pr-8 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+                    <option value="">-- Không thuộc bộ sưu tập --</option>
+                    <option *ngFor="let collection of collections" [value]="collection.name">{{ collection.name }}</option>
+                  </select>
+                  <span class="material-symbols-outlined absolute right-3 top-3 text-outline pointer-events-none text-lg">expand_more</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mô tả sản phẩm -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Mô tả chi tiết tác phẩm &amp; Điển tích chế tác
+              </label>
+              <textarea [(ngModel)]="product.description" name="description" rows="4" placeholder="Nhập mô tả tác phẩm..." class="w-full p-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all resize-y"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. THÔNG SỐ KỸ THUẬT & CHẾ TÁC -->
+        <div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm border border-surface-container space-y-space-md">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
+            <span class="material-symbols-outlined text-secondary text-xl">tune</span>
+            <h2 class="font-headline-sm text-lg text-primary font-bold">Thông số kỹ thuật &amp; Chế tác thủ công</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Kích thước -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Kích thước (Cao x Miệng x Bụng)
+              </label>
+              <input [(ngModel)]="product.size" name="size" type="text" placeholder="Cao 52cm x Miệng 20cm x Bụng 35cm" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <!-- Chất liệu -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Cốt đất &amp; Chất liệu
+              </label>
+              <input [(ngModel)]="product.material" name="material" type="text" placeholder="Đất phù sa sông Hồng sa khoáng tuyển chọn" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <!-- Nhiệt độ nung -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Nhiệt độ nung kiểm định
+              </label>
+              <input [(ngModel)]="product.firingTemp" name="firingTemp" type="text" placeholder="Chỉ nhập thông tin có trên nguồn" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <!-- Đơn vị tính -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Đơn vị tính <span class="text-error">*</span>
+              </label>
+              <select [(ngModel)]="product.unit" name="unit" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all">
+                <option value="chiếc">chiếc</option>
+                <option value="bộ">bộ</option>
+                <option value="bình">bình</option>
+                <option value="cặp">cặp</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. QUẢN LÝ GIÁ & TỒN KHO -->
+        <div class="bg-surface-container-lowest p-space-xl rounded-xl shadow-sm border border-surface-container space-y-space-md">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
+            <span class="material-symbols-outlined text-secondary text-xl">payments</span>
+            <h2 class="font-headline-sm text-lg text-primary font-bold">Quản lý Giá &amp; Tồn kho</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Giá niêm yết -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Giá niêm yết (VNĐ) <span class="text-error">*</span>
+              </label>
+              <input [(ngModel)]="product.price" name="price" type="number" min="1" placeholder="0" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-mono text-base font-bold text-primary focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" [ngClass]="{'border-error': validationErrors['price']}" />
+              <p *ngIf="validationErrors['price']" class="text-xs text-error mt-1">{{ validationErrors['price'] }}</p>
+            </div>
+
+            <!-- Giá ưu đãi -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Giá gạch cũ / Chiết khấu nghệ nhân (VNĐ)
+              </label>
+              <input [(ngModel)]="product.originalPrice" name="originalPrice" type="number" min="0" placeholder="0" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-mono text-base text-on-surface-variant focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <!-- Số lượng tồn kho ban đầu -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Số lượng tồn kho ban đầu <span class="text-error">*</span>
+              </label>
+              <input [(ngModel)]="product.stock" name="stock" type="number" min="0" placeholder="0" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-mono text-base font-bold text-primary focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" [ngClass]="{'border-error': validationErrors['stock']}" />
+              <p *ngIf="validationErrors['stock']" class="text-xs text-error mt-1">{{ validationErrors['stock'] }}</p>
+            </div>
+
+            <!-- Cảnh báo tồn tối thiểu -->
+            <div>
+              <label class="block font-label-md text-xs font-semibold text-primary mb-1.5">
+                Cảnh báo tồn kho tối thiểu
+              </label>
+              <input [(ngModel)]="product.minStockAlert" name="minStockAlert" type="number" min="0" placeholder="3" class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-mono text-base text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+              <span class="text-[11px] text-outline mt-1 block">Hệ thống sẽ gắn thẻ cảnh báo khi tồn kho ≤ mức này</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: HÌNH ẢNH CHỈ CÓ URL -->
+      <div class="product-form-sidebar space-y-space-lg">
+        <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-container space-y-space-md">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
+            <span class="material-symbols-outlined text-secondary text-xl">photo_library</span>
+            <h2 class="font-headline-sm text-base text-primary font-bold">Ảnh sản phẩm</h2>
+          </div>
+
+          <div class="p-3 bg-[#f2e2d8] border border-[#e7c9b3] rounded-lg text-xs text-[#7b3e1d] leading-relaxed">
+            Nhập URL ảnh đã xác minh từ nguồn chính thức để hiển thị trên gian hàng.
+          </div>
+
+          <label class="block font-label-md text-xs font-semibold text-primary mb-1.5" for="product-image-url">
+            URL ảnh sản phẩm
+          </label>
+          <input id="product-image-url" [(ngModel)]="imageUrlInput" name="imageUrlInput" type="url" (ngModelChange)="syncPrimaryImageUrl($event)" placeholder="https://..." class="w-full h-11 px-3.5 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-sm text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all" />
+          <p *ngIf="validationErrors['image']" class="text-xs text-error mt-1">{{ validationErrors['image'] }}</p>
+
+          <div *ngIf="previewImages.length > 0" class="space-y-2 pt-2">
+            <span class="font-label-sm text-xs font-semibold text-primary block">Xem trước hình ảnh:</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div *ngFor="let img of previewImages; let i = index" class="relative group rounded-lg overflow-hidden border border-surface-variant aspect-square bg-surface-container">
+                <img [src]="img" class="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. TRẠNG THÁI & ĐẶC QUYỀN PHÁT HÀNH -->
+        <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-container space-y-space-md">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
+            <span class="material-symbols-outlined text-secondary text-xl">toggle_on</span>
+            <h2 class="font-headline-sm text-base text-primary font-bold">Trạng thái phát hành</h2>
+          </div>
+
+          <!-- Trạng thái bán -->
+          <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+            <div class="flex flex-col">
+              <span class="font-label-md text-xs font-bold text-primary">Hiển thị trên gian hàng</span>
+              <span class="text-[11px] text-outline">Khách hàng có thể tìm kiếm &amp; đặt mua</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [checked]="product.status === 'active'" (change)="product.status = $any($event.target).checked ? 'active' : 'inactive'" class="sr-only peer" />
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
+          </div>
+
+          <!-- Cho phép cá nhân hóa 2D -->
+          <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
+            <div class="flex flex-col">
+              <span class="font-label-md text-xs font-bold text-primary">Hỗ trợ Xưởng 2D</span>
+              <span class="text-[11px] text-outline">Cho phép khắc ấn triện &amp; thư pháp</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [(ngModel)]="product.custom2DEnabled" name="custom2DEnabled" class="sr-only peer" />
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 6. LUỒNG ĐỒNG BỘ JSON -> MONGODB (YÊU CẦU 6) -->
+        <div class="bg-surface-container-lowest p-space-md rounded-xl border border-surface-container text-xs text-on-surface-variant space-y-1.5">
+          <div class="flex items-center gap-1.5 font-bold text-primary">
+            <span class="material-symbols-outlined text-base text-emerald-600">sync_alt</span>
+            <span>Quy trình ghi đồng bộ dữ liệu:</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-outline">
+            1. Form Angular submit dữ liệu.<br/>
+            2. Express Backend ghi nguyên tử vào file <code class="font-mono text-secondary">products_runtime.json</code>.<br/>
+            3. Đọc dữ liệu từ file và đồng bộ cập nhật MongoDB.<br/>
+            4. Trả về kết quả xác thực cho Admin.
+          </p>
+        </div>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- ================= CREATE PRODUCT CONFIRMATION ================= -->
+<div *ngIf="isCreateConfirmationOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0A2540]/60 backdrop-blur-sm">
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="createProductConfirmTitle"
+    class="w-full max-w-md rounded-2xl border border-surface-container bg-surface-container-lowest p-6 shadow-2xl"
+  >
+    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+      <span class="material-symbols-outlined text-3xl">inventory_2</span>
+    </div>
+    <h2 id="createProductConfirmTitle" class="text-center font-headline-sm text-xl font-bold text-primary">Xác nhận thêm sản phẩm</h2>
+    <p class="mt-2 text-center font-body-sm text-sm leading-relaxed text-on-surface-variant">
+      Thêm sản phẩm “{{ product.name }}” vào hệ thống và lưu vào MongoDB?
+    </p>
+    <div class="mt-6 flex gap-3">
+      <button
+        (click)="cancelCreateConfirmation()"
+        type="button"
+        class="flex-1 rounded-lg border border-surface-variant bg-surface-container-low px-4 py-3 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-container"
+      >
+        Hủy
+      </button>
+      <button
+        (click)="confirmCreateProduct()"
+        type="button"
+        class="flex-1 rounded-lg bg-secondary px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#852f0e]"
+      >
+        Thêm sản phẩm
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- ================= STITCH NOTICE MODAL ================= -->
+<div *ngIf="isNoticeModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0A2540]/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="productNoticeTitle"
+    class="relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-surface-container bg-surface-container-lowest p-6 text-center shadow-2xl"
+  >
+    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-error/10 text-error">
+      <span class="material-symbols-outlined text-3xl">{{ noticeIcon }}</span>
+    </div>
+
+    <h2 id="productNoticeTitle" class="font-headline-sm text-xl font-bold text-primary">{{ noticeTitle }}</h2>
+    <p class="mt-2 whitespace-pre-line font-body-sm text-sm leading-relaxed text-on-surface-variant">{{ noticeMessage }}</p>
+
+    <ul *ngIf="noticeDetails.length > 0" class="mt-4 max-h-[35vh] space-y-2 overflow-y-auto rounded-xl bg-surface-container-low p-4 text-left">
+      <li *ngFor="let detail of noticeDetails" class="flex items-start gap-2 text-sm text-on-surface-variant">
+        <span class="material-symbols-outlined mt-0.5 text-base text-secondary">error</span>
+        <span>{{ detail }}</span>
+      </li>
+    </ul>
+
+    <button
+      (click)="onCloseNoticeModal()"
+      type="button"
+      class="mt-6 w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#07192c]"
+    >
+      Đã hiểu
+    </button>
+  </section>
+</div>
+
+<!-- ================= STITCH SUCCESS MODAL (SCREEN 3) ================= -->
+<div *ngIf="isSuccessModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+  <div class="relative w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container p-6 text-center space-y-4">
+    <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-inner">
+      <span class="material-symbols-outlined text-3xl">check_circle</span>
+    </div>
+
+    <div>
+      <h3 class="font-headline-sm text-xl text-primary font-bold">{{ successTitle }}</h3>
+      <p class="font-body-sm text-xs text-on-surface-variant mt-2 leading-relaxed">
+        {{ successDescription }}
+      </p>
+    </div>
+
+    <div class="p-3 bg-surface-container-low rounded-xl text-left flex items-center gap-3">
+      <img *ngIf="product.image" [src]="product.image" class="w-12 h-12 rounded-lg object-cover border border-surface-variant shrink-0" />
+      <div class="flex flex-col min-w-0">
+        <span class="font-bold text-xs text-primary truncate">{{ product.name }}</span>
+        <span class="text-[11px] text-secondary font-semibold font-mono">{{ product.sku }} • {{ (product.price || 0) | number:'1.0-0' }}₫</span>
+        <span class="text-[10px] text-outline">Tồn thử nghiệm: {{ product.stock }} {{ product.unit || 'chiếc' }}</span>
+      </div>
+    </div>
+
+    <div class="pt-2">
+      <button (click)="onCloseSuccessModal()" class="w-full py-3 rounded-lg bg-primary text-white font-semibold text-xs hover:bg-[#07192c] transition-colors cursor-pointer shadow-md" type="button">
+        Về danh sách quản lý sản phẩm
+      </button>
+    </div>
+  </div>
+</div>
