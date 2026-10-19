@@ -45,7 +45,7 @@ export class ProductList implements OnInit {
   isConfirmModalOpen = false;
   modalMode: 'confirm' | 'notice' = 'confirm';
   targetProduct: ProductItem | null = null;
-  modalAction: 'pause' | 'delete' | 'stock' = 'pause';
+  modalAction: 'pause' | 'stock' = 'pause';
   stockDelta = 0;
   modalTitle = '';
   modalConfirmLabel = '';
@@ -184,17 +184,6 @@ export class ProductList implements OnInit {
     this.isConfirmModalOpen = true;
   }
 
-  // Mở modal xác nhận xóa
-  openDeleteModal(product: ProductItem): void {
-    this.targetProduct = product;
-    this.modalMode = 'confirm';
-    this.modalAction = 'delete';
-    this.modalTitle = 'Xác nhận xóa tác phẩm';
-    this.modalConfirmLabel = 'Xác nhận xóa';
-    this.modalNotice = `Bạn có chắc chắn muốn xóa tác phẩm "${product.name}" không?`;
-    this.isConfirmModalOpen = true;
-  }
-
   openStockAdjustModal(product: ProductItem, delta: number): void {
     if (!product._id || !delta || (delta < 0 && (product.stock || 0) === 0)) return;
     this.targetProduct = product;
@@ -250,19 +239,6 @@ export class ProductList implements OnInit {
         },
         error: (err) => {
           this.showNoticeModal('Không thể cập nhật trạng thái', err.error?.message || err.message || 'Vui lòng thử lại.');
-        }
-      });
-    } else if (this.modalAction === 'delete') {
-      this.productService.deleteProduct(prodId).subscribe({
-        next: (res) => {
-          this.modalLoading = false;
-          this.closeConfirmModal();
-          this.loadSummary();
-          this.loadProducts();
-          this.showNoticeModal(res.warning ? 'Đã xóa sản phẩm kèm lưu ý' : 'Đã xóa sản phẩm', [res.message, res.warning].filter(Boolean).join('\n'));
-        },
-        error: (err) => {
-          this.showNoticeModal('Không thể xóa sản phẩm', err.error?.message || err.message || 'Vui lòng thử lại.');
         }
       });
     } else if (this.modalAction === 'stock') {

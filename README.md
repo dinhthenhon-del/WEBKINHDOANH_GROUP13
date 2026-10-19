@@ -58,13 +58,13 @@ npm start
 ```
 *(Server cần kết nối MongoDB qua biến `MONGODB_URI` trong file `server/.env`. Không chia sẻ hoặc đưa file này lên Git.)*
 
-Các file seed chạy không tham số chỉ xem trước, không ghi MongoDB. API danh mục sản phẩm chỉ trả dữ liệu có nguồn trang Minh Long, ảnh CDN hợp lệ và liên kết danh mục/bộ sưu tập; nếu database chưa được seed, Customer/Admin sẽ hiển thị danh sách trống thay vì sản phẩm cũ hoặc ảnh thay thế. Để nạp dữ liệu, xác nhận đúng tên database trong MongoDB và chạy từ thư mục `server` theo thứ tự:
+Các file seed chạy không tham số chỉ xem trước, không ghi MongoDB. API danh mục sản phẩm chỉ trả dữ liệu có nguồn sản phẩm Minh Long hoặc Gốm sứ Long Loan, ảnh trực tiếp hợp lệ và liên kết danh mục/bộ sưu tập; nếu database chưa được seed, Customer/Admin sẽ hiển thị danh sách trống thay vì sản phẩm cũ hoặc ảnh thay thế. Để nạp dữ liệu, xác nhận đúng tên database trong MongoDB và chạy từ thư mục `server` theo thứ tự:
 ```bash
 node seed_categories.js --apply --confirm-db=TEN_DATABASE
 node seed_collections.js --apply --confirm-db=TEN_DATABASE
 node seed_products.js --apply --confirm-db=TEN_DATABASE
 ```
-*(Thay `TEN_DATABASE` bằng đúng tên database trong MongoDB. Ba seed script cần `--apply --confirm-db=TEN_DATABASE` để ghi; seed sản phẩm yêu cầu danh mục và bộ sưu tập đã tồn tại để gắn đúng `categoryId`, `collectionId` và `collectionName`, đồng thời xử lý SKU có sẵn theo quy tắc trong script. Giá là snapshot từ lần cập nhật seed; stock là dữ liệu kiểm thử, không phải tồn kho thật của Minh Long. Không chạy lệnh `--apply` nếu chưa được chủ sở hữu database cho phép.)*
+*(Thay `TEN_DATABASE` bằng đúng tên database trong MongoDB. Ba seed script cần `--apply --confirm-db=TEN_DATABASE` để ghi; seed sản phẩm yêu cầu danh mục và bộ sưu tập đã tồn tại để gắn đúng `categoryId`, `collectionId` và `collectionName`, đồng thời xử lý SKU có sẵn theo quy tắc trong script. Giá sản phẩm Minh Long là snapshot; giá và stock của sản phẩm Long Loan là dữ liệu demo, không phải báo giá hoặc tồn kho thật. Không chạy lệnh `--apply` nếu chưa được chủ sở hữu database cho phép.)*
 
 **2. Chạy Frontend (Admin Web):**
 Mở một Terminal mới, chuyển vào thư mục admin-web và chạy:

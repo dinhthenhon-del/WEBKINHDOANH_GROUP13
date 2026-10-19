@@ -8,9 +8,8 @@ const APPLY = process.argv.includes('--apply');
 const CONFIRM_DB = process.argv.find((arg) => arg.startsWith('--confirm-db='))?.split('=')[1];
 
 /**
- * Bốn bộ sưu tập có ảnh chụp bộ sản phẩm thật của Minh Long.
+ * Các bộ sưu tập có ảnh sản phẩm và trang nguồn đã xác minh.
  * Click collection -> product collectionName tương ứng.
- * Ảnh gốc lấy từ trang sản phẩm xác minh trên minhlong.com.
  */
 const sampleCollections = [
   {
@@ -43,6 +42,26 @@ const sampleCollections = [
     "description": "Dòng trà Camellia viền vàng. Ảnh đại diện là bộ trà 0.8 L.",
     "imageUrl": "https://product.hstatic.net/200000532849/product/bo-tra-08-l-camellia-chi-vang_01803801403-sm-01_91287cb9ecf04533a0adb34470db02be.png",
     "sourceUrl": "https://minhlong.com/products/bo-tra-0-8-l-camellia-chi-vang",
+    "status": "active"
+  },
+  {
+    "name": "Bộ Đồ Ăn Hoa Mặt Trời Men Lam",
+    "slug": "bo-do-an-hoa-mat-troi-men-lam",
+    "subTitle": "Nét lam cổ điển từ làng gốm Bát Tràng",
+    "countText": "3 tuyển phẩm",
+    "description": "Bộ bát đĩa hoa mặt trời vẽ họa tiết thủ công bằng men lam trên nền men trắng. Các đĩa cánh hoa xếp quanh tô lớn, tạo điểm nhấn trang nhã cho bàn ăn gia đình.",
+    "imageUrl": "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-men-lam-hoa-day-mau-don-gom-su-bat-trang.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/bo-bat-dia-hoa-mat-troi-hoa-mau-don-men-lam-bat-trang",
+    "status": "active"
+  },
+  {
+    "name": "Bình Men Lam Cổ Điển",
+    "slug": "binh-men-lam-co-dien",
+    "subTitle": "Tuyển chọn bình trang trí Bát Tràng",
+    "countText": "3 tuyển phẩm",
+    "description": "Các mẫu bình gốm Bát Tràng trang trí men lam với hoa văn vẽ tay, từ phượng hoàng và mẫu đơn đến cảnh sinh hoạt và hoa cẩm tú cầu.",
+    "imageUrl": "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-phuong-hoang-mau-don-men-lam-gom-su-bat-trang-cao-cap.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/binh-gom-song-phuong-vinh-hoa-men-lam-bat-trang",
     "status": "active"
   }
 ];

@@ -251,11 +251,6 @@
                   <button (click)="openPauseModal(p)" class="p-1.5 rounded-lg text-secondary hover:bg-secondary-container/50 transition-colors inline-flex items-center justify-center cursor-pointer" [title]="p.status === 'active' ? 'Ngừng bán' : 'Kích hoạt bán'">
                     <span class="material-symbols-outlined text-lg">{{ p.status === 'active' ? 'pause_circle' : 'play_circle' }}</span>
                   </button>
-
-                  <!-- Xóa sản phẩm -->
-                  <button (click)="openDeleteModal(p)" class="p-1.5 rounded-lg text-error hover:bg-error-container/50 transition-colors inline-flex items-center justify-center cursor-pointer" title="Xóa tác phẩm">
-                    <span class="material-symbols-outlined text-lg">delete</span>
-                  </button>
                 </div>
               </td>
             </tr>
@@ -313,8 +308,8 @@
     <!-- Header Modal -->
     <div class="p-6 border-b border-surface-container flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center" [ngClass]="modalAction === 'delete' ? 'bg-error-container text-error' : 'bg-secondary-container text-secondary'">
-          <span class="material-symbols-outlined text-2xl">{{ modalMode === 'notice' ? 'info' : modalAction === 'delete' ? 'delete_forever' : modalAction === 'stock' ? 'inventory_2' : 'pause_circle' }}</span>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-secondary-container text-secondary">
+          <span class="material-symbols-outlined text-2xl">{{ modalMode === 'notice' ? 'info' : modalAction === 'stock' ? 'inventory_2' : 'pause_circle' }}</span>
         </div>
         <div>
           <h3 class="font-headline-sm text-lg text-primary font-bold">{{ modalTitle }}</h3>
@@ -347,7 +342,7 @@
       <button *ngIf="modalMode === 'confirm'" (click)="closeConfirmModal()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors cursor-pointer" type="button">
         Hủy bỏ
       </button>
-      <button *ngIf="modalMode === 'confirm'" (click)="executeModalAction()" [disabled]="modalLoading" [ngClass]="modalAction === 'delete' ? 'bg-error hover:bg-red-700' : 'bg-secondary hover:bg-[#852f0e]'" class="px-5 py-2.5 rounded-lg text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-md" type="button">
+      <button *ngIf="modalMode === 'confirm'" (click)="executeModalAction()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg bg-secondary hover:bg-[#852f0e] text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-md" type="button">
         <span *ngIf="modalLoading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
         <span>{{ modalConfirmLabel }}</span>
       </button>

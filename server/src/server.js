@@ -17,12 +17,16 @@ const DEFAULT_MONGO_URI = 'mongodb://dinhthenhon_db_user:dinhthenhongmail.com@ac
 const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGO_URI;
 const MINHLONG_PRODUCT_URL = /^https:\/\/minhlong\.com\/products\/[a-z0-9-]+\/?$/i;
 const MINHLONG_IMAGE_URL = /^https:\/\/(?:cdn\.hstatic\.net\/products\/200000532849\/|product\.hstatic\.net\/200000532849\/product\/)[^?#]+\.(?:png|jpe?g|webp)(?:\?[^#]*)?$/i;
-const PRODUCT_IMAGE_URL = /^https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?$/i;
-const PRODUCT_IMAGE_PATTERN = /^(?:https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?|data:image\/(?:jpeg|jpg|png|webp|gif);base64,)/i;
+const BATTRANG_PRODUCT_URL = /^https:\/\/gomsulongloan\.vn\/san-pham\/[a-z0-9-]+\/?$/i;
+const BATTRANG_IMAGE_URL = /^https:\/\/gomsulongloan\.vn\/wp-content\/uploads\/[^?#]+\.(?:png|jpe?g|webp)(?:\?[^#]*)?$/i;
+const PRODUCT_IMAGE_URL = /^(?:https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?|https:\/\/encrypted-tbn\d*\.gstatic\.com\/images\?[^#]+)$/i;
+const PRODUCT_IMAGE_PATTERN = /^(?:https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?|https:\/\/encrypted-tbn\d*\.gstatic\.com\/images\?[^#]+|data:image\/(?:jpeg|jpg|png|webp|gif);base64,)/i;
 const MAX_PRODUCT_IMAGE_DATA_URLS_SIZE = 8 * 1024 * 1024;
 
 function isValidProductSource(sourceUrl) {
-  return MINHLONG_PRODUCT_URL.test(sourceUrl || '') || PRODUCT_IMAGE_URL.test(sourceUrl || '');
+  return MINHLONG_PRODUCT_URL.test(sourceUrl || '') ||
+    BATTRANG_PRODUCT_URL.test(sourceUrl || '') ||
+    PRODUCT_IMAGE_URL.test(sourceUrl || '');
 }
 
 function validateCatalogImage(image) {
@@ -57,7 +61,7 @@ function validateCatalogImages(images) {
 
 function getVerifiedCatalogProductFilter() {
   return {
-    sourceUrl: { $in: [MINHLONG_PRODUCT_URL, PRODUCT_IMAGE_URL] },
+    sourceUrl: { $in: [MINHLONG_PRODUCT_URL, BATTRANG_PRODUCT_URL, PRODUCT_IMAGE_URL] },
     name: { $type: 'string', $ne: '' },
     sku: { $type: 'string', $ne: '' },
     price: { $gt: 0 },
@@ -384,8 +388,8 @@ app.post('/api/products', async (req, res) => {
     if (cleanCollectionName) {
       selectedCollection = await Collection.findOne({
         name: cleanCollectionName,
-        sourceUrl: MINHLONG_PRODUCT_URL,
-        imageUrl: MINHLONG_IMAGE_URL,
+        sourceUrl: { $in: [MINHLONG_PRODUCT_URL, BATTRANG_PRODUCT_URL] },
+        imageUrl: { $in: [MINHLONG_IMAGE_URL, BATTRANG_IMAGE_URL] },
         status: 'active'
       });
       if (!selectedCollection) {
@@ -548,8 +552,8 @@ app.put('/api/products/:id', async (req, res) => {
       if (cleanCollectionName) {
         selectedCollection = await Collection.findOne({
           name: cleanCollectionName,
-          sourceUrl: MINHLONG_PRODUCT_URL,
-          imageUrl: MINHLONG_IMAGE_URL,
+          sourceUrl: { $in: [MINHLONG_PRODUCT_URL, BATTRANG_PRODUCT_URL] },
+          imageUrl: { $in: [MINHLONG_IMAGE_URL, BATTRANG_IMAGE_URL] },
           status: 'active'
         });
         if (!selectedCollection) {
@@ -771,8 +775,8 @@ app.get('/api/collections', async (req, res) => {
     };
     const distinctNames = await Product.distinct('collectionName', productFilter);
     const collectionFilter = { status: 'active' };
-    collectionFilter.sourceUrl = MINHLONG_PRODUCT_URL;
-    collectionFilter.imageUrl = MINHLONG_IMAGE_URL;
+    collectionFilter.sourceUrl = { $in: [MINHLONG_PRODUCT_URL, BATTRANG_PRODUCT_URL] };
+    collectionFilter.imageUrl = { $in: [MINHLONG_IMAGE_URL, BATTRANG_IMAGE_URL] };
     collectionFilter.name = { $in: distinctNames };
     let collections = await Collection.find(collectionFilter).sort({ createdAt: 1 }).lean();
 

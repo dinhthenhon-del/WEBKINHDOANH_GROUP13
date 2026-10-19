@@ -16,7 +16,8 @@ export class ProductForm implements OnInit {
   private readonly maxUploadBytes = 5 * 1024 * 1024;
   private readonly base64ImagePattern = /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/i;
   private readonly productUrlPattern = /^https:\/\/minhlong\.com\/products\/[a-z0-9-]+\/?$/i;
-  private readonly imageUrlPattern = /^https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?$/i;
+  private readonly battrangProductUrlPattern = /^https:\/\/gomsulongloan\.vn\/san-pham\/[a-z0-9-]+\/?$/i;
+  private readonly imageUrlPattern = /^(?:https:\/\/[^/?#]+\/[^?#]*\.(?:png|jpe?g|webp|gif|avif)(?:\?[^#]*)?(?:#.*)?|https:\/\/encrypted-tbn\d*\.gstatic\.com\/images\?[^#]+)$/i;
   private changeDetector = inject(ChangeDetectorRef);
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
@@ -258,7 +259,9 @@ export class ProductForm implements OnInit {
   }
 
   private isValidProductSource(sourceUrl: string): boolean {
-    return this.productUrlPattern.test(sourceUrl) || this.imageUrlPattern.test(sourceUrl);
+    return this.productUrlPattern.test(sourceUrl) ||
+      this.battrangProductUrlPattern.test(sourceUrl) ||
+      this.imageUrlPattern.test(sourceUrl);
   }
 
   private readImageAsDataUrl(file: File): Promise<string> {

@@ -8,10 +8,10 @@ const APPLY = process.argv.includes('--apply');
 const CONFIRM_DB = process.argv.find((arg) => arg.startsWith('--confirm-db='))?.split('=')[1];
 
 /**
- * 20 sản phẩm có trang sản phẩm và ảnh chính xác từ minhlong.com.
+ * Sản phẩm có trang sản phẩm và ảnh trực tiếp đã xác minh từ nguồn.
  * sourceUrl được lưu cùng sản phẩm để API chỉ công khai bản ghi có nguồn.
  * categorySlug chỉ dùng để tra categoryId, không lưu vào document products.
- * Giá và tồn kho là snapshot từ Shopify JSON; giá trị có thể thay đổi theo Minh Long.
+ * Giá và tồn kho Minh Long là snapshot; giá Long Loan và tồn kho là số demo do nguồn không công bố.
  */
 const sampleProducts = [
   {
@@ -408,6 +408,154 @@ const sampleProducts = [
     "status": "active",
     "averageRating": 0,
     "reviewCount": 0
+  },
+  {
+    "name": "Bộ bát đĩa hoa mặt trời Hoa Mẫu Đơn men lam",
+    "sku": "LL-BDA-9834",
+    "collectionName": "Bộ Đồ Ăn Hoa Mặt Trời Men Lam",
+    "categorySlug": "bo-do-an",
+    "price": 1890000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-men-lam-hoa-day-mau-don-gom-su-bat-trang.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-men-lam-hoa-day-mau-don-gom-su-bat-trang-long-loan.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-men-lam-hoa-day-mau-don-gom-su-bat-trang.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/bo-bat-dia-hoa-mat-troi-hoa-mau-don-men-lam-bat-trang",
+    "stock": 8,
+    "slug": "bo-bat-dia-hoa-mat-troi-hoa-mau-don-men-lam-bat-trang",
+    "description": "Bộ bát đĩa dáng hoa mặt trời với họa tiết hoa mẫu đơn vẽ tay bằng men lam cổ truyền trên nền men trắng ngà. Bộ gồm 6 đĩa vuông bo góc, 6 bát cơm, 3 chén nước chấm và 1 tô lớn miệng cánh sen.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Bộ 16 món",
+    "glazeColor": "Men lam trên nền trắng ngà",
+    "firingTemp": "",
+    "unit": "Bộ",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
+  },
+  {
+    "name": "Bộ bát đĩa hoa mặt trời Công Múa men lam",
+    "sku": "LL-BDA-9831",
+    "collectionName": "Bộ Đồ Ăn Hoa Mặt Trời Men Lam",
+    "categorySlug": "bo-do-an",
+    "price": 1950000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-cong-mua-men-lam-gom-su-bat-trang-long-loan.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-cong-mua-men-lam-gom-su-bat-trang-cao-cap-long-loan.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-cong-mua-men-lam-gom-su-bat-trang-long-loan.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/bo-bat-dia-hoa-mat-troi-cong-mua-men-lam-bat-trang",
+    "stock": 6,
+    "slug": "bo-bat-dia-hoa-mat-troi-cong-mua-men-lam-bat-trang",
+    "description": "Bộ bát đĩa dáng hoa mặt trời, họa tiết đôi chim công và hoa lá phối men lam. Bộ gồm 6 đĩa bày món ăn, 1 tô lớn ở trung tâm, 6 bát cơm và 3 chén gia vị.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Bộ 16 món",
+    "glazeColor": "Men lam",
+    "firingTemp": "",
+    "unit": "Bộ",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
+  },
+  {
+    "name": "Bộ bát đĩa hoa mặt trời Phú Quý Trường An men lam",
+    "sku": "LL-BDA-9828",
+    "collectionName": "Bộ Đồ Ăn Hoa Mặt Trời Men Lam",
+    "categorySlug": "bo-do-an",
+    "price": 1990000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-phu-quy-truong-an-men-lam-gom-su-bat-trang-long-loan.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-phu-quy-truong-an-men-lam-gom-su-bat-trang-long-loan-cao-cap.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/10/bo-bat-dia-hoa-mat-troi-phu-quy-truong-an-men-lam-gom-su-bat-trang-long-loan.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/bo-bat-dia-hoa-mat-troi-phu-quy-truong-an-men-lam-bat-trang",
+    "stock": 5,
+    "slug": "bo-bat-dia-hoa-mat-troi-phu-quy-truong-an-men-lam-bat-trang",
+    "description": "Bộ bát đĩa hoa mặt trời men lam với họa tiết cá chép, phượng hoàng, hoa sen và chữ Thọ. Bộ gồm 6 đĩa bày món, 1 tô lớn, 6 bát cơm và 3 chén chấm.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Bộ 16 món",
+    "glazeColor": "Men lam",
+    "firingTemp": "",
+    "unit": "Bộ",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
+  },
+  {
+    "name": "Bình gốm Song Phượng Vinh Hoa men lam",
+    "sku": "LL-BINH-9449",
+    "collectionName": "Bình Men Lam Cổ Điển",
+    "categorySlug": "binh",
+    "price": 3250000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-phuong-hoang-mau-don-men-lam-gom-su-bat-trang-cao-cap.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-phuong-hoang-mau-don-men-lam-gom-su-bat-trang.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-phuong-hoang-mau-don-men-lam-gom-su-bat-trang-long-loan-co-binh.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-phuong-hoang-mau-don-men-lam-gom-su-bat-trang-cao-cap.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/binh-gom-song-phuong-vinh-hoa-men-lam-bat-trang",
+    "stock": 4,
+    "slug": "binh-gom-song-phuong-vinh-hoa-men-lam-bat-trang",
+    "description": "Bình dáng chum, vai nở, cổ thắt nhẹ và miệng loe; trang trí đôi phượng hoàng cùng dây hoa mẫu đơn vẽ tay trên nền men lam. Nguồn sản phẩm ghi chiều cao 40 cm.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Cao 40 cm",
+    "glazeColor": "Men lam",
+    "firingTemp": "",
+    "unit": "Chiếc",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
+  },
+  {
+    "name": "Bình gốm Tôn Tử Vạn Đại men lam",
+    "sku": "LL-BINH-9252",
+    "collectionName": "Bình Men Lam Cổ Điển",
+    "categorySlug": "binh",
+    "price": 2950000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-trung-bay-ton-tu-van-dai-men-lam-cao-cap-long-loan-bat-trang.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-trung-bay-ton-tu-van-dai-men-lam-long-loan-bat-trang-cao-cap.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-bat-trang-ton-tu-van-dai-men-lam-long-loan-cao-cap.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-trung-bay-ton-tu-van-dai-men-lam-cao-cap-long-loan-bat-trang.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/binh-gom-ton-tu-van-dai-men-lam-bat-trang",
+    "stock": 3,
+    "slug": "binh-gom-ton-tu-van-dai-men-lam-bat-trang",
+    "description": "Bình dáng chum cổ, thân phình tròn và miệng nhỏ. Họa tiết trẻ em vui chơi được vẽ tay bằng men lam truyền thống trên nền men trắng.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Chưa công bố",
+    "glazeColor": "Men lam",
+    "firingTemp": "",
+    "unit": "Chiếc",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
+  },
+  {
+    "name": "Bình hoa Cẩm Tú Cầu men lam",
+    "sku": "LL-BINH-9074",
+    "collectionName": "Bình Men Lam Cổ Điển",
+    "categorySlug": "binh",
+    "price": 2150000,
+    "images": [
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-decor-hoa-cam-tu-cau-men-lam-gom-su-bat-trang.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-decor-hoa-cam-tu-cau-men-lam-gom-su-bat-trang-cao-cap.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-decor-hoa-cam-tu-cau-men-lam-gom-su-bat-trang-cao-cap-long-loan.jpg",
+      "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-decor-hoa-cam-tu-cau-men-lam-gom-su-bat-trang-cao-cap-dep.jpg"
+    ],
+    "image": "https://gomsulongloan.vn/wp-content/uploads/2025/08/binh-gom-decor-hoa-cam-tu-cau-men-lam-gom-su-bat-trang.jpg",
+    "sourceUrl": "https://gomsulongloan.vn/san-pham/binh-hoa-cam-tu-cau-men-lam-gom-su-bat-trang",
+    "stock": 7,
+    "slug": "binh-hoa-cam-tu-cau-men-lam-gom-su-bat-trang",
+    "description": "Bình hoa dáng trụ tròn với cổ thắt và miệng loe nhẹ, trang trí hoa cẩm tú cầu bằng các sắc độ men lam trên nền trắng. Kích thước không được công bố trên trang nguồn.",
+    "material": "Gốm sứ Bát Tràng",
+    "size": "Chưa công bố",
+    "glazeColor": "Men lam",
+    "firingTemp": "",
+    "unit": "Chiếc",
+    "status": "active",
+    "averageRating": 0,
+    "reviewCount": 0
   }
 ];
 
@@ -463,6 +611,11 @@ async function seed() {
         status: item.status,
         averageRating: item.averageRating,
         reviewCount: item.reviewCount,
+        material: item.material || '',
+        size: item.size || '',
+        glazeColor: item.glazeColor || '',
+        firingTemp: item.firingTemp || '',
+        unit: item.unit || 'Chiếc',
       };
       const sameSku = await Product.findOne({ sku: item.sku });
       const sameSlug = await Product.findOne({ slug: item.slug });
