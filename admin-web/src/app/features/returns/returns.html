@@ -1,0 +1,750 @@
+<div class="w-full px-space-lg py-space-md flex flex-col gap-space-lg">
+  <!-- Toast Notification -->
+  <div *ngIf="isToastVisible" class="fixed top-20 right-8 z-[100] flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#0A2540] text-white shadow-xl border border-surface-variant/40 animate-bounce">
+    <span class="material-symbols-outlined text-secondary text-xl">info</span>
+    <span class="text-sm font-medium">{{ toastMessage }}</span>
+  </div>
+
+  <!-- Top Heritage Breadcrumb & Context Header -->
+  <div class="flex flex-col gap-space-xs mb-space-xs">
+    <div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm uppercase tracking-widest text-[11px]">
+      <span class="hover:text-primary transition-colors cursor-pointer">Gốm Sứ Thanh Xuân</span>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span>Phân Hệ Quản Trị</span>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-secondary font-semibold">Quản lý Đổi - Trả hàng (UC-A05)</span>
+    </div>
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+      <div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">Quản Lý Yêu Cầu Đổi / Trả Hàng</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-1">
+          Hệ thống thẩm định, bảo hành và thu hồi tác phẩm gốm sứ thủ công mỹ nghệ. Đảm bảo chuẩn mực di sản và cam kết dịch vụ khách hàng 24/7.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm flex items-center gap-1.5 text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Đang kết nối API Backend
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI / Status Analytic Ribbon (4 Cards matching Stitch Screen 12) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-sm">
+    <!-- Card 1: Chờ thẩm định -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-variant/40 relative overflow-hidden flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Chờ thẩm định</span>
+        <span class="w-8 h-8 rounded-lg bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center">
+          <span class="material-symbols-outlined text-[18px]">hourglass_top</span>
+        </span>
+      </div>
+      <div class="mt-space-md flex items-baseline justify-between">
+        <div>
+          <span class="font-headline-md text-headline-md text-primary font-bold">{{ kpi.pending }}</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant ml-1">yêu cầu</span>
+        </div>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-secondary bg-secondary-fixed text-label-sm font-semibold">
+          Cần xử lý trong 24h
+        </span>
+      </div>
+      <div class="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
+        <div class="bg-secondary h-full rounded-full transition-all duration-500" [style.width.%]="(kpi.pending / (returns.length || 1)) * 100"></div>
+      </div>
+    </div>
+
+    <!-- Card 2: Đã chấp thuận -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-variant/40 relative overflow-hidden flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Đã chấp thuận</span>
+        <span class="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[18px]">verified</span>
+        </span>
+      </div>
+      <div class="mt-space-md flex items-baseline justify-between">
+        <div>
+          <span class="font-headline-md text-headline-md text-primary font-bold">{{ kpi.approved }}</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant ml-1">tác phẩm</span>
+        </div>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-primary bg-primary-fixed text-label-sm font-semibold">Đổi mới sản phẩm</span>
+      </div>
+      <div class="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
+        <div class="bg-primary h-full rounded-full transition-all duration-500" [style.width.%]="(kpi.approved / (returns.length || 1)) * 100"></div>
+      </div>
+    </div>
+
+    <!-- Card 3: Đã từ chối -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-variant/40 relative overflow-hidden flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Đã từ chối</span>
+        <span class="w-8 h-8 rounded-lg bg-error-container text-error flex items-center justify-center">
+          <span class="material-symbols-outlined text-[18px]">block</span>
+        </span>
+      </div>
+      <div class="mt-space-md flex items-baseline justify-between">
+        <div>
+          <span class="font-headline-md text-headline-md text-primary font-bold">{{ kpi.rejected }}</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant ml-1">hồ sơ</span>
+        </div>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-on-error-container bg-error-container text-label-sm font-semibold">
+          Sai tiêu chuẩn / Quá hạn
+        </span>
+      </div>
+      <div class="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
+        <div class="bg-error h-full rounded-full transition-all duration-500" [style.width.%]="(kpi.rejected / (returns.length || 1)) * 100"></div>
+      </div>
+    </div>
+
+    <!-- Card 4: Tỷ lệ xử lý đúng hạn -->
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-variant/40 relative overflow-hidden flex flex-col justify-between transition-transform hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tỷ lệ đúng hạn</span>
+        <span class="w-8 h-8 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        </span>
+      </div>
+      <div class="mt-space-md flex items-baseline justify-between">
+        <div>
+          <span class="font-headline-md text-headline-md text-primary font-bold">{{ kpi.slaRate }}%</span>
+        </div>
+        <span class="inline-flex items-center text-primary font-label-sm text-label-sm font-semibold">
+          <span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span> SLA &lt; 24h
+        </span>
+      </div>
+      <div class="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
+        <div class="bg-emerald-600 h-full rounded-full" style="width: 97.8%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operational Filter Strip & Search Section -->
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border border-surface-variant/40 flex flex-col gap-space-md">
+    <!-- Row 1: Search and High-level Tabs -->
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+      <!-- Search Input -->
+      <div class="relative flex-1 max-w-xl">
+        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+        <input [(ngModel)]="searchQuery" (input)="applyFilter()" class="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant pl-11 pr-4 py-2.5 rounded-lg font-body-sm text-body-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary-container border border-surface-variant/40 transition-all" placeholder="Tìm kiếm mã yêu cầu, mã đơn (#DH...), khách hàng, SĐT..." type="text">
+      </div>
+
+      <!-- Quick Status Filter Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+        <button (click)="setStatusFilter('all')" [ngClass]="statusFilter === 'all' ? 'bg-[#0A2540] text-white shadow-sm' : 'bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high'" class="px-3.5 py-1.5 rounded-full text-label-md font-semibold transition-colors flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Tất cả</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">{{ returns.length }}</span>
+        </button>
+        <button (click)="setStatusFilter('pending')" [ngClass]="statusFilter === 'pending' ? 'bg-[#0A2540] text-white shadow-sm' : 'bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high'" class="px-3.5 py-1.5 rounded-full text-label-md font-semibold transition-colors flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Chờ duyệt</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold">{{ kpi.pending }}</span>
+        </button>
+        <button (click)="setStatusFilter('approved')" [ngClass]="statusFilter === 'approved' ? 'bg-[#0A2540] text-white shadow-sm' : 'bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high'" class="px-3.5 py-1.5 rounded-full text-label-md font-semibold transition-colors flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Đã duyệt</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px]">{{ kpi.approved }}</span>
+        </button>
+        <button (click)="setStatusFilter('rejected')" [ngClass]="statusFilter === 'rejected' ? 'bg-[#0A2540] text-white shadow-sm' : 'bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high'" class="px-3.5 py-1.5 rounded-full text-label-md font-semibold transition-colors flex items-center gap-1.5 cursor-pointer" type="button">
+          <span>Từ chối</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-surface-variant text-on-surface-variant text-[10px]">{{ kpi.rejected }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 2: Secondary Dropdown Filters -->
+    <div class="flex flex-wrap items-center justify-between gap-space-sm pt-2 border-t border-surface-variant/40">
+      <div class="flex flex-wrap items-center gap-space-sm">
+        <!-- Reason Dropdown -->
+        <div class="relative">
+          <select [(ngModel)]="reasonFilter" (change)="applyFilter()" class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md py-2 pl-3 pr-8 rounded-lg cursor-pointer border border-surface-variant/40 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="">Lý do: Tất cả khiếu nại</option>
+            <option value="nut-ran">Nứt rạn men khi vận chuyển</option>
+            <option value="sai-mau">Sai mẫu / Kích thước cốt gốm</option>
+            <option value="loi-nung">Lỗi bọt khí &amp; bề mặt men nung</option>
+            <option value="khac">Khác (Bảo hành vàng vẽ)</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]">expand_more</span>
+        </div>
+
+        <!-- Timeframe Dropdown -->
+        <div class="relative">
+          <select [(ngModel)]="timeframeFilter" class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md py-2 pl-3 pr-8 rounded-lg cursor-pointer border border-surface-variant/40 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="7d">Thời gian: 7 ngày qua</option>
+            <option value="30d">Thời gian: 30 ngày qua</option>
+            <option value="quarter">Quý hiện tại (Q4/2026)</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[16px]">calendar_today</span>
+        </div>
+
+        <!-- Reset Button -->
+        <button (click)="resetFilters()" class="px-3 py-2 text-label-sm font-label-sm text-on-surface-variant hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+          <span>Đặt lại</span>
+        </button>
+      </div>
+
+      <!-- Live MongoDB Synced Indicator -->
+      <div class="flex items-center gap-2 text-label-sm font-label-sm text-on-surface-variant">
+        <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+        <span>Cập nhật thời gian thực từ Collection: <code class="font-mono text-primary font-semibold">returnRequests</code></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Artisanal Heritage Data Table -->
+  <div class="bg-surface-container-lowest rounded-xl shadow-md border border-surface-variant/40 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left min-w-[1080px]">
+        <thead>
+          <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border-b border-surface-variant/50">
+            <th class="py-3.5 px-4 w-12 text-center">
+              <input class="rounded accent-primary cursor-pointer w-4 h-4" type="checkbox">
+            </th>
+            <th class="py-3.5 px-4">Mã Đơn Hàng</th>
+            <th class="py-3.5 px-4">Loại Yêu Cầu</th>
+            <th class="py-3.5 px-4">Lý Do Đổi Trả</th>
+            <th class="py-3.5 px-4">Ảnh Minh Chứng</th>
+            <th class="py-3.5 px-4 text-center">Trạng Thái Yêu Cầu</th>
+            <th class="py-3.5 px-4">Người Xử Lý</th>
+            <th class="py-3.5 px-4">Thời Điểm Xử Lý</th>
+            <th class="py-3.5 px-4 text-right">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-variant/40 text-on-surface font-body-sm text-body-sm">
+          <tr *ngFor="let item of paginatedReturns" class="hover:bg-surface-container/60 transition-colors">
+            <td class="py-4 px-4 text-center">
+              <input class="rounded accent-primary cursor-pointer w-4 h-4" type="checkbox">
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex flex-col">
+                <span class="font-title-sm text-title-sm text-primary font-bold">{{ getOrderCode(item) }}</span>
+                <span class="text-on-surface-variant text-[11px]">{{ formatDate(item.createdAt) }}</span>
+              </div>
+            </td>
+            <td class="py-4 px-4">
+              <span *ngIf="item.type === 'exchange'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-secondary-fixed text-on-secondary-fixed font-semibold">
+                Đổi hàng
+              </span>
+              <span *ngIf="item.type !== 'exchange'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-error-container text-on-error-container font-semibold">
+                Trả hàng
+              </span>
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex flex-col max-w-[220px]">
+                <span class="text-primary font-semibold line-clamp-1">{{ item.reason }}</span>
+                <span class="text-on-surface-variant text-[12px] truncate">{{ getProductName(item) }}</span>
+              </div>
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex items-center gap-2">
+                <img *ngIf="item.evidenceImages && item.evidenceImages.length > 0"
+                     [src]="item.evidenceImages[0]"
+                     (click)="openImageLightbox(item.evidenceImages[0], $event)"
+                     alt="Minh chứng"
+                     class="w-12 h-12 rounded-lg object-cover shadow-sm shrink-0 border border-surface-variant cursor-pointer hover:scale-105 transition-transform">
+                <span *ngIf="item.evidenceImages && item.evidenceImages.length > 0" class="text-[11px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm font-semibold">
+                  {{ item.evidenceImages.length }} ảnh
+                </span>
+                <span *ngIf="!item.evidenceImages || item.evidenceImages.length === 0" class="text-[11px] text-on-surface-variant italic">
+                  Không kèm ảnh
+                </span>
+              </div>
+            </td>
+            <td class="py-4 px-4 text-center">
+              <span *ngIf="item.status === 'pending'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-secondary-fixed text-on-secondary-fixed font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary mr-1.5 animate-ping"></span>
+                Pending
+              </span>
+              <span *ngIf="item.status === 'approved'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed font-semibold">
+                <span class="material-symbols-outlined text-[13px] mr-1">check_circle</span>
+                Approved
+              </span>
+              <span *ngIf="item.status === 'rejected'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-error-container text-on-error-container font-semibold">
+                <span class="material-symbols-outlined text-[13px] mr-1">close</span>
+                Rejected
+              </span>
+              <span *ngIf="item.status === 'completed'" class="inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface font-semibold">
+                <span class="material-symbols-outlined text-[13px] mr-1">task_alt</span>
+                Completed
+              </span>
+            </td>
+            <td class="py-4 px-4">
+              <span class="text-on-surface font-medium">{{ getProcessorName(item) }}</span>
+            </td>
+            <td class="py-4 px-4">
+              <span class="text-on-surface-variant text-[12px]">{{ formatDateTime(item.processedAt) }}</span>
+            </td>
+            <td class="py-4 px-4 text-right">
+              <button (click)="openDetail(item)" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-[#07192c] shadow-sm transition-all inline-flex items-center gap-1 cursor-pointer" type="button">
+                <span>Xử lý yêu cầu</span>
+                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedReturns.length === 0">
+            <td colspan="9" class="py-12 text-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl text-outline mb-2">find_in_page</span>
+              <p class="font-medium text-base">Không tìm thấy yêu cầu đổi trả phù hợp</p>
+              <button (click)="resetFilters()" class="mt-3 px-4 py-2 rounded-lg bg-surface-container text-primary text-xs font-semibold hover:bg-surface-container-high">
+                Đặt lại bộ lọc
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination & Bulk Execution Bar -->
+    <div class="p-space-md bg-surface-container-low border-t border-surface-variant/40 flex flex-col sm:flex-row items-center justify-between gap-space-md">
+      <div class="flex items-center gap-space-md">
+        <span class="text-on-surface-variant font-body-sm text-body-sm">
+          Hiển thị <span class="font-semibold text-primary">{{ paginatedReturns.length ? (currentPage - 1) * pageSize + 1 : 0 }} - {{ (currentPage - 1) * pageSize + paginatedReturns.length }}</span> trên tổng số <span class="font-semibold text-primary">{{ filteredReturns.length }}</span> yêu cầu đổi trả
+        </span>
+      </div>
+      <!-- Pagination Buttons -->
+      <div class="flex items-center gap-1.5">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" [ngClass]="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-container'" class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <button *ngFor="let p of [1, 2, 3]; let i = index"
+                (click)="changePage(i + 1)"
+                [ngClass]="currentPage === (i + 1) ? 'bg-[#0A2540] text-white shadow-sm' : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container'"
+                class="w-8 h-8 rounded-lg font-label-md text-label-md transition-colors cursor-pointer"
+                type="button">
+          {{ i + 1 }}
+        </button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages" [ngClass]="currentPage >= totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-surface-container'" class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operational Policy Guidelines Callout (Bat Trang Artisanal Standard) -->
+  <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 flex flex-col md:flex-row items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-md">
+      <div class="w-12 h-12 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[24px]">verified_user</span>
+      </div>
+      <div>
+        <h3 class="font-title-sm text-title-sm text-primary font-bold">Quy chuẩn thẩm định Đổi / Trả tác phẩm Di sản Thanh Xuân</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">
+          1. Thời hạn tiếp nhận: Tối đa 7 ngày kể từ khi khách nhận kiện bọc xốp củi. <br class="hidden sm:inline">
+          2. Nứt rạn men tự nhiên do hỏa biến lò củi là đặc trưng mỹ thuật, không cấu thành khiếm khuyết sản phẩm.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-space-sm shrink-0">
+      <a routerLink="/products" class="px-3.5 py-2 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm hover:bg-surface-container-high transition-colors font-semibold cursor-pointer">
+        Xem danh mục tác phẩm
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- FULL SCREEN DETAIL & WORKFLOW MODAL (Stitch Screen 8 - UC-A05) -->
+<!-- ======================================================== -->
+<div *ngIf="isDetailOpen && selectedReturn" class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 md:p-8 flex items-center justify-center">
+  <div class="w-full max-w-7xl bg-background rounded-2xl shadow-2xl border border-surface-variant/50 overflow-hidden flex flex-col my-auto max-h-[95vh]">
+    <!-- Modal Header Ribbon -->
+    <div class="bg-surface px-space-lg py-4 border-b border-surface-variant/50 flex items-center justify-between shrink-0">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-space-xs text-xs text-on-surface-variant uppercase tracking-wider">
+          <span>Quản lý Đổi - Trả</span>
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+          <span class="text-secondary font-semibold">Chi tiết yêu cầu {{ getOrderCode(selectedReturn) }}</span>
+        </div>
+        <h2 class="font-headline-md text-headline-md text-primary font-bold mt-0.5">Xử lý Yêu cầu Đổi / Trả Hàng</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="closeDetail()" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Scrollable Body -->
+    <div class="p-space-lg overflow-y-auto flex-1 flex flex-col gap-space-lg">
+      <!-- Status & Top Action Buttons -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-surface-container-lowest border border-surface-variant/40">
+        <div class="flex items-center gap-3">
+          <span *ngIf="selectedReturn.status === 'pending'" class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-semibold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+            Chờ duyệt (Pending) • Còn hạn đổi trả
+          </span>
+          <span *ngIf="selectedReturn.status === 'approved'" class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-xs font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            Đã duyệt (Approved)
+          </span>
+          <span *ngIf="selectedReturn.status === 'rejected'" class="px-3 py-1 rounded-full bg-error-container text-on-error-container text-xs font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">block</span>
+            Đã từ chối (Rejected)
+          </span>
+          <span *ngIf="selectedReturn.status === 'completed'" class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface text-xs font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">task_alt</span>
+            Đã hoàn thành (Completed)
+          </span>
+        </div>
+
+        <div class="flex items-center gap-space-sm flex-wrap">
+          <button (click)="closeDetail()" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-title-sm text-title-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span>Đóng lại</span>
+          </button>
+          <button *ngIf="selectedReturn.status === 'pending'" (click)="openRejectModal(selectedReturn)" class="px-4 py-2 rounded-lg bg-error-container hover:bg-red-200 text-error font-title-sm text-title-sm flex items-center gap-1.5 transition-colors cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">cancel</span>
+            <span>Từ chối (Rejected)</span>
+          </button>
+          <button *ngIf="selectedReturn.status === 'pending'" (click)="openApproveModal(selectedReturn)" class="px-4 py-2 rounded-lg bg-primary hover:bg-[#07192c] text-on-primary font-title-sm text-title-sm flex items-center gap-1.5 transition-colors shadow-md cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            <span>Duyệt yêu cầu (Approved)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Editorial Layout: Split Review View (65% Left, 35% Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+        <!-- LEFT PANEL (Col 1-7): Case Dossier & Evidence -->
+        <div class="lg:col-span-7 flex flex-col gap-space-lg">
+          <!-- Card 1: Original Order & Collector Profile -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-variant/40">
+            <div class="flex items-center justify-between pb-space-md mb-space-md bg-surface-container-low -mx-space-lg -mt-space-lg px-space-lg pt-space-lg rounded-t-xl border-b border-surface-variant/40">
+              <div class="flex items-center gap-space-sm">
+                <span class="material-symbols-outlined text-secondary text-[22px]">receipt_long</span>
+                <span class="font-title-md text-title-md text-primary font-bold">Hồ sơ Đơn hàng gốc &amp; Khách hàng</span>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Mã đơn:</span>
+                <span class="font-title-sm text-title-sm font-bold text-primary bg-surface-container-high px-space-sm py-0.5 rounded">
+                  {{ getOrderCode(selectedReturn) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Order & Buyer Information Mosaic -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mb-space-lg">
+              <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Khách hàng</span>
+                <span class="font-title-sm text-title-sm text-primary font-semibold">{{ getCustomerName(selectedReturn) }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">call</span> {{ getCustomerPhone(selectedReturn) }}
+                </span>
+              </div>
+              <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Địa chỉ nhận hàng</span>
+                <span class="font-title-sm text-title-sm text-primary font-semibold truncate">{{ getCustomerAddress(selectedReturn) }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Mã bưu cục: 100000</span>
+              </div>
+              <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Thanh toán &amp; Thời gian</span>
+                <span class="font-title-sm text-title-sm text-secondary font-semibold">VietQR • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ formatDate(selectedReturn.createdAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Artwork In Dispute Spotlight -->
+            <div class="p-space-md rounded-xl bg-surface-container-low flex flex-col sm:flex-row items-center gap-space-md border border-surface-variant/40">
+              <div class="w-24 h-24 rounded-lg overflow-hidden shrink-0 shadow-sm relative group bg-surface-container-high">
+                <img class="w-full h-full object-cover" [src]="(selectedReturn.evidenceImages && selectedReturn.evidenceImages.length) ? selectedReturn.evidenceImages[0] : 'minimalist_archway_pottery_icon.png'" alt="Tác phẩm tranh chấp">
+              </div>
+              <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center gap-space-xs mb-1">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded font-bold">Men Lam Dát Vàng Độc Bản</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">SKU: {{ getProductSku(selectedReturn) }}</span>
+                </div>
+                <h2 class="font-headline-sm text-headline-sm text-primary truncate font-bold">{{ getProductName(selectedReturn) }}</h2>
+                <div class="flex items-center justify-between mt-2 pt-2 text-on-surface-variant font-body-sm text-body-sm border-t border-surface-variant/30">
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">verified</span>
+                    Nghệ nhân: Thanh Xuân Heritage Guild
+                  </span>
+                  <span class="font-title-sm text-title-sm font-semibold text-primary">SL: 01 • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Return Reason & Customer Photographic Proof -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-variant/40">
+            <div class="flex items-center justify-between pb-space-sm mb-space-md border-b border-surface-variant/40">
+              <div class="flex items-center gap-space-sm">
+                <span class="material-symbols-outlined text-secondary text-[22px]">content_paste_search</span>
+                <span class="font-title-md text-title-md text-primary font-bold">Chi tiết Khiếu nại &amp; Bằng chứng Khách hàng</span>
+              </div>
+              <span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-sm py-1 rounded font-semibold font-mono">
+                ID: {{ selectedReturn._id }}
+              </span>
+            </div>
+
+            <!-- Issue Statement Banner -->
+            <div class="p-space-md rounded-lg bg-surface-container-low mb-space-md border border-surface-variant/30">
+              <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider block mb-1">
+                Phân loại: {{ selectedReturn.type === 'exchange' ? 'Đổi hàng mới (Exchange)' : 'Trả hàng hoàn tiền (Return)' }}
+              </span>
+              <p class="font-title-sm text-title-sm text-primary font-semibold mb-2">{{ selectedReturn.reason }}</p>
+              <div class="p-space-sm rounded bg-surface-container text-on-surface font-body-md text-body-md italic leading-relaxed">
+                “Khi mở kiện hàng kiểm tra, phát hiện khiếm khuyết kỹ thuật hoặc rạn vỡ phát sinh trong quá trình điều phối bưu cục. Đề nghị xưởng xem xét xử lý theo quy chuẩn bảo hành di sản.”
+              </div>
+            </div>
+
+            <!-- Evidence Gallery Grid -->
+            <div class="flex flex-col gap-space-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
+                  Hình ảnh &amp; Video thẩm định gửi kèm ({{ selectedReturn.evidenceImages?.length || 0 }} tệp)
+                </span>
+                <span class="font-label-sm text-label-sm text-emerald-700 font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">verified</span> Đã xác thực tệp gốc
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
+                <div *ngFor="let img of selectedReturn.evidenceImages; let idx = index"
+                     (click)="openImageLightbox(img)"
+                     class="group relative rounded-lg overflow-hidden h-36 bg-surface-container cursor-pointer shadow-sm border border-surface-variant/40">
+                  <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" [src]="img" [alt]="'Minh chứng ' + (idx + 1)">
+                  <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex items-end p-2">
+                    <span class="text-white text-xs font-semibold">Ảnh minh chứng #{{ idx + 1 }}</span>
+                  </div>
+                </div>
+
+                <!-- Unboxing Video Simulation Card -->
+                <div class="group relative rounded-lg overflow-hidden h-36 bg-primary flex flex-col items-center justify-center p-2 text-center cursor-pointer shadow-sm hover:bg-[#07192c] transition-colors">
+                  <div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center mb-1 shadow-md">
+                    <span class="material-symbols-outlined text-[20px]">play_arrow</span>
+                  </div>
+                  <span class="text-on-primary font-label-sm text-label-sm font-semibold">Video bóc hộp (45s)</span>
+                  <span class="text-on-primary/70 font-body-sm text-[11px]">MP4 • 1080p FHD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Audit Trail -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-variant/40">
+            <div class="flex items-center gap-space-sm mb-space-md">
+              <span class="material-symbols-outlined text-secondary text-[22px]">history_edu</span>
+              <span class="font-title-md text-title-md text-primary font-bold">Lịch sử Xử lý &amp; Nhật ký Hệ thống (Audit Trail)</span>
+            </div>
+            <div class="relative pl-6 space-y-space-md before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-high">
+              <div class="relative flex flex-col gap-0.5">
+                <span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-surface-container-highest"></span>
+                <div class="flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant">
+                  <span>{{ formatDate(selectedReturn.createdAt) }} • Khởi tạo</span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container font-semibold">Portal Khách hàng</span>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface">Khách hàng <span class="font-semibold text-primary">{{ getCustomerName(selectedReturn) }}</span> khởi tạo yêu cầu đổi trả cho đơn {{ getOrderCode(selectedReturn) }}.</p>
+              </div>
+
+              <div class="relative flex flex-col gap-0.5">
+                <span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-secondary"></span>
+                <div class="flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Đối soát hệ thống</span>
+                  <span class="px-2 py-0.5 rounded bg-surface-container font-semibold">Automated Service</span>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface">Hệ thống đối soát xác nhận đơn hàng nằm trọn trong chính sách đổi trả 7 ngày của xưởng Gốm Sứ Thanh Xuân.</p>
+              </div>
+
+              <div class="relative flex flex-col gap-0.5">
+                <span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-primary animate-ping"></span>
+                <span class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-primary"></span>
+                <div class="flex items-center gap-space-sm font-label-sm text-label-sm text-primary font-bold">
+                  <span>Hiện trạng thẩm định</span>
+                  <span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed text-xs font-semibold">
+                    {{ selectedReturn.status | uppercase }}
+                  </span>
+                </div>
+                <p class="font-body-md text-body-md text-primary font-medium">
+                  {{ selectedReturn.status === 'pending' ? 'Chờ Quản trị viên đối chiếu với phân xưởng kiểm định rạn nung và ra phán quyết hoàn tiền hoặc xuất kho đổi mới.' : 'Hồ sơ đã được lưu trữ vào biên bản đối soát kho vận di sản.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL (Col 8-12): Compliance & Decision Terminal -->
+        <div class="lg:col-span-5 flex flex-col gap-space-lg sticky top-6">
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm border border-surface-variant/40 flex flex-col gap-space-md">
+            <div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+              <div class="flex items-center gap-space-sm">
+                <span class="material-symbols-outlined text-secondary text-[22px]">manage_accounts</span>
+                <span class="font-title-md text-title-md text-primary font-bold">Trạng thái &amp; Người xử lý</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wider font-semibold">
+                {{ selectedReturn.status }}
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-space-sm">
+              <div class="flex justify-between items-center p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Mã đơn (orderCode):</span>
+                <span class="font-title-sm text-title-sm font-bold text-primary">{{ getOrderCode(selectedReturn) }}</span>
+              </div>
+              <div class="flex justify-between items-center p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Loại yêu cầu:</span>
+                <span class="font-title-sm text-title-sm font-bold text-secondary">
+                  {{ selectedReturn.type === 'exchange' ? 'Đổi hàng mới (Exchange)' : 'Trả hàng (Return)' }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Người xử lý:</span>
+                <span class="font-body-md text-body-md font-semibold text-primary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px]">person</span>
+                  {{ getProcessorName(selectedReturn) }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center p-space-sm rounded-lg bg-surface-container-low">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Thời điểm xử lý:</span>
+                <span class="font-body-sm text-body-sm text-on-surface font-medium">{{ formatDateTime(selectedReturn.processedAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Case of Rejection Information Banner -->
+            <div class="border-t border-surface-container pt-space-md flex flex-col gap-2">
+              <div class="flex items-center gap-1 text-error font-title-sm text-title-sm font-semibold">
+                <span class="material-symbols-outlined text-[20px]">info</span>
+                <span>Trường hợp Từ chối (Rejection Reason)</span>
+              </div>
+              <div class="p-space-sm rounded-lg bg-error-container/40 border border-error/20">
+                <p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1 font-bold">Lý do giải trình:</p>
+                <p class="font-body-sm text-body-sm text-error italic leading-relaxed">
+                  {{ selectedReturn.rejectionReason || 'Chưa kích hoạt từ chối. Khi Quản trị viên bấm "Từ chối", lý do thẩm định giải trình bắt buộc (E1) sẽ được lưu trữ và hiển thị tại đây.' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Inventory Availability -->
+            <div class="mt-space-xs p-space-sm rounded-lg bg-surface-container flex items-center justify-between">
+              <div class="flex items-center gap-space-xs">
+                <span class="material-symbols-outlined text-[18px] text-primary">warehouse</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Tồn kho khả dụng xưởng:</span>
+              </div>
+              <span class="font-title-sm text-title-sm text-primary font-bold">08 tác phẩm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 1: CONFIRM APPROVAL DIALOG (Stitch Screen 8) -->
+<!-- ======================================================== -->
+<div *ngIf="isApproveModalOpen && selectedReturn" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="bg-surface-container-lowest rounded-xl max-w-xl w-full p-space-lg shadow-2xl border border-surface-variant/40 flex flex-col gap-space-md animate-in fade-in zoom-in-95">
+    <div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">inventory</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm text-primary font-bold">Xác nhận duyệt Yêu cầu Đổi / Trả</span>
+          <span class="font-label-sm text-label-sm text-secondary font-semibold">Mã đơn: {{ getOrderCode(selectedReturn) }}</span>
+        </div>
+      </div>
+      <button (click)="closeApproveModal()" class="text-on-surface-variant hover:text-primary cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[24px]">close</span>
+      </button>
+    </div>
+
+    <div class="flex flex-col gap-space-sm text-body-md text-body-md text-on-surface">
+      <p>Hệ thống sẽ tiến hành các thao tác tự động theo tiêu chuẩn điều phối phân xưởng Làng Gốm Thanh Xuân:</p>
+      <div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-2 font-body-sm text-body-sm border border-surface-variant/30">
+        <div class="flex items-center gap-2 text-primary font-medium">
+          <span class="material-symbols-outlined text-[18px] text-green-700">check_circle</span>
+          <span>Khởi tạo đơn đổi mới mã {{ getOrderCode(selectedReturn) }}-EXCHANGE</span>
+        </div>
+        <div class="flex items-center gap-2 text-primary font-medium">
+          <span class="material-symbols-outlined text-[18px] text-green-700">inventory_2</span>
+          <span>Đồng bộ phục hồi tồn kho sản phẩm (+1 tác phẩm vào kho xưởng)</span>
+        </div>
+        <div class="flex items-center gap-2 text-primary font-medium">
+          <span class="material-symbols-outlined text-[18px] text-green-700">local_shipping</span>
+          <span>Đặt lịch điều phối thu hồi hàng vỡ/rạn qua Viettel Post Chuyên Tuyến Gốm</span>
+        </div>
+        <div class="flex items-center gap-2 text-primary font-medium">
+          <span class="material-symbols-outlined text-[18px] text-green-700">notifications_active</span>
+          <span>Gửi SMS &amp; Thông báo duyệt cho khách hàng {{ getCustomerName(selectedReturn) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-space-sm pt-space-sm border-t border-surface-variant/40">
+      <button (click)="closeApproveModal()" class="px-space-md py-2 rounded-lg bg-surface-container text-on-surface font-title-sm text-title-sm hover:bg-surface-container-high transition-colors cursor-pointer" type="button">
+        Hủy bỏ
+      </button>
+      <button (click)="confirmApprove()" [disabled]="isSubmitting" class="px-space-lg py-2 rounded-lg bg-primary text-on-primary font-title-sm text-title-sm hover:bg-[#07192c] transition-colors shadow-md flex items-center gap-1.5 cursor-pointer" type="button">
+        <span *ngIf="isSubmitting" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+        <span>Xác nhận Phê duyệt</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 2: REJECTION FLOW (EXCEPTION E1 - Stitch Screen 8) -->
+<!-- ======================================================== -->
+<div *ngIf="isRejectModalOpen && selectedReturn" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-2xl border border-surface-variant/40 flex flex-col gap-space-md animate-in fade-in zoom-in-95">
+    <div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">block</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-headline-sm text-headline-sm text-primary font-bold">Từ chối Yêu cầu Đổi / Trả</span>
+          <span class="font-label-sm text-label-sm text-error font-semibold">Mã đơn: {{ getOrderCode(selectedReturn) }}</span>
+        </div>
+      </div>
+      <button (click)="closeRejectModal()" class="text-on-surface-variant hover:text-primary cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[24px]">close</span>
+      </button>
+    </div>
+
+    <!-- Error notice for E1 validation -->
+    <div *ngIf="rejectErrorMessage" class="p-3 rounded-lg bg-error-container text-on-error-container text-xs font-semibold flex items-center gap-2">
+      <span class="material-symbols-outlined text-base">error</span>
+      <span>{{ rejectErrorMessage }}</span>
+    </div>
+
+    <div class="flex flex-col gap-space-xs">
+      <label class="font-label-sm text-label-sm text-error uppercase tracking-wider font-bold flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">error</span>
+        Bắt buộc nhập lý do từ chối (Rejection Reason - E1)
+      </label>
+      <select [(ngModel)]="rejectPresetReason" (change)="onPresetReasonChange()" class="w-full bg-surface-container-low p-space-sm rounded-lg text-body-sm text-on-surface font-body-sm focus:outline-none focus:ring-1 focus:ring-error mb-2 border border-surface-variant/40 cursor-pointer">
+        <option value="">-- Chọn danh mục lý do từ chối --</option>
+        <option value="Sản phẩm bị nứt vỡ do lỗi va đập trong quá trình sử dụng của khách hàng">Sản phẩm bị nứt vỡ do lỗi va đập trong quá trình sử dụng của khách hàng</option>
+        <option value="Ảnh chụp hiện trường không trùng khớp với sản phẩm và mã lô xưởng bàn giao">Ảnh chụp hiện trường không trùng khớp với sản phẩm và mã lô xưởng bàn giao</option>
+        <option value="Đã quá thời hạn đổi trả theo quy định bảo hành gốm Thanh Xuân (quá 7 ngày)">Đã quá thời hạn đổi trả theo quy định bảo hành gốm Thanh Xuân (quá 7 ngày)</option>
+        <option value="Khác (Nhập giải trình chi tiết phía dưới)">Khác (Nhập giải trình chi tiết phía dưới)</option>
+      </select>
+      <textarea [(ngModel)]="rejectDetailReason" class="w-full bg-surface-container-low p-space-sm rounded-lg text-body-sm text-on-surface font-body-sm placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-error border border-surface-variant/40" placeholder="Nhập chi tiết lý do từ chối bắt buộc gửi thông báo đến khách hàng..." rows="3" required></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-space-sm pt-space-xs border-t border-surface-variant/40">
+      <button (click)="closeRejectModal()" class="px-space-md py-2 rounded-lg bg-surface-container text-on-surface font-title-sm text-title-sm hover:bg-surface-container-high transition-colors cursor-pointer" type="button">
+        Đóng
+      </button>
+      <button (click)="confirmReject()" [disabled]="isSubmitting" class="px-space-md py-2 rounded-lg bg-error text-on-error font-title-sm text-title-sm hover:bg-opacity-90 transition-colors shadow-md flex items-center gap-1.5 cursor-pointer" type="button">
+        <span *ngIf="isSubmitting" class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+        <span>Xác nhận Từ chối</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 3: EVIDENCE IMAGE LIGHTBOX PREVIEW -->
+<!-- ======================================================== -->
+<div *ngIf="previewImage" (click)="closeImageLightbox()" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 cursor-pointer">
+  <div class="relative max-w-4xl max-h-[90vh] bg-surface-container-lowest rounded-2xl overflow-hidden shadow-2xl p-2" (click)="$event.stopPropagation()">
+    <img [src]="previewImage" alt="Chi tiết ảnh minh chứng" class="max-w-full max-h-[82vh] object-contain rounded-xl">
+    <div class="flex items-center justify-between p-3">
+      <span class="text-xs text-on-surface-variant font-medium">Ảnh minh chứng hiện trường - Độ phân giải gốc</span>
+      <button (click)="closeImageLightbox()" class="px-3 py-1 rounded-lg bg-surface-container text-primary font-semibold text-xs hover:bg-surface-container-high">
+        Đóng xem ảnh
+      </button>
+    </div>
+  </div>
+</div>

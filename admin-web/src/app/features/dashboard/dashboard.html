@@ -1,1 +1,245 @@
-<p>dashboard works!</p>
+<div class="w-full px-space-lg py-space-md flex flex-col gap-space-lg">
+  <!-- Toast Notification -->
+  <div *ngIf="isToastVisible" class="fixed top-20 right-8 z-[100] flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#0A2540] text-white shadow-xl border border-surface-variant/40 animate-bounce">
+    <span class="material-symbols-outlined text-secondary text-xl">check_circle</span>
+    <span class="text-sm font-medium">{{ toastMessage }}</span>
+  </div>
+
+  <!-- Header Banner & Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pb-1">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+        <span>Trang chủ</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-secondary font-semibold">Tổng quan Dashboard</span>
+      </div>
+      <div class="flex items-center gap-space-md flex-wrap">
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">{{ currentWeekLabel }}</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm flex items-center gap-1.5 shadow-sm font-semibold">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          Cập nhật trực tiếp
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center gap-space-sm">
+      <div class="flex items-center gap-2 bg-surface-container-lowest px-space-md py-2 rounded-lg shadow-sm border border-surface-variant/50 text-body-sm font-body-sm text-on-surface-variant">
+        <span class="material-symbols-outlined text-lg text-primary">calendar_today</span>
+        <span class="font-medium">{{ dateRangeLabel }}</span>
+      </div>
+      <button (click)="exportWeeklyReport()" class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 transition-all font-semibold cursor-pointer">
+        <span class="material-symbols-outlined text-lg">file_download</span>
+        <span>Xuất báo cáo tuần</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dãy KPI 3 cột dàn đều 100% lấp đầy bề ngang -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md w-full">
+    <!-- Thẻ 1: Tổng sản phẩm -->
+    <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm border border-surface-variant/40 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">Tổng sản phẩm</span>
+        <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-xl">category</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalProductsCount }}</div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
+          <span class="material-symbols-outlined text-sm">arrow_upward</span>
+          <span>+4 sản phẩm mới tuần này</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/30"></div>
+    </div>
+
+    <!-- Thẻ 2: Khách hàng thành viên -->
+    <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm border border-surface-variant/40 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">Khách hàng thành viên</span>
+        <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-xl">group</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalCustomersCount | number }}</div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
+          <span class="material-symbols-outlined text-sm">trending_up</span>
+          <span>+18% so với tháng trước</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/30"></div>
+    </div>
+
+    <!-- Thẻ 3: Doanh thu tuần -->
+    <div class="relative overflow-hidden rounded-xl bg-primary p-space-lg shadow-md text-on-primary flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-primary-fixed font-medium">Doanh thu tuần này</span>
+        <div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+          <span class="material-symbols-outlined text-xl">payments</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-on-primary leading-none tracking-tight font-bold whitespace-nowrap">
+          {{ formatCurrency(stats.totalRevenue) }}
+        </div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary-fixed whitespace-nowrap font-medium">
+          <span class="material-symbols-outlined text-sm">check_circle</span>
+          <span>Mục tiêu 92% • Đạt chỉ tiêu kho</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-secondary"></div>
+    </div>
+  </div>
+
+  <!-- Bố cục 2 Cột lấp đầy toàn bộ khung hình -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start w-full">
+    <!-- Cột Trái: Biểu đồ & Bảng Đơn Hàng (8 Cột) -->
+    <div class="lg:col-span-8 flex flex-col gap-space-lg w-full">
+      <!-- Card Biểu Đồ Doanh Thu -->
+      <div class="rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 p-space-lg flex flex-col w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-surface-variant/50">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-bold">Biểu Đồ Doanh Thu 7 Ngày Gần Nhất</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+              Đạt đỉnh <strong class="text-primary font-bold">4.800.000đ</strong> vào Thứ Sáu • Tổng tích luỹ: <strong class="text-secondary font-bold">23.000.000đ</strong>
+            </p>
+          </div>
+          <div class="flex items-center gap-4 text-label-sm font-label-sm">
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
+              <span class="w-3 h-3 rounded-full bg-primary inline-block"></span> Dòng Men Lam
+            </span>
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
+              <span class="w-3 h-3 rounded-full bg-secondary inline-block"></span> Gốm Sa Thạch
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-6 pb-2">
+          <div class="h-52 flex items-end justify-between gap-4 px-4 border-b border-surface-variant/60">
+            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group">
+              <!-- Peak label badge for Friday (T6) -->
+              <div *ngIf="item.isPeak" class="px-2 py-0.5 rounded bg-secondary text-on-secondary text-[10px] font-bold shadow-sm whitespace-nowrap mb-1">
+                Đỉnh: 4.8M
+              </div>
+              <span *ngIf="!item.isPeak" class="text-[10px] text-outline opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                {{ (item.totalAmount / 1000000).toFixed(1) }}M
+              </span>
+              <div class="w-full flex gap-1 items-end justify-center h-full">
+                <div class="w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.menLamHeightPercent" [title]="'Men Lam: ' + formatCurrency(item.menLamAmount)"></div>
+                <div class="w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.saThachHeightPercent" [title]="'Sa Thạch: ' + formatCurrency(item.saThachAmount)"></div>
+              </div>
+              <span [ngClass]="item.isPeak ? 'text-secondary font-bold' : 'text-on-surface-variant font-medium'" class="text-xs mt-1">
+                {{ item.dayLabel }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-space-sm p-3 rounded-lg bg-surface-container-low border border-surface-variant/40 flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-secondary text-lg shrink-0">stars</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            <strong class="text-primary font-semibold">Đơn hàng giá trị cao nhất:</strong> {{ highestOrderHighlight }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Card Đơn Hàng Chờ Xác Nhận Gần Đây -->
+      <div class="w-full rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 overflow-hidden flex flex-col">
+        <div class="p-space-md flex items-center justify-between border-b border-surface-variant/50">
+          <div class="flex items-center gap-space-sm">
+            <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-lg">receipt_long</span>
+            </div>
+            <div>
+              <h2 class="font-headline-md text-headline-md text-primary font-bold">Đơn Hàng Chờ Xác Nhận Gần Đây</h2>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">5 đơn đặt tác phẩm thủ công cần rà soát đóng kiện</span>
+            </div>
+          </div>
+          <span class="font-label-sm text-label-sm text-primary flex items-center gap-1 font-semibold">
+            <span>Hiển thị {{ (stats.recentOrders || []).length }} đơn mới</span>
+            <span class="material-symbols-outlined text-sm">bolt</span>
+          </span>
+        </div>
+
+        <div class="w-full overflow-x-auto">
+          <table class="w-full text-left whitespace-nowrap">
+            <thead class="w-full">
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border-b border-surface-variant/50">
+                <th class="py-3 px-space-md font-semibold w-24">Mã đơn</th>
+                <th class="py-3 px-space-md font-semibold">Khách hàng &amp; Địa chỉ</th>
+                <th class="py-3 px-space-md text-center font-semibold w-40">Thời gian</th>
+                <th class="py-3 px-space-md text-right font-semibold w-36">Tổng tiền</th>
+                <th class="py-3 px-space-md text-center font-semibold w-36">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-variant/60 font-body-md text-body-md text-on-surface">
+              <tr *ngFor="let ord of stats.recentOrders" class="hover:bg-surface-container-low/50 transition-colors">
+                <td class="py-3 px-space-md font-bold text-primary font-label-md">{{ ord.orderCode }}</td>
+                <td class="py-3 px-space-md">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                      {{ (ord.customerName || 'K').charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <span class="font-semibold text-on-surface text-sm">{{ ord.customerName }}</span>
+                      <span class="text-xs text-on-surface-variant ml-1 font-light">({{ ord.customerPhone }} • {{ ord.customerAddress }})</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-space-md text-center font-mono text-xs text-on-surface-variant">{{ ord.timeDisplay }}</td>
+                <td class="py-3 px-space-md text-right font-semibold text-primary font-mono text-sm">{{ formatCurrency(ord.totalAmount) }}</td>
+                <td class="py-3 px-space-md text-center">
+                  <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-label-sm font-semibold inline-flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    {{ ord.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột Phải: Sản Phẩm Sắp Hết Hàng (4 Cột) -->
+    <div class="lg:col-span-4 flex flex-col gap-space-lg w-full">
+      <div class="rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 p-space-md flex flex-col w-full">
+        <div class="flex items-center justify-between pb-space-sm border-b border-surface-variant/50">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-lg">warning_amber</span>
+            </div>
+            <div>
+              <h2 class="font-headline-md text-base text-primary font-bold leading-tight">Sản Phẩm Sắp Hết Hàng</h2>
+              <span class="font-body-sm text-xs text-on-surface-variant">Cảnh báo tồn kho an toàn ≤ 5 chiếc</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divide-y divide-surface-variant/50">
+          <div *ngFor="let item of stats.lowStockProducts" class="py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <img [src]="item.image" [alt]="item.name" class="w-10 h-10 rounded-lg object-cover bg-surface-container shrink-0 border border-surface-variant/40">
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-md text-sm text-on-surface font-semibold truncate">{{ item.name }}</span>
+                <span class="text-xs text-outline truncate">SKU: {{ item.sku }} • {{ item.glazeColor }}</span>
+              </div>
+            </div>
+            <span [ngClass]="item.stock === 1 ? 'animate-pulse' : ''" class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-label-sm font-bold whitespace-nowrap inline-flex items-center gap-1 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Còn {{ item.stock }} chiếc
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-space-sm mt-1 border-t border-surface-variant/40">
+          <a routerLink="/products" class="w-full flex items-center justify-center gap-1 py-2 px-space-md rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-all font-semibold text-xs cursor-pointer">
+            <span>Quản lý tồn kho ngay</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

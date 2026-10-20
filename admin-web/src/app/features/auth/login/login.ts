@@ -36,7 +36,7 @@ export class Login {
       try {
         const admin = JSON.parse(existingAdmin);
         if (admin && admin.role === 'admin') {
-          this.router.navigate(['/customers']);
+          this.router.navigate(['/dashboard']);
         }
       } catch (e) {
         localStorage.removeItem('admin_user');
@@ -88,8 +88,8 @@ export class Login {
           // Lưu thông tin admin vào localStorage
           localStorage.setItem('admin_user', JSON.stringify(res.data));
 
-          // Chuyển hướng vào trang quản lý khách hàng
-          this.router.navigate(['/customers']);
+          // Chuyển hướng vào Dashboard
+          this.router.navigate(['/dashboard']);
         } else {
           this.errorMessage = res.message || 'Email hoặc mật khẩu không chính xác!';
         }
@@ -110,7 +110,7 @@ export class Login {
             status: 'active',
           };
           localStorage.setItem('admin_user', JSON.stringify(fallbackAdmin));
-          this.router.navigate(['/customers']);
+          this.router.navigate(['/dashboard']);
         } else {
           this.errorMessage = 'Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại!';
         }

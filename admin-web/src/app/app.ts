@@ -18,6 +18,8 @@ export class App {
   adminName = 'Trưởng ban Quản trị';
   adminEmail = 'admin@gombattrang.vn';
 
+  currentModuleName = 'Dashboard Tổng quan';
+
   constructor() {
     this.checkRoute(this.router.url);
     this.router.events.subscribe((event) => {
@@ -30,6 +32,17 @@ export class App {
 
   checkRoute(url: string) {
     this.isAuthPage = url.includes('/login');
+    if (url.includes('/dashboard')) {
+      this.currentModuleName = 'Tổng quan Dashboard';
+    } else if (url.includes('/returns')) {
+      this.currentModuleName = 'Quản trị Đổi / Trả hàng (UC-A05)';
+    } else if (url.includes('/products')) {
+      this.currentModuleName = 'Quản lý Sản phẩm & Tồn kho';
+    } else if (url.includes('/customers')) {
+      this.currentModuleName = 'Quản trị Khách hàng & Hội viên';
+    } else {
+      this.currentModuleName = 'Quản trị Hệ thống';
+    }
   }
 
   showFeatureNotice(title: string, message: string) {
