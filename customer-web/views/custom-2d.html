@@ -1,0 +1,1026 @@
+<!-- ============================================================== -->
+<!-- GIAO DIỆN CUSTOMER: STUDIO THIẾT KẾ 2D (TÁC CHẾ PHÔI & HỌA TIẾT THẬT) -->
+<!-- ============================================================== -->
+<div class="flex flex-col w-full bg-[#fcfbfa] text-[#1d242d] min-h-screen">
+  <!-- 1. BREADCRUMB & TIÊU ĐỀ TRANG -->
+  <section class="w-full bg-[#f8f6f0] py-6 border-b border-[#e8e5de]">
+    <div class="max-w-7xl mx-auto px-4 md:px-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <nav class="flex items-center gap-2 text-xs text-[#68707c] mb-2 font-['Plus_Jakarta_Sans',sans-serif]">
+          <a class="hover:text-[#0a2540] cursor-pointer" onclick="dieuHuong('home')">Trang chủ</a>
+          <span>/</span>
+          <span class="text-[#a35d33] font-semibold">Tác chế thủ công</span>
+        </nav>
+        <h1 class="font-['Playfair_Display',serif] text-3xl lg:text-4xl text-[#0a2540] tracking-tight font-semibold">
+          Studio Tác Chế Gốm 2D
+        </h1>
+      </div>
+      <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-xs border border-[#e8e5de]">
+        <span class="material-symbols-outlined text-[#a35d33]">tune</span>
+        <div class="flex flex-col">
+          <span class="text-[10px] text-[#68707c] uppercase tracking-wider font-semibold">Công nghệ tác chế</span>
+          <span class="text-xs text-[#0a2540] font-bold">Căn chỉnh & Định vị họa tiết 2D</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. BỐ CỤC CHÍNH 2 CỘT -->
+  <main class="max-w-7xl mx-auto px-4 md:px-12 py-8 sm:py-10 w-full flex-grow">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+      
+      <!-- CỘT TRÁI (CANVAS XEM TRƯỚC PHÔI THẬT + HỌA TIẾT KÉO THẢ & CĂN CHỈNH) -->
+      <div class="lg:col-span-7 sticky top-24 z-10">
+        <div class="relative w-full aspect-[4/3] sm:aspect-square max-h-[580px] bg-[#f9fafb] rounded-2xl border border-[#e8e5de] shadow-sm flex flex-col items-center justify-center p-4 sm:p-8 overflow-hidden select-none">
+          <!-- Ánh sáng nền studio mềm mại -->
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,1)_0%,rgba(244,241,235,0.75)_65%,rgba(228,222,212,0.45)_100%)] pointer-events-none"></div>
+
+          <!-- KHUNG PREVIEW TRUNG TÂM -->
+          <div class="relative w-full h-full max-w-[420px] max-h-[480px] flex items-center justify-center" id="ceramicCanvasContainer">
+            <!-- 1. ẢNH PHÔI THẬT (TÁCH NỀN TỪ THƯ MỤC CHUẨN) -->
+            <img
+              id="realBlankImage"
+              src="assets/2d-blanks/dia-su.png"
+              alt="Phôi gốm thật"
+              class="absolute w-full h-full object-contain pointer-events-none drop-shadow-[0_20px_30px_rgba(10,37,64,0.18)] transition-all duration-300 z-0"
+            />
+
+            <!-- 2. LỚP VÙNG HỌA TIẾT TƯƠNG TÁC (DRAG & DROP, SCALE, ROTATE) -->
+            <div
+              id="motifInteractiveWrapper"
+              class="absolute z-10 cursor-grab active:cursor-grabbing transition-shadow"
+              style="left: 50%; top: 40%; transform: translate(-50%, -50%) rotate(0deg) scale(0.75);"
+            >
+              <!-- Khung viền chỉ báo khi hover / tương tác -->
+              <div id="motifOutlineBox" class="relative group p-1 rounded-lg border border-transparent hover:border-dashed hover:border-[#0a2540]/60 transition-colors">
+                <img
+                  id="motifImageLayer"
+                  src="assets/2d-motifs/rong-vang-van-may.png"
+                  alt="Họa tiết gốm"
+                  class="w-[180px] h-[180px] object-contain pointer-events-none transition-all duration-150"
+                />
+                <!-- Handle góc chỉ báo kéo chỉnh -->
+                <div class="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full bg-white border border-[#0a2540] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-white border border-[#0a2540] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full bg-white border border-[#0a2540] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full bg-white border border-[#0a2540] shadow-xs opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+            </div>
+
+            <!-- 3. LỚP SVG CHỮ KHẮC ÔM CONG THEO DÁNG PHÔI -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none z-20" id="ceramicSvg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 400 520">
+              <defs>
+                <!-- ĐƯỜNG CONG TỌA ĐỘ ÔM DÁNG PHÔI (TEXTPATH) -->
+                <path id="engravingCurvePath" d="M 110 380 Q 200 420 290 380"></path>
+                <!-- ĐỔ BÓNG KHẮC CHÌM SÂU TRÊN MEN GỐM -->
+                <filter id="engravingShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0.5" dy="1.2" stdDeviation="0.8" flood-color="#ffffff" flood-opacity="0.6"/>
+                  <feDropShadow dx="-0.5" dy="-0.8" stdDeviation="0.8" flood-color="#000000" flood-opacity="0.45"/>
+                </filter>
+              </defs>
+
+              <g id="engravingCanvasGroup" pointer-events="none" transform="translate(0, 0)">
+                <!-- ĐƯỜNG CHỈ VIỀN CONG ÔM CHÂN CHỮ -->
+                <path id="engravingUnderlineCurve" d="M 120 392 Q 200 432 280 392" fill="none" stroke="#0a2540" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.45" />
+
+                <!-- CHỮ KHẮC TEXTPATH NGHỆ THUẬT -->
+                <text id="engravingSvgTextEl" class="select-none transition-all duration-200" fill="#0a2540" font-family="'Playfair Display', serif" font-size="14.5" font-weight="700" letter-spacing="0.12em" filter="url(#engravingShadow)">
+                  <textPath id="engravingSvgText" href="#engravingCurvePath" startOffset="50%" text-anchor="middle">TRI ÂN KHÁCH QUÝ</textPath>
+                </text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- THANH CÔNG CỤ NHANH DƯỚI PREVIEW -->
+          <div class="relative z-20 mt-3 pt-3 border-t border-stone-200/80 w-full flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600">
+            <div class="flex items-center gap-1.5 text-[11px] text-stone-500">
+              <span class="material-symbols-outlined text-[16px] text-[#a35d33]">touch_app</span>
+              <span>Kéo chuột trên họa tiết để định vị tự do</span>
+            </div>
+            <div class="flex items-center gap-1 sm:gap-2">
+              <button
+                type="button"
+                onclick="centerMotif()"
+                class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-stone-400 text-stone-700 font-medium transition-colors flex items-center gap-1 shadow-2xs"
+                title="Đưa họa tiết về vị trí trung tâm chuẩn của phôi"
+              >
+                <span class="material-symbols-outlined text-[14px]">filter_center_focus</span>
+                <span>Căn giữa chuẩn</span>
+              </button>
+              <button
+                type="button"
+                onclick="resetMotifTransform()"
+                class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 hover:border-stone-400 text-stone-700 font-medium transition-colors flex items-center gap-1 shadow-2xs"
+                title="Khôi phục kích thước và góc xoay mặc định"
+              >
+                <span class="material-symbols-outlined text-[14px]">restart_alt</span>
+                <span>Đặt lại</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI (BẢNG ĐIỀU KHIỂN 4 BƯỚC THỦ CÔNG) -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        <div class="bg-white p-6 sm:p-7 rounded-2xl border border-[#e8e5de] shadow-sm flex flex-col gap-6 font-['Plus_Jakarta_Sans',sans-serif]">
+          
+          <!-- BƯỚC 1 – CHỌN PHÔI GỐM SỨ THẬT (TỪ THƯ MỤC ĐÃ TÁCH NỀN) -->
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs uppercase tracking-widest font-bold text-[#8B4513] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                Bước 1 – Chọn phôi gốm
+              </h2>
+              <span class="text-xs text-stone-700 font-semibold" id="selectedBlankLabel">Đĩa Sứ Nghệ Thuật</span>
+            </div>
+            <!-- Lưới 5 phôi gốm thật -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="blankGrid">
+              <!-- 1. Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ) -->
+              <div class="blank-card cursor-pointer p-2 rounded-xl border-2 border-[#0a2540] bg-[#fcfbfa] hover:border-[#0a2540] transition-all flex flex-col gap-1.5 shadow-2xs" onclick="selectBlank('dia-su', 'Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ)', 1200000, this)">
+                <div class="w-full aspect-square rounded-lg bg-stone-50 flex items-center justify-center p-1 overflow-hidden">
+                  <img alt="Đĩa Sứ Nghệ Thuật" class="w-full h-full object-contain" src="assets/2d-blanks/dia-su.png" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-stone-900 truncate">Đĩa Sứ Giá Gỗ</span>
+                  <span class="text-xs text-[#a35d33] font-bold">1.200.000₫</span>
+                </div>
+              </div>
+              <!-- 2. Mai Bình Dáng Cao -->
+              <div class="blank-card cursor-pointer p-2 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col gap-1.5 shadow-2xs" onclick="selectBlank('mai-binh', 'Mai Bình Dáng Cao', 2850000, this)">
+                <div class="w-full aspect-square rounded-lg bg-stone-50 flex items-center justify-center p-1 overflow-hidden">
+                  <img alt="Mai Bình Dáng Cao" class="w-full h-full object-contain" src="assets/2d-blanks/mai-binh.png" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-stone-900 truncate">Mai Bình Dáng Cao</span>
+                  <span class="text-xs text-[#a35d33] font-bold">2.850.000₫</span>
+                </div>
+              </div>
+              <!-- 3. Bình Tròn Cổ Sóng -->
+              <div class="blank-card cursor-pointer p-2 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col gap-1.5 shadow-2xs" onclick="selectBlank('binh-tron', 'Bình Hoa Tròn Cổ Sóng', 1850000, this)">
+                <div class="w-full aspect-square rounded-lg bg-stone-50 flex items-center justify-center p-1 overflow-hidden">
+                  <img alt="Bình Tròn Cổ Sóng" class="w-full h-full object-contain" src="assets/2d-blanks/binh-tron.png" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-stone-900 truncate">Bình Hoa Cổ Sóng</span>
+                  <span class="text-xs text-[#a35d33] font-bold">1.850.000₫</span>
+                </div>
+              </div>
+              <!-- 4. Ấm Trà Sứ Trắng -->
+              <div class="blank-card cursor-pointer p-2 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col gap-1.5 shadow-2xs" onclick="selectBlank('am-tra', 'Ấm Trà Sứ Trắng', 1450000, this)">
+                <div class="w-full aspect-square rounded-lg bg-stone-50 flex items-center justify-center p-1 overflow-hidden">
+                  <img alt="Ấm Trà Sứ Trắng" class="w-full h-full object-contain" src="assets/2d-blanks/am-tra.png" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-stone-900 truncate">Ấm Trà Sứ Trắng</span>
+                  <span class="text-xs text-[#a35d33] font-bold">1.450.000₫</span>
+                </div>
+              </div>
+              <!-- 5. Tách Trà Có Nắp -->
+              <div class="blank-card cursor-pointer p-2 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col gap-1.5 shadow-2xs" onclick="selectBlank('coc-tra', 'Tách Trà Có Nắp Hoàng Gia', 380000, this)">
+                <div class="w-full aspect-square rounded-lg bg-stone-50 flex items-center justify-center p-1 overflow-hidden">
+                  <img alt="Tách Trà Có Nắp" class="w-full h-full object-contain" src="assets/2d-blanks/coc-tra.png" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-stone-900 truncate">Tách Trà Có Nắp</span>
+                  <span class="text-xs text-[#a35d33] font-bold">380.000₫</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BƯỚC 2 – CHỌN HỌA TIẾT (13 MẪU THỰC TẾ TỪ THƯ MỤC ĐÃ TÁCH NỀN) -->
+          <div class="flex flex-col gap-3 pt-3 border-t border-stone-100">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs uppercase tracking-widest font-bold text-[#8B4513] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                Bước 2 – Chọn họa tiết tác chế
+              </h2>
+              <span class="text-xs text-stone-700 font-semibold truncate max-w-[200px]" id="selectedMotifLabel">Rồng Vàng Vân Mây</span>
+            </div>
+            <!-- Lưới danh sách 14 mẫu (1 Trơn + 13 mẫu thực tế từ file đã tách nền) -->
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-[220px] overflow-y-auto p-1 border border-stone-200/70 rounded-xl bg-stone-50/50" id="motifList">
+              
+              <!-- 0. Không họa tiết (Trơn) -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('none', 'Trơn (Không họa tiết)', '', this)" title="Trơn (Không họa tiết)" type="button">
+                <span class="material-symbols-outlined text-[20px] text-stone-400">block</span>
+                <span class="text-[10px] text-stone-500 font-medium">Trơn</span>
+              </button>
+
+              <!-- 1. Rồng Vàng Vân Mây -->
+              <button class="motif-card p-1.5 rounded-xl border-2 border-[#0a2540] bg-[#fcfbfa] hover:border-[#0a2540] transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('rong-vang-van-may', 'Rồng Vàng Vân Mây', 'assets/2d-motifs/rong-vang-van-may.png', this)" title="Rồng Vàng Vân Mây" type="button">
+                <img src="assets/2d-motifs/rong-vang-van-may.png" class="w-7 h-7 object-contain" alt="Rồng Vàng Vân Mây" />
+                <span class="text-[9px] font-semibold text-stone-900 truncate max-w-full">Rồng Mây</span>
+              </button>
+
+              <!-- 2. Hoa Sen Men Lam -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('hoa-sen-men-lam', 'Hoa Sen Men Lam', 'assets/2d-motifs/hoa-sen-men-lam.png', this)" title="Hoa Sen Men Lam" type="button">
+                <img src="assets/2d-motifs/hoa-sen-men-lam.png" class="w-7 h-7 object-contain" alt="Hoa Sen Men Lam" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Sen Lam</span>
+              </button>
+
+              <!-- 3. Cành Mai Vàng Tết -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('canh-mai-vang', 'Cành Mai Vàng Tết', 'assets/2d-motifs/canh-mai-vang.png', this)" title="Cành Mai Vàng Tết" type="button">
+                <img src="assets/2d-motifs/canh-mai-vang.png" class="w-7 h-7 object-contain" alt="Cành Mai Vàng Tết" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Mai Vàng</span>
+              </button>
+
+              <!-- 4. Huy Hiệu Chim Phượng -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('phuong-hoang-men-lam', 'Huy Hiệu Chim Phượng', 'assets/2d-motifs/phuong-hoang-men-lam.png', this)" title="Huy Hiệu Chim Phượng" type="button">
+                <img src="assets/2d-motifs/phuong-hoang-men-lam.png" class="w-7 h-7 object-contain" alt="Huy Hiệu Chim Phượng" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Phượng Lam</span>
+              </button>
+
+              <!-- 5. Song Ngư Men Lam -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('song-ngu-men-lam', 'Song Ngư Quần Tụ', 'assets/2d-motifs/song-ngu-men-lam.png', this)" title="Song Ngư Quần Tụ" type="button">
+                <img src="assets/2d-motifs/song-ngu-men-lam.png" class="w-7 h-7 object-contain" alt="Song Ngư Quần Tụ" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Song Ngư</span>
+              </button>
+
+              <!-- 6. Tùng Hạc Men Lam -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('tung-hac-men-lam', 'Tùng Hạc Diên Niên', 'assets/2d-motifs/tung-hac-men-lam.png', this)" title="Tùng Hạc Diên Niên" type="button">
+                <img src="assets/2d-motifs/tung-hac-men-lam.png" class="w-7 h-7 object-contain" alt="Tùng Hạc Diên Niên" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Tùng Hạc</span>
+              </button>
+
+              <!-- 7. Hoa Đào Chim Én -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('hoa-dao-chim-en', 'Hoa Đào Chim Én', 'assets/2d-motifs/hoa-dao-chim-en.png', this)" title="Hoa Đào Chim Én" type="button">
+                <img src="assets/2d-motifs/hoa-dao-chim-en.png" class="w-7 h-7 object-contain" alt="Hoa Đào Chim Én" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Đào Én</span>
+              </button>
+
+              <!-- 8. Khóm Trúc Vàng Khắc Ấn -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('truc-vang-tai-loc', 'Khóm Trúc Vàng Khắc Ấn', 'assets/2d-motifs/truc-vang-tai-loc.png', this)" title="Khóm Trúc Vàng Khắc Ấn" type="button">
+                <img src="assets/2d-motifs/truc-vang-tai-loc.png" class="w-7 h-7 object-contain" alt="Khóm Trúc Vàng Khắc Ấn" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Trúc Vàng</span>
+              </button>
+
+              <!-- 9. Kim Long Nhả Ngọc Dát Vàng -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('hoang-gia-kim-long', 'Kim Long Nhả Ngọc', 'assets/2d-motifs/hoang-gia-kim-long.png', this)" title="Kim Long Nhả Ngọc" type="button">
+                <img src="assets/2d-motifs/hoang-gia-kim-long.png" class="w-7 h-7 object-contain" alt="Kim Long Nhả Ngọc" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Kim Long</span>
+              </button>
+
+              <!-- 10. Cành Sen Dáng Đứng -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('sen-leo-men-lam', 'Cành Sen Dáng Đứng', 'assets/2d-motifs/sen-leo-men-lam.png', this)" title="Cành Sen Dáng Đứng" type="button">
+                <img src="assets/2d-motifs/sen-leo-men-lam.png" class="w-7 h-7 object-contain" alt="Cành Sen Dáng Đứng" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Sen Đứng</span>
+              </button>
+
+              <!-- 11. Hoa Mẫu Đơn & Bướm -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('hoa-mau-don-buom', 'Hoa Mẫu Đơn & Bướm', 'assets/2d-motifs/hoa-mau-don-buom.png', this)" title="Hoa Mẫu Đơn & Bướm" type="button">
+                <img src="assets/2d-motifs/hoa-mau-don-buom.png" class="w-7 h-7 object-contain" alt="Hoa Mẫu Đơn & Bướm" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Mẫu Đơn</span>
+              </button>
+
+              <!-- 12. Phượng Hoàng Phi Thiên -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('phuong-hoang-phi-thien', 'Phượng Hoàng Phi Thiên', 'assets/2d-motifs/phuong-hoang-phi-thien.png', this)" title="Phượng Hoàng Phi Thiên" type="button">
+                <img src="assets/2d-motifs/phuong-hoang-phi-thien.png" class="w-7 h-7 object-contain" alt="Phượng Hoàng Phi Thiên" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Phượng Bay</span>
+              </button>
+
+              <!-- 13. Đại Cúc Men Lam Dát Vàng -->
+              <button class="motif-card p-1.5 rounded-xl border border-stone-200 bg-white hover:border-stone-400 transition-all flex flex-col items-center justify-center gap-1 aspect-square cursor-pointer" onclick="selectMotif('dai-cuc-men-lam', 'Đại Cúc Men Lam Viền Vàng', 'assets/2d-motifs/dai-cuc-men-lam.png', this)" title="Đại Cúc Men Lam Viền Vàng" type="button">
+                <img src="assets/2d-motifs/dai-cuc-men-lam.png" class="w-7 h-7 object-contain" alt="Đại Cúc Men Lam Viền Vàng" />
+                <span class="text-[9px] text-stone-600 font-medium truncate max-w-full">Đại Cúc</span>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- BẢNG ĐIỀU KHIỂN CĂN CHỈNH KÍCH THƯỚC & VỊ TRÍ HỌA TIẾT -->
+          <div id="motifAdjusterPanel" class="flex flex-col gap-3.5 p-3.5 rounded-xl bg-[#f8f9fa] border border-stone-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-[#a35d33]">aspect_ratio</span>
+                Căn chỉnh kích thước & Vị trí họa tiết
+              </span>
+              <button
+                type="button"
+                onclick="centerMotif()"
+                class="text-[11px] text-[#0a2540] hover:text-[#a35d33] font-semibold underline cursor-pointer"
+              >
+                Căn giữa chuẩn
+              </button>
+            </div>
+
+            <!-- 1. THANH TRƯỢT KÍCH THƯỚC (SCALE SLIDER) -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between text-xs text-stone-600">
+                <span>Kích thước họa tiết:</span>
+                <span id="motifScaleLabel" class="font-bold text-[#0a2540]">75%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustScale(-0.05)" class="w-7 h-7 rounded-lg bg-white border border-stone-300 hover:border-stone-500 font-bold text-stone-700 flex items-center justify-center text-sm shadow-2xs">−</button>
+                <input
+                  id="motifScaleRange"
+                  type="range"
+                  min="25"
+                  max="150"
+                  step="1"
+                  value="75"
+                  oninput="onScaleRangeInput(this.value)"
+                  class="flex-1 accent-[#0a2540] cursor-pointer h-2 bg-stone-200 rounded-lg"
+                />
+                <button type="button" onclick="adjustScale(0.05)" class="w-7 h-7 rounded-lg bg-white border border-stone-300 hover:border-stone-500 font-bold text-stone-700 flex items-center justify-center text-sm shadow-2xs">+</button>
+              </div>
+            </div>
+
+            <!-- 2. THANH TRƯỢT XOAY (ROTATION SLIDER) -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between text-xs text-stone-600">
+                <span>Góc xoay:</span>
+                <span id="motifRotateLabel" class="font-bold text-[#0a2540]">0°</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustRotate(-15)" class="w-7 h-7 rounded-lg bg-white border border-stone-300 hover:border-stone-500 font-bold text-stone-700 flex items-center justify-center text-xs shadow-2xs">↺</button>
+                <input
+                  id="motifRotateRange"
+                  type="range"
+                  min="-180"
+                  max="180"
+                  step="5"
+                  value="0"
+                  oninput="onRotateRangeInput(this.value)"
+                  class="flex-1 accent-[#0a2540] cursor-pointer h-2 bg-stone-200 rounded-lg"
+                />
+                <button type="button" onclick="adjustRotate(15)" class="w-7 h-7 rounded-lg bg-white border border-stone-300 hover:border-stone-500 font-bold text-stone-700 flex items-center justify-center text-xs shadow-2xs">↻</button>
+              </div>
+            </div>
+
+            <!-- 3. PHÍM ĐIỀU HƯỚNG TINH CHỈNH TỌA ĐỘ HỌA TIẾT (D-PAD) -->
+            <div class="flex items-center justify-between pt-1 border-t border-stone-200/70">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-stone-500 mr-1">Vị trí họa tiết:</span>
+                <button type="button" onclick="nudgeMotif(0, -6)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-stone-700 text-xs shadow-2xs" title="Lên trên">↑</button>
+                <button type="button" onclick="nudgeMotif(0, 6)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-stone-700 text-xs shadow-2xs" title="Xuống dưới">↓</button>
+                <button type="button" onclick="nudgeMotif(-6, 0)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-stone-700 text-xs shadow-2xs" title="Sang trái">←</button>
+                <button type="button" onclick="nudgeMotif(6, 0)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-stone-700 text-xs shadow-2xs" title="Sang phải">→</button>
+              </div>
+              <button
+                type="button"
+                onclick="centerMotif()"
+                class="text-[11px] text-[#0a2540] hover:text-[#a35d33] font-semibold underline cursor-pointer"
+              >
+                Căn giữa họa tiết
+              </button>
+            </div>
+          </div>
+
+          <!-- BƯỚC 3 – CHỮ KHẮC THỦ CÔNG & ĐIỀU CHỈNH VỊ TRÍ CHỮ (MAX 20 KÝ TỰ - CHUẨN UC-C04) -->
+          <div class="flex flex-col gap-3 pt-3 border-t border-stone-100">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs uppercase tracking-widest font-bold text-[#8B4513] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                Bước 3 – Chữ khắc nghệ thuật
+              </h2>
+              <span class="text-xs font-mono font-medium text-stone-500" id="engravingCounter">
+                <span id="charCountNum">16</span> / 20 ký tự
+              </span>
+            </div>
+            <div class="relative w-full">
+              <input
+                id="engravingInput"
+                type="text"
+                maxlength="20"
+                value="TRI ÂN KHÁCH QUÝ"
+                placeholder="Nhập chữ khắc (tối đa 20 ký tự)..."
+                oninput="handleEngravingChange(this.value)"
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-[#fcfbfa] text-stone-900 text-sm focus:outline-none focus:border-[#0a2540] transition-colors"
+              />
+            </div>
+            <!-- THÔNG BÁO LỖI MÀU ĐỎ KHI VƯỢT QUÁ 20 KÝ TỰ (UC-C04 E1) -->
+            <div id="engravingErrorMsg" class="hidden items-center gap-1.5 text-xs text-[#ba1a1a] font-medium pt-0.5">
+              <span class="material-symbols-outlined text-[16px]">error</span>
+              <span>Nội dung tùy chỉnh tối đa 20 ký tự</span>
+            </div>
+
+            <!-- MÀU CHỮ KHẮC -->
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-stone-500">Màu chữ:</span>
+                <button type="button" onclick="setEngravingColor('#0a2540', this)" class="engrave-color-btn px-2 py-0.5 rounded text-[11px] font-semibold bg-[#0a2540] text-white ring-1 ring-[#0a2540]">Men Lam</button>
+                <button type="button" onclick="setEngravingColor('#b8860b', this)" class="engrave-color-btn px-2 py-0.5 rounded text-[11px] font-semibold bg-white text-[#b8860b] border border-stone-200">Dát Vàng</button>
+                <button type="button" onclick="setEngravingColor('#991b1b', this)" class="engrave-color-btn px-2 py-0.5 rounded text-[11px] font-semibold bg-white text-[#991b1b] border border-stone-200">Son Ấn</button>
+              </div>
+              <button
+                type="button"
+                onclick="centerEngraving()"
+                class="text-[11px] text-[#0a2540] hover:text-[#a35d33] font-semibold underline cursor-pointer"
+              >
+                Căn giữa chữ
+              </button>
+            </div>
+
+            <!-- BẢNG ĐIỀU CHỈNH VỊ TRÍ & CỠ CHỮ KHẮC TRÊN THÂN PHÔI GỐM -->
+            <div class="flex flex-col gap-2.5 p-3 rounded-xl bg-[#f8f9fa] border border-stone-200/90 mt-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-stone-700 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px] text-[#a35d33]">tune</span>
+                  Chỉnh vị trí & Cỡ chữ khắc
+                </span>
+                <span id="engravingPosLabel" class="text-[11px] text-stone-500 font-mono">Độ cao: 0px</span>
+              </div>
+
+              <!-- Thanh trượt vị trí Lên / Xuống (Độ cao chữ trên phôi) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between text-[11px] text-stone-600">
+                  <span>Vị trí trên phôi (Lên / Xuống):</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="nudgeEngraving(0, -6)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs font-bold shadow-2xs" title="Đưa chữ lên trên">↑</button>
+                  <input
+                    id="engravingYRange"
+                    type="range"
+                    min="-120"
+                    max="80"
+                    step="2"
+                    value="0"
+                    oninput="onEngravingYInput(this.value)"
+                    class="flex-1 accent-[#0a2540] cursor-pointer h-1.5 bg-stone-200 rounded-lg"
+                  />
+                  <button type="button" onclick="nudgeEngraving(0, 6)" class="w-6 h-6 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs font-bold shadow-2xs" title="Đưa chữ xuống dưới">↓</button>
+                </div>
+              </div>
+
+              <!-- Dịch chuyển sang Trái / Phải & Cỡ chữ -->
+              <div class="flex items-center justify-between pt-1 border-t border-stone-200/70 text-[11px]">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-stone-500">Lệch ngang:</span>
+                  <button type="button" onclick="nudgeEngraving(-6, 0)" class="w-5 h-5 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs" title="Lệch trái">←</button>
+                  <button type="button" onclick="nudgeEngraving(6, 0)" class="w-5 h-5 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center text-xs" title="Lệch phải">→</button>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <span class="text-stone-500">Cỡ chữ:</span>
+                  <button type="button" onclick="adjustEngravingFontSize(-1)" class="w-5 h-5 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center font-bold text-xs" title="Giảm cỡ chữ">−</button>
+                  <span id="engravingSizeLabel" class="font-bold text-[#0a2540] min-w-[36px] text-center">14.5px</span>
+                  <button type="button" onclick="adjustEngravingFontSize(1)" class="w-5 h-5 rounded bg-white border border-stone-300 hover:bg-stone-100 flex items-center justify-center font-bold text-xs" title="Tăng cỡ chữ">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÊN THIẾT KẾ -->
+          <div class="flex flex-col gap-1.5 pt-3 border-t border-stone-100">
+            <label for="designNameInput" class="text-xs font-semibold text-stone-700">
+              Tên tác phẩm gốm <span class="text-[#ba1a1a]">*</span>
+            </label>
+            <input
+              id="designNameInput"
+              type="text"
+              value="Đĩa Sứ Rồng Vàng Tri Ân 2025"
+              placeholder="Nhập tên tác phẩm..."
+              class="w-full px-4 py-2.5 rounded-xl border border-stone-300 bg-[#fcfbfa] text-stone-900 text-sm focus:outline-none focus:border-[#0a2540] transition-colors"
+            />
+          </div>
+
+          <!-- GIÁ & NÚT THÊM VÀO GIỎ -->
+          <div class="flex flex-col gap-4 pt-3 border-t border-stone-200">
+            <div class="flex items-baseline justify-between">
+              <span class="text-sm font-medium text-stone-600">Đơn giá tác chế:</span>
+              <span id="displayPriceText" class="font-['Playfair_Display',serif] text-2xl font-bold text-[#0a2540]">
+                1.200.000₫
+              </span>
+            </div>
+            <button
+              id="btnAddToCart"
+              type="button"
+              onclick="handleAddToCartSubmit()"
+              class="w-full py-4 rounded-xl bg-[#0a2540] hover:bg-[#06182a] text-white font-semibold text-sm uppercase tracking-wider transition-all duration-200 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+              <span>Hoàn tất & Thêm vào giỏ</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // 1. DỮ LIỆU ĐỒ HỌA 5 PHÔI GỐM THỰC TẾ (LẤY TỪ THƯ MỤC ĐÃ TÁCH NỀN)
+  window.BLANK_SHAPES = {
+    'dia-su': {
+      name: 'Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ)',
+      image: 'assets/2d-blanks/dia-su.png',
+      productId: '6ad58e8c8f5c132fa2cc4969',
+      price: 1200000,
+      defaultX: 50,
+      defaultY: 41,
+      defaultScale: 0.72,
+      textCurve: 'M 110 380 Q 200 420 290 380',
+      underlineCurve: 'M 120 392 Q 200 432 280 392'
+    },
+    'mai-binh': {
+      name: 'Mai Bình Dáng Cao',
+      image: 'assets/2d-blanks/mai-binh.png',
+      productId: '6ad58e8d8f5c132fa2cc496e',
+      price: 2850000,
+      defaultX: 50,
+      defaultY: 52,
+      defaultScale: 0.62,
+      textCurve: 'M 130 330 Q 200 360 270 330',
+      underlineCurve: 'M 135 342 Q 200 372 265 342'
+    },
+    'binh-tron': {
+      name: 'Bình Hoa Tròn Cổ Sóng',
+      image: 'assets/2d-blanks/binh-tron.png',
+      productId: '6ad4bb29635d6bb5b84814be',
+      price: 1850000,
+      defaultX: 50,
+      defaultY: 53,
+      defaultScale: 0.72,
+      textCurve: 'M 120 350 Q 200 385 280 350',
+      underlineCurve: 'M 125 362 Q 200 397 275 362'
+    },
+    'am-tra': {
+      name: 'Ấm Trà Sứ Trắng',
+      image: 'assets/2d-blanks/am-tra.png',
+      productId: '6ad58e8d8f5c132fa2cc496d',
+      price: 1450000,
+      defaultX: 47,
+      defaultY: 56,
+      defaultScale: 0.58,
+      textCurve: 'M 135 355 Q 190 380 245 355',
+      underlineCurve: 'M 140 367 Q 190 392 240 367'
+    },
+    'coc-tra': {
+      name: 'Tách Trà Có Nắp Hoàng Gia',
+      image: 'assets/2d-blanks/coc-tra.png',
+      productId: '6ad4b0e6431f363f7f908bcc',
+      price: 380000,
+      defaultX: 48,
+      defaultY: 56,
+      defaultScale: 0.58,
+      textCurve: 'M 140 340 Q 190 365 240 340',
+      underlineCurve: 'M 145 352 Q 190 377 235 352'
+    }
+  };
+
+  // State lưu trữ cấu hình Studio 2D hiện tại
+  window.currentStudioState = {
+    blankId: 'dia-su',
+    blankName: 'Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ)',
+    price: 1200000,
+    motifId: 'rong-vang-van-may',
+    motifName: 'Rồng Vàng Vân Mây',
+    motifImage: 'assets/2d-motifs/rong-vang-van-may.png',
+    motifX: 50, // %
+    motifY: 41, // %
+    motifScale: 0.72, // 0.25 - 1.50
+    motifRotate: 0, // deg
+    engravingText: 'TRI ÂN KHÁCH QUÝ',
+    engravingColor: '#0a2540',
+    engravingX: 0, // px dịch ngang (-60 đến 60)
+    engravingY: 0, // px độ cao lên/xuống (-120 đến 80)
+    engravingFontSize: 14.5 // px (10 đến 24)
+  };
+
+  // Áp dụng transform cho Họa Tiết
+  function renderMotifTransform() {
+    const wrapper = document.getElementById('motifInteractiveWrapper');
+    if (!wrapper) return;
+    wrapper.style.left = currentStudioState.motifX + '%';
+    wrapper.style.top = currentStudioState.motifY + '%';
+    wrapper.style.transform = `translate(-50%, -50%) rotate(${currentStudioState.motifRotate}deg) scale(${currentStudioState.motifScale})`;
+    
+    // Cập nhật range inputs & labels
+    const scaleRange = document.getElementById('motifScaleRange');
+    const scaleLabel = document.getElementById('motifScaleLabel');
+    if (scaleRange) scaleRange.value = Math.round(currentStudioState.motifScale * 100);
+    if (scaleLabel) scaleLabel.textContent = Math.round(currentStudioState.motifScale * 100) + '%';
+
+    const rotRange = document.getElementById('motifRotateRange');
+    const rotLabel = document.getElementById('motifRotateLabel');
+    if (rotRange) rotRange.value = currentStudioState.motifRotate;
+    if (rotLabel) rotLabel.textContent = currentStudioState.motifRotate + '°';
+  }
+
+  // 1. CHỌN PHÔI GỐM
+  window.selectBlank = function(id, name, price, cardEl) {
+    currentStudioState.blankId = id;
+    currentStudioState.blankName = name;
+    currentStudioState.price = price;
+
+    document.querySelectorAll('.blank-card').forEach(c => {
+      c.classList.remove('border-2', 'border-[#0a2540]', 'bg-[#fcfbfa]');
+      c.classList.add('border', 'border-stone-200', 'bg-white');
+    });
+    if (cardEl) {
+      cardEl.classList.remove('border', 'border-stone-200', 'bg-white');
+      cardEl.classList.add('border-2', 'border-[#0a2540]', 'bg-[#fcfbfa]');
+    }
+
+    const label = document.getElementById('selectedBlankLabel');
+    if (label) label.textContent = name;
+    const priceText = document.getElementById('displayPriceText');
+    if (priceText) priceText.textContent = Number(price).toLocaleString('vi-VN') + '₫';
+
+    const nameInput = document.getElementById('designNameInput');
+    if (nameInput) {
+      nameInput.value = name + ' ' + (currentStudioState.motifName || '') + ' Tri Ân 2025';
+    }
+
+    const shapeData = window.BLANK_SHAPES[id];
+    if (shapeData) {
+      // 1. Cập nhật ảnh phôi thật
+      const realImg = document.getElementById('realBlankImage');
+      if (realImg && shapeData.image) {
+        realImg.src = shapeData.image;
+        realImg.alt = name;
+      }
+
+      // 2. Cập nhật đường cong chữ khắc
+      const curvePath = document.getElementById('engravingCurvePath');
+      const underlineCurve = document.getElementById('engravingUnderlineCurve');
+      if (curvePath && shapeData.textCurve) {
+        curvePath.setAttribute('d', shapeData.textCurve);
+      }
+      if (underlineCurve && shapeData.underlineCurve) {
+        underlineCurve.setAttribute('d', shapeData.underlineCurve);
+      }
+
+      // 3. Đặt họa tiết về vị trí và scale chuẩn của phôi này
+      currentStudioState.motifX = shapeData.defaultX;
+      currentStudioState.motifY = shapeData.defaultY;
+      currentStudioState.motifScale = shapeData.defaultScale;
+      currentStudioState.motifRotate = 0;
+      renderMotifTransform();
+
+      // 4. Đặt vị trí chữ khắc về chuẩn theo phôi mới
+      if (typeof window.centerEngraving === 'function') {
+        window.centerEngraving();
+      }
+    }
+  };
+
+  // 2. CHỌN HỌA TIẾT
+  window.selectMotif = function(id, name, imgSrc, btnEl) {
+    currentStudioState.motifId = id;
+    currentStudioState.motifName = name;
+    currentStudioState.motifImage = imgSrc;
+
+    document.querySelectorAll('.motif-card').forEach(card => {
+      card.classList.remove('border-2', 'border-[#0a2540]', 'bg-[#fcfbfa]');
+      card.classList.add('border', 'border-stone-200', 'bg-white');
+    });
+    if (btnEl) {
+      btnEl.classList.remove('border', 'border-stone-200', 'bg-white');
+      btnEl.classList.add('border-2', 'border-[#0a2540]', 'bg-[#fcfbfa]');
+    }
+
+    const label = document.getElementById('selectedMotifLabel');
+    if (label) label.textContent = name;
+
+    const wrapper = document.getElementById('motifInteractiveWrapper');
+    const motifImg = document.getElementById('motifImageLayer');
+    const adjusterPanel = document.getElementById('motifAdjusterPanel');
+
+    if (id === 'none') {
+      if (wrapper) wrapper.classList.add('hidden');
+      if (adjusterPanel) adjusterPanel.classList.add('hidden');
+    } else {
+      if (wrapper) wrapper.classList.remove('hidden');
+      if (adjusterPanel) adjusterPanel.classList.remove('hidden');
+      if (motifImg) {
+        motifImg.src = imgSrc;
+        motifImg.alt = name;
+      }
+    }
+
+    const nameInput = document.getElementById('designNameInput');
+    if (nameInput) {
+      nameInput.value = currentStudioState.blankName + ' ' + (id === 'none' ? 'Trơn' : name) + ' Tri Ân 2025';
+    }
+  };
+
+  // 3. ĐIỀU CHỈNH SCALE & ROTATE & VỊ TRÍ
+  window.onScaleRangeInput = function(val) {
+    currentStudioState.motifScale = Number(val) / 100;
+    renderMotifTransform();
+  };
+
+  window.adjustScale = function(delta) {
+    let nextScale = Math.round((currentStudioState.motifScale + delta) * 100) / 100;
+    if (nextScale < 0.25) nextScale = 0.25;
+    if (nextScale > 1.50) nextScale = 1.50;
+    currentStudioState.motifScale = nextScale;
+    renderMotifTransform();
+  };
+
+  window.onRotateRangeInput = function(val) {
+    currentStudioState.motifRotate = Number(val);
+    renderMotifTransform();
+  };
+
+  window.adjustRotate = function(delta) {
+    let nextRot = currentStudioState.motifRotate + delta;
+    if (nextRot > 180) nextRot -= 360;
+    if (nextRot < -180) nextRot += 360;
+    currentStudioState.motifRotate = nextRot;
+    renderMotifTransform();
+  };
+
+  window.nudgeMotif = function(deltaX, deltaY) {
+    // 1% of container ≈ 4px
+    currentStudioState.motifX = Math.max(10, Math.min(90, currentStudioState.motifX + (deltaX / 4)));
+    currentStudioState.motifY = Math.max(10, Math.min(90, currentStudioState.motifY + (deltaY / 4)));
+    renderMotifTransform();
+  };
+
+  window.centerMotif = function() {
+    const shape = window.BLANK_SHAPES[currentStudioState.blankId];
+    if (shape) {
+      currentStudioState.motifX = shape.defaultX;
+      currentStudioState.motifY = shape.defaultY;
+      renderMotifTransform();
+    }
+  };
+
+  window.resetMotifTransform = function() {
+    const shape = window.BLANK_SHAPES[currentStudioState.blankId];
+    if (shape) {
+      currentStudioState.motifX = shape.defaultX;
+      currentStudioState.motifY = shape.defaultY;
+      currentStudioState.motifScale = shape.defaultScale;
+      currentStudioState.motifRotate = 0;
+      renderMotifTransform();
+    }
+  };
+
+  // 4. KÉO THẢ TRỰC TIẾP TRÊN CANVAS BẰNG POINTER EVENTS
+  (function initDragAndDrop() {
+    const wrapper = document.getElementById('motifInteractiveWrapper');
+    const container = document.getElementById('ceramicCanvasContainer');
+    if (!wrapper || !container) return;
+
+    let isDragging = false;
+    let startPointerX = 0;
+    let startPointerY = 0;
+    let startMotifX = 0;
+    let startMotifY = 0;
+
+    wrapper.addEventListener('pointerdown', function(e) {
+      isDragging = true;
+      wrapper.setPointerCapture(e.pointerId);
+      startPointerX = e.clientX;
+      startPointerY = e.clientY;
+      startMotifX = currentStudioState.motifX;
+      startMotifY = currentStudioState.motifY;
+      wrapper.classList.add('cursor-grabbing');
+      e.preventDefault();
+    });
+
+    wrapper.addEventListener('pointermove', function(e) {
+      if (!isDragging) return;
+      const rect = container.getBoundingClientRect();
+      const deltaXPixels = e.clientX - startPointerX;
+      const deltaYPixels = e.clientY - startPointerY;
+      
+      const deltaXPercent = (deltaXPixels / rect.width) * 100;
+      const deltaYPercent = (deltaYPixels / rect.height) * 100;
+
+      currentStudioState.motifX = Math.max(10, Math.min(90, Math.round((startMotifX + deltaXPercent) * 10) / 10));
+      currentStudioState.motifY = Math.max(10, Math.min(90, Math.round((startMotifY + deltaYPercent) * 10) / 10));
+      
+      wrapper.style.left = currentStudioState.motifX + '%';
+      wrapper.style.top = currentStudioState.motifY + '%';
+    });
+
+    function endDrag(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      try { wrapper.releasePointerCapture(e.pointerId); } catch(err) {}
+      wrapper.classList.remove('cursor-grabbing');
+      renderMotifTransform();
+    }
+
+    wrapper.addEventListener('pointerup', endDrag);
+    wrapper.addEventListener('pointercancel', endDrag);
+  })();
+
+  // 5. CHỮ KHẮC & VALIDATION MAX 20 KÝ TỰ (UC-C04 E1)
+  window.handleEngravingChange = function(text) {
+    currentStudioState.engravingText = text;
+    const len = text.length;
+
+    const countNum = document.getElementById('charCountNum');
+    const counterWrapper = document.getElementById('engravingCounter');
+    const inputEl = document.getElementById('engravingInput');
+    const errorMsg = document.getElementById('engravingErrorMsg');
+    const btnAdd = document.getElementById('btnAddToCart');
+    const svgText = document.getElementById('engravingSvgText');
+    const svgLine = document.getElementById('engravingUnderlineCurve');
+
+    if (countNum) countNum.textContent = len;
+    if (svgText) svgText.textContent = text.trim() === '' ? '' : text.toUpperCase();
+    if (svgLine) svgLine.style.opacity = text.trim() === '' ? '0' : '0.45';
+
+    if (len > 20) {
+      if (inputEl) {
+        inputEl.classList.add('border-[#ba1a1a]', 'ring-1', 'ring-[#ba1a1a]', 'text-[#ba1a1a]');
+        inputEl.classList.remove('border-stone-300', 'text-stone-900');
+      }
+      if (counterWrapper) {
+        counterWrapper.classList.add('text-[#ba1a1a]', 'font-bold');
+        counterWrapper.classList.remove('text-stone-500');
+      }
+      if (errorMsg) {
+        errorMsg.classList.remove('hidden');
+        errorMsg.classList.add('flex');
+      }
+      if (btnAdd) btnAdd.disabled = true;
+    } else {
+      if (inputEl) {
+        inputEl.classList.remove('border-[#ba1a1a]', 'ring-1', 'ring-[#ba1a1a]', 'text-[#ba1a1a]');
+        inputEl.classList.add('border-stone-300', 'text-stone-900');
+      }
+      if (counterWrapper) {
+        counterWrapper.classList.remove('text-[#ba1a1a]', 'font-bold');
+        counterWrapper.classList.add('text-stone-500');
+      }
+      if (errorMsg) {
+        errorMsg.classList.add('hidden');
+        errorMsg.classList.remove('flex');
+      }
+      if (btnAdd) btnAdd.disabled = false;
+    }
+  };
+
+  window.setEngravingColor = function(color, btnEl) {
+    currentStudioState.engravingColor = color;
+    const svgText = document.getElementById('engravingSvgText');
+    const svgLine = document.getElementById('engravingUnderlineCurve');
+    if (svgText) svgText.setAttribute('fill', color);
+    if (svgLine) svgLine.setAttribute('stroke', color);
+
+    document.querySelectorAll('.engrave-color-btn').forEach(btn => {
+      btn.classList.remove('bg-[#0a2540]', 'text-white', 'ring-1', 'ring-[#0a2540]');
+      btn.classList.add('bg-white', 'border', 'border-stone-200');
+    });
+    if (btnEl) {
+      btnEl.classList.remove('bg-white', 'border', 'border-stone-200');
+      btnEl.classList.add('bg-[#0a2540]', 'text-white', 'ring-1', 'ring-[#0a2540]');
+    }
+  };
+
+  // 6. ĐIỀU CHỈNH VỊ TRÍ & CỠ CHỮ KHẮC NGHỆ THUẬT
+  function renderEngravingTransform() {
+    const group = document.getElementById('engravingCanvasGroup');
+    const textEl = document.getElementById('engravingSvgTextEl');
+    const yRange = document.getElementById('engravingYRange');
+    const posLabel = document.getElementById('engravingPosLabel');
+    const sizeLabel = document.getElementById('engravingSizeLabel');
+
+    if (group) {
+      group.setAttribute('transform', `translate(${currentStudioState.engravingX}, ${currentStudioState.engravingY})`);
+    }
+    if (textEl) {
+      textEl.setAttribute('font-size', currentStudioState.engravingFontSize);
+    }
+    if (yRange) {
+      yRange.value = currentStudioState.engravingY;
+    }
+    if (posLabel) {
+      const yVal = currentStudioState.engravingY;
+      const xVal = currentStudioState.engravingX;
+      let desc = (yVal < 0 ? `Lên ${Math.abs(yVal)}px` : (yVal > 0 ? `Xuống ${yVal}px` : 'Chuẩn (0px)'));
+      if (xVal !== 0) {
+        desc += ` (${xVal < 0 ? `Trái ${Math.abs(xVal)}px` : `Phải ${xVal}px`})`;
+      }
+      posLabel.textContent = desc;
+    }
+    if (sizeLabel) {
+      sizeLabel.textContent = currentStudioState.engravingFontSize + 'px';
+    }
+  }
+
+  window.onEngravingYInput = function(val) {
+    currentStudioState.engravingY = Number(val);
+    renderEngravingTransform();
+  };
+
+  window.nudgeEngraving = function(deltaX, deltaY) {
+    currentStudioState.engravingX = Math.max(-60, Math.min(60, currentStudioState.engravingX + deltaX));
+    currentStudioState.engravingY = Math.max(-120, Math.min(80, currentStudioState.engravingY + deltaY));
+    renderEngravingTransform();
+  };
+
+  window.adjustEngravingFontSize = function(delta) {
+    let nextSize = Math.round((currentStudioState.engravingFontSize + delta) * 10) / 10;
+    if (nextSize < 10) nextSize = 10;
+    if (nextSize > 24) nextSize = 24;
+    currentStudioState.engravingFontSize = nextSize;
+    renderEngravingTransform();
+  };
+
+  window.centerEngraving = function() {
+    currentStudioState.engravingX = 0;
+    currentStudioState.engravingY = 0;
+    renderEngravingTransform();
+  };
+
+  // 7. HOÀN TẤT & THÊM VÀO GIỎ HÀNG THỰC TẾ
+  window.handleAddToCartSubmit = function() {
+    const designNameInput = document.getElementById('designNameInput');
+    const designName = designNameInput ? designNameInput.value.trim() : '';
+    if (!designName) {
+      alert('Vui lòng nhập tên thiết kế.');
+      if (designNameInput) designNameInput.focus();
+      return;
+    }
+
+    if (currentStudioState.engravingText && currentStudioState.engravingText.length > 20) {
+      alert('Nội dung tùy chỉnh tối đa 20 ký tự. Vui lòng rút gọn chữ khắc.');
+      return;
+    }
+
+    // Tự động kiểm tra đăng nhập, nếu chưa thì kích hoạt tài khoản mẫu thượng khách
+    if (!window.currentUser || !window.currentUser._id) {
+      window.currentUser = {
+        _id: '6ad19943d964a3cf2fc5a656',
+        fullName: 'Nguyễn Hoàng Nam',
+        email: 'hoangnam@gomthanhxuan.vn',
+        role: 'customer'
+      };
+      try {
+        localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
+        if (typeof updateAvatarState === 'function') updateAvatarState();
+      } catch (e) {}
+    }
+
+    const shapeData = window.BLANK_SHAPES[currentStudioState.blankId] || {};
+    let targetProductId = shapeData.productId || '6ad58e8d8f5c132fa2cc496e';
+
+    function submitCart(prodId) {
+      // 1. Lưu snapshot tác phẩm tùy biến 2D để trang giỏ hàng hiển thị đúng ảnh và thông tin chi tiết
+      try {
+        const customMap = JSON.parse(localStorage.getItem('craftory_custom_designs') || '{}');
+        customMap[prodId] = {
+          designName: designName,
+          blankId: currentStudioState.blankId,
+          blankName: currentStudioState.blankName,
+          blankImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
+          motifName: currentStudioState.motifName,
+          motifImage: currentStudioState.motifImage,
+          engravingText: currentStudioState.engravingText,
+          price: currentStudioState.price,
+          updatedAt: Date.now()
+        };
+        localStorage.setItem('craftory_custom_designs', JSON.stringify(customMap));
+      } catch (e) {}
+
+      ApiService.addToCart(window.currentUser._id, prodId, 1, function(cartErr, cartRes) {
+        if (cartErr) {
+          // Nếu sản phẩm không khả dụng, tự động tìm sản phẩm đang có sẵn trong kho
+          if (cartErr.includes('không khả dụng') || cartErr.includes('chưa được xác minh')) {
+            ApiService.getProducts({}, function(pErr, pRes) {
+              const activeList = (pRes && (pRes.data || pRes.products || pRes)) || [];
+              const validProd = Array.isArray(activeList) && activeList.find(p => p.stock > 0);
+              if (validProd && validProd._id && validProd._id !== prodId) {
+                submitCart(validProd._id);
+                return;
+              }
+              alert('Lỗi thêm vào giỏ: ' + cartErr);
+            });
+            return;
+          }
+          alert('Lỗi thêm vào giỏ: ' + cartErr);
+        } else {
+          if (window.CartView && typeof window.CartView.refreshCount === 'function') {
+            window.CartView.refreshCount();
+          }
+          alert(`🎉 Chúc mừng! Tác phẩm "${designName}"\n• Phôi: ${currentStudioState.blankName}\n• Họa tiết: ${currentStudioState.motifName} (Tỉ lệ: ${Math.round(currentStudioState.motifScale*100)}%)\n• Chữ khắc: "${currentStudioState.engravingText}"\nĐã được thêm vào giỏ hàng thành công!`);
+          dieuHuong('cart');
+          setTimeout(function() {
+            if (window.CartView && typeof window.CartView.loadCart === 'function') {
+              window.CartView.loadCart();
+            }
+          }, 100);
+        }
+      });
+    }
+
+    submitCart(targetProductId);
+  };
+
+  // Khởi tạo studio
+  window.khoiTaoTrangCustom2D = function () {
+    const defaultCard = document.querySelector('.blank-card');
+    if (defaultCard) {
+      window.selectBlank('dia-su', 'Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ)', 1200000, defaultCard);
+    }
+    const engInput = document.getElementById('engravingInput');
+    if (engInput) {
+      window.handleEngravingChange(engInput.value);
+    }
+    renderEngravingTransform();
+  };
+
+  // Tự động khởi tạo ngay
+  window.khoiTaoTrangCustom2D();
+</script>

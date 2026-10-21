@@ -1012,10 +1012,20 @@ const CartView = {
     const totalEl = document.getElementById('cartTotal');
     const emptyEl = document.getElementById('cartEmpty');
     if (!list) return;
+
+    // Tự động khôi phục currentUser từ localStorage nếu bị rỗng
+    if (!window.currentUser || !window.currentUser._id) {
+      try {
+        const saved = localStorage.getItem('craftory_user');
+        if (saved) window.currentUser = JSON.parse(saved);
+      } catch (e) {}
+    }
+
     if (!window.currentUser || !window.currentUser._id) {
       list.innerHTML = '<p class="py-12 text-center text-[#74777e]">Vui lòng đăng nhập để xem giỏ hàng.</p>';
       return;
     }
+
     list.innerHTML = '<p class="py-12 text-center text-[#74777e]">Đang tải giỏ hàng...</p>';
     ApiService.getCart(window.currentUser._id, function (err, res) {
       if (err || !res || !res.success) {
@@ -1030,17 +1040,44 @@ const CartView = {
         if (totalEl) totalEl.textContent = '0₫';
         return;
       }
+
+      // Đọc các snapshot thiết kế 2D đã lưu
+      let customDesigns = {};
+      try {
+        customDesigns = JSON.parse(localStorage.getItem('craftory_custom_designs') || '{}');
+      } catch (e) {}
+
       list.innerHTML = items.map(item => {
         const product = item.productId;
         const productId = escapeProductText(product._id);
-        const imageUrl = product.image || (product.images && product.images[0]) || '';
-        const unitPrice = item.unitPrice || 0;
+        const customInfo = customDesigns[product._id];
+        const isCustom2D = !!customInfo;
+
+        const displayName = isCustom2D ? customInfo.designName : product.name;
+        const displayImage = isCustom2D && customInfo.blankImage ? customInfo.blankImage : (product.image || (product.images && product.images[0]) || '');
+        const unitPrice = isCustom2D && customInfo.price ? customInfo.price : (item.unitPrice || 0);
         const subtotal = unitPrice * item.quantity;
+
         return `<article class="flex flex-col gap-4 border-b border-[#EBEAE5] py-5 sm:flex-row sm:items-center">
-          <div class="h-24 w-20 shrink-0 rounded-lg bg-[#f3f4f5] p-2">${imageUrl ? `<img class="h-full w-full object-contain" src="${escapeProductText(imageUrl)}" alt="${escapeProductText(product.name)}">` : ''}</div>
+          <div class="h-24 w-20 shrink-0 rounded-lg bg-[#f3f4f5] p-2 relative flex items-center justify-center overflow-hidden">
+            ${displayImage ? `<img class="h-full w-full object-contain" src="${escapeProductText(displayImage)}" alt="${escapeProductText(displayName)}">` : ''}
+            ${isCustom2D && customInfo.motifImage ? `<img class="absolute w-10 h-10 object-contain pointer-events-none" style="mix-blend-mode: multiply;" src="${escapeProductText(customInfo.motifImage)}" alt="Họa tiết">` : ''}
+          </div>
           <div class="min-w-0 flex-1">
-            <h2 class="font-semibold text-[#000f22]">${escapeProductText(product.name)}</h2>
-            <p class="mt-1 text-sm text-[#74777e]">${unitPrice.toLocaleString('vi-VN')}₫ / sản phẩm</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="font-semibold text-[#000f22]">${escapeProductText(displayName)}</h2>
+              ${isCustom2D ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#0a2540] text-white tracking-wider uppercase">Tác chế 2D</span>` : ''}
+            </div>
+
+            ${isCustom2D ? `
+              <div class="mt-1 flex flex-col gap-0.5 text-xs text-stone-600 bg-stone-50 p-2 rounded-lg border border-stone-200/60 max-w-md">
+                <div class="flex items-center gap-1.5"><span class="text-stone-400">Phôi:</span> <strong class="text-stone-700">${escapeProductText(customInfo.blankName)}</strong></div>
+                <div class="flex items-center gap-1.5"><span class="text-stone-400">Họa tiết:</span> <strong class="text-stone-700">${escapeProductText(customInfo.motifName)}</strong></div>
+                ${customInfo.engravingText ? `<div class="flex items-center gap-1.5"><span class="text-stone-400">Khắc chữ:</span> <span class="font-bold text-[#a23e18] font-serif">"${escapeProductText(customInfo.engravingText)}"</span></div>` : ''}
+              </div>
+            ` : ''}
+
+            <p class="mt-1.5 text-sm text-[#74777e]">${unitPrice.toLocaleString('vi-VN')}₫ / sản phẩm</p>
             <div class="mt-3 flex flex-wrap items-center gap-3">
               <div class="inline-flex h-9 items-center overflow-hidden rounded-lg border border-[#EBEAE5]" aria-label="Điều chỉnh số lượng">
                 <button type="button" data-cart-product="${productId}" onclick="CartView.setQuantity('${productId}', ${item.quantity - 1})" ${item.quantity <= 1 || CartView.pendingItemChanges.has(product._id) ? 'disabled' : ''} aria-label="Giảm số lượng" class="h-full w-9 text-lg text-[#000f22] hover:bg-[#f3f4f5] disabled:cursor-not-allowed disabled:opacity-40">−</button>
@@ -1055,8 +1092,15 @@ const CartView = {
           <strong class="shrink-0 text-[#a23e18]">${subtotal.toLocaleString('vi-VN')}₫</strong>
         </article>`;
       }).join('');
-      const total = items.reduce((sum, item) => sum + (item.unitPrice || 0) * item.quantity, 0);
-      if (totalEl) totalEl.textContent = `${total.toLocaleString('vi-VN')}₫`;
+      const total = items.reduce((sum, item) => {
+        const customInfo = customDesigns[item.productId._id];
+        const unitPrice = customInfo && customInfo.price ? customInfo.price : (item.unitPrice || 0);
+        return sum + unitPrice * item.quantity;
+      }, 0);
+      const formattedTotal = `${total.toLocaleString('vi-VN')}₫`;
+      if (totalEl) totalEl.textContent = formattedTotal;
+      const finalTotalEl = document.getElementById('cartFinalTotal');
+      if (finalTotalEl) finalTotalEl.textContent = formattedTotal;
     });
   }
 };
@@ -1220,44 +1264,71 @@ const CollectionDetailView = {
     const image = document.getElementById('collectionDetailImage');
     const grid = document.getElementById('collectionProductsGrid');
     const count = document.getElementById('collectionDetailCount');
-    const name = selection.collectionName || '';
+
+    let collectionId = selection.collectionId || '';
+    let name = selection.collectionName || '';
+
+    // Khôi phục từ sessionStorage nếu người dùng nhấn F5 refresh trang
+    if (!collectionId && !name) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('craftory_last_collection') || '{}');
+        collectionId = saved.collectionId || '';
+        name = saved.collectionName || '';
+      } catch (e) {}
+    }
 
     if (!grid) return;
     grid.innerHTML = '<div class="col-span-full py-12 text-center text-[#74777e]">Đang tải sản phẩm của bộ sưu tập...</div>';
 
     ApiService.getCollections((collectionError, collectionResponse) => {
       if (collectionError || !collectionResponse || !collectionResponse.success || !Array.isArray(collectionResponse.data)) {
+        if (title) title.textContent = 'Bộ sưu tập tuyển chọn';
         grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không tải được thông tin bộ sưu tập.</div>';
         return;
       }
 
-      const collection = collectionResponse.data.find(item =>
-        (selection.collectionId && item._id === selection.collectionId) ||
+      // Tìm bộ sưu tập theo ID hoặc Name, nếu không thấy thì tự động lấy bộ sưu tập đầu tiên
+      let collection = collectionResponse.data.find(item =>
+        (collectionId && item._id === collectionId) ||
         (name && item.name.toLocaleLowerCase() === name.toLocaleLowerCase())
       );
-      const resolvedName = (collection && collection.name) || name;
-      if (!resolvedName) {
-        grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không xác định được bộ sưu tập.</div>';
+
+      if (!collection && collectionResponse.data.length > 0) {
+        collection = collectionResponse.data[0];
+      }
+
+      if (!collection) {
+        if (title) title.textContent = 'Bộ sưu tập tuyển chọn';
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Chưa có bộ sưu tập nào khả dụng.</div>';
         return;
       }
 
+      // Lưu lại để F5 không bị mất
+      try {
+        sessionStorage.setItem('craftory_last_collection', JSON.stringify({ collectionId: collection._id, collectionName: collection.name }));
+      } catch (e) {}
+
+      const resolvedName = collection.name || 'Bộ sưu tập tuyển chọn';
       if (title) title.textContent = resolvedName;
       if (breadcrumb) breadcrumb.textContent = resolvedName;
-      if (subtitle) subtitle.textContent = (collection && collection.description) || `Các tác phẩm thuộc bộ sưu tập ${resolvedName}.`;
+      if (subtitle) subtitle.textContent = collection.description || `Các tác phẩm thuộc bộ sưu tập ${resolvedName}.`;
+
+      const imgUrl = collection.imageUrl || collection.image || '';
       if (image) {
-        image.hidden = !(collection && (collection.imageUrl || collection.image));
-        if (collection && (collection.imageUrl || collection.image)) image.src = collection.imageUrl || collection.image;
+        if (imgUrl) {
+          image.src = imgUrl;
+          image.alt = resolvedName;
+          image.hidden = false;
+        } else {
+          image.hidden = true;
+        }
         image.onerror = function () {
           image.hidden = true;
         };
-        image.alt = resolvedName;
       }
-      if (count) count.textContent = `${collection && collection.productCount ? collection.productCount : 0} tác phẩm`;
+      if (count) count.textContent = `${collection.productCount || 0} tác phẩm`;
 
-      const params = { limit: 0, source: 'verified' };
-      if (collection && collection._id) params.collectionId = collection._id;
-      else params.collectionName = resolvedName;
-
+      const params = { limit: 0, source: 'verified', collectionId: collection._id };
       ApiService.getProducts(params, (productError, productResponse) => {
         if (productError || !productResponse || !productResponse.success || !Array.isArray(productResponse.data)) {
           grid.innerHTML = '<div class="col-span-full py-12 text-center text-red-700">Không tải được sản phẩm thuộc bộ sưu tập.</div>';

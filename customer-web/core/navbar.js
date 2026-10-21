@@ -53,7 +53,7 @@ window.kickBlockedUser = function (message) {
   }, 250);
 };
 
-// Heartbeat định kỳ 2.5 giây: Nếu Admin khóa tài khoản thì đá customer ra ngay lập tức
+// Heartbeat định kỳ 15 giây: Kiểm tra trạng thái tài khoản không làm nghẽn mạng
 setInterval(function () {
   if (currentUser && currentUser._id) {
     ApiService.checkStatus(currentUser._id, function (err, res) {
@@ -62,7 +62,7 @@ setInterval(function () {
       }
     });
   }
-}, 2500);
+}, 15000);
 
 document.addEventListener('DOMContentLoaded', function () {
   initNavbar();
@@ -77,8 +77,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Khởi tạo trang chủ ban đầu
-  dieuHuong('home');
+  // Khởi tạo trang ban đầu dựa trên hash URL nếu có, mặc định là 'home'
+  const initialHash = window.location.hash ? window.location.hash.replace('#', '') : '';
+  const initialPage = initialHash || 'home';
+  window.dieuHuong(initialPage);
+
+  // Lắng nghe sự kiện hash URL thay đổi
+  window.addEventListener('hashchange', function () {
+    const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
+    if (currentHash) {
+      window.dieuHuong(currentHash);
+    }
+  });
 });
 
 /**
@@ -132,7 +142,7 @@ function initNavbar() {
             </div>
           </div>
 
-          <a class="font-body-md text-stone-700 hover:text-primary transition-colors tracking-wide py-2 cursor-pointer" onclick="alert('Phân hệ Thiết kế 2D đang sẵn sàng tích hợp!')">Thiết kế 2D</a>
+          <a class="nav-menu-item font-body-md text-stone-700 hover:text-primary transition-colors tracking-wide py-2 cursor-pointer" id="nav-item-custom-2d" onclick="dieuHuong('custom-2d', this)">Thiết kế 2D</a>
         </nav>
 
         <!-- Bên phải: Tìm kiếm, Wishlist, Giỏ hàng, Avatar -->
@@ -271,21 +281,24 @@ function updateAvatarState() {
   if (window.CartView) window.CartView.refreshCount();
 }
 
-/**
- * 3. Cơ chế AJAX Kéo phân hệ vào khung (Slide 10 - XMLHttpRequest)
- */
-function dieuHuong(tenPhanHe, element, param) {
+window.dieuHuong = function (tenPhanHe, element, param) {
   const viewport = document.getElementById('app-viewport');
+  if (!viewport) {
+    console.error('Không tìm thấy #app-viewport');
+    return;
+  }
   const url = `views/${tenPhanHe}.html?v=${Date.now()}`;
 
   // Update active state
-  if (element) {
-    document.querySelectorAll('.nav-menu-item').forEach(el => {
-      el.classList.remove('text-[#b91c1c]', 'font-bold', 'border-b-2', 'border-[#b91c1c]');
-      el.classList.add('text-stone-700');
-    });
-    element.classList.add('text-[#b91c1c]', 'font-bold', 'border-b-2', 'border-[#b91c1c]');
-    element.classList.remove('text-stone-700');
+  window.location.hash = '#' + tenPhanHe;
+  document.querySelectorAll('.nav-menu-item').forEach(el => {
+    el.classList.remove('text-[#b91c1c]', 'font-bold', 'border-b-2', 'border-[#b91c1c]');
+    el.classList.add('text-stone-700');
+  });
+  const matchedNav = element || document.getElementById(`nav-item-${tenPhanHe}`);
+  if (matchedNav) {
+    matchedNav.classList.add('text-[#b91c1c]', 'font-bold', 'border-b-2', 'border-[#b91c1c]');
+    matchedNav.classList.remove('text-stone-700');
   }
 
   const xhr = new XMLHttpRequest();
@@ -335,6 +348,10 @@ function dieuHuong(tenPhanHe, element, param) {
         } else if (tenPhanHe === 'cart') {
           if (typeof CartView !== 'undefined') {
             CartView.loadCart();
+          }
+        } else if (tenPhanHe === 'custom-2d') {
+          if (typeof khoiTaoTrangCustom2D === 'function') {
+            khoiTaoTrangCustom2D();
           }
         } else if (tenPhanHe === 'home') {
           if (window.ProductComponent) {

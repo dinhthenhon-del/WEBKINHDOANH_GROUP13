@@ -1607,6 +1607,58 @@ app.get('/api/dashboard/stats', async (req, res) => {
   }
 });
 
+// ==========================================
+// THÀNH VIÊN 4: CHATBOT TƯ VẤN GỐM MỘC (UC-C09)
+// ==========================================
+app.post('/api/chatbot', (req, res) => {
+  try {
+    const { message } = req.body || {};
+    const text = (message || '').trim();
+
+    if (!text) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          reply: 'Xin chào quý khách! Mình là Trợ lý Nghệ nhân của Gốm Mộc. Quý khách có thể hỏi về dáng gốm, sắc men, thiết kế 2D, đặt hàng hoặc bảo quản gốm nhé.'
+        }
+      });
+    }
+
+    const lower = text.toLowerCase();
+    let reply = '';
+
+    if (lower.includes('2d') || lower.includes('tự thiết kế') || lower.includes('tác chế') || lower.includes('thiết kế gốm')) {
+      reply = '🎨 Để tự thiết kế gốm 2D tại Gốm Mộc (UC-C04):\n1. Vào mục "Thiết kế 2D".\n2. Chọn 1 trong 5 dáng phôi gốm thủ công (Đĩa sứ nghệ thuật kèm giá gỗ, Mai bình dáng cao, Bình hoa cổ sóng, Ấm trà sứ trắng, Tách trà hoàng gia).\n3. Chọn họa tiết truyền thống (13 mẫu đã tách nền chuẩn).\n4. Kéo thả tự do trực tiếp trên thân bình, chỉnh kích cỡ phóng to/thu nhỏ (scale 25%-150%), xoay góc 360° và bấm Căn giữa chuẩn.\n5. Nhập chữ khắc nghệ thuật (tối đa 20 ký tự theo chuẩn UC-C04), chọn màu men và tùy chỉnh độ cao (Lên/Xuống), dịch ngang hoặc cỡ chữ.\n6. Nhấn "Hoàn tất & Thêm vào giỏ" để nghệ nhân xưởng tiếp nhận chế tác.';
+    } else if (lower.includes('kí tự') || lower.includes('ký tự') || lower.includes('chữ khắc') || lower.includes('bao nhiêu ký tự') || lower.includes('tối đa')) {
+      reply = '✍️ Chữ khắc nghệ thuật trên thân phôi gốm được quy định tối đa 20 ký tự (chuẩn UC-C04 E1). Giới hạn này giúp đường nét đục khắc hoặc vẽ men chìm đạt độ cân đối, sắc nét và tôn dáng gốm mỹ thuật nhất.';
+    } else if (lower.includes('phôi') || lower.includes('dáng gốm') || lower.includes('giá bao nhiêu') || lower.includes('giá phôi') || lower.includes('bình')) {
+      reply = '🏺 Bảng giá 5 dáng phôi gốm thủ công tại Studio 2D:\n• Mai Bình Dáng Cao: 2.850.000₫\n• Bình Hoa Tròn Cổ Sóng: 1.850.000₫\n• Ấm Trà Sứ Trắng: 1.450.000₫\n• Đĩa Sứ Nghệ Thuật (kèm giá gỗ): 1.200.000₫\n• Tách Trà Có Nắp Hoàng Gia: 380.000₫';
+    } else if (lower.includes('men') || lower.includes('sắc men') || lower.includes('màu men') || lower.includes('khác nhau')) {
+      reply = '✨ Gốm Mộc hội tụ 5 dòng men danh tiếng Bát Tràng:\n• Men Lam: Sắc xanh cobalt cổ điển thời Lý - Trần - Lê, trang nhã và vĩnh cửu.\n• Men Rạn: Vân rạn tam giác, tứ giác tự nhiên độc bản do kiểm soát chênh lệch nhiệt độ lò nung.\n• Men Ngọc (Celadon): Sắc xanh lục bảo mịn màng như ngọc quý hoàng gia triều đình.\n• Men Hỏa Biến: Biến đổi ngẫu nhiên theo nhiệt độ lửa lò nung, độc bản không trùng lặp.\n• Dát Vàng Kim Sa: Họa tiết điểm xuyết vàng 24K thủ công sang trọng và vượng phong thủy.';
+    } else if (lower.includes('thanh toán') || lower.includes('cod') || lower.includes('chuyển khoản') || lower.includes('trả tiền')) {
+      reply = '💳 Gốm Mộc hỗ trợ 3 hình thức thanh toán thuận tiện (UC-C06):\n1. Thanh toán khi nhận hàng (COD) toàn quốc - đồng kiểm trước khi trả tiền.\n2. Chuyển khoản ngân hàng qua mã QR động (xác nhận tức thì).\n3. Thẻ ATM / Visa / Mastercard nội địa và quốc tế.';
+    } else if (lower.includes('bảo quản') || lower.includes('vệ sinh') || lower.includes('rửa') || lower.includes('lau chùi')) {
+      reply = '🛡️ Cách bảo quản đồ gốm sứ Bát Tràng:\n• Vệ sinh bằng nước ấm pha giấm trắng hoặc nước rửa chén dịu nhẹ, dùng khăn vải mềm hoặc bọt biển.\n• Tuyệt đối không dùng miếng cọ sắt ráp chà xát làm xước men bóng và đường dát vàng.\n• Đặt sản phẩm nơi bằng phẳng, tránh mép bàn và hạn chế thay đổi nhiệt độ đột ngột.';
+    } else if (lower.includes('đổi trả') || lower.includes('bảo hành') || lower.includes('vỡ') || lower.includes('hỏng')) {
+      reply = '📦 Chính sách đổi trả & bảo hành (UC-A05, UC-C08):\n• Đổi mới 100% trong vòng 7 ngày nếu sản phẩm nứt vỡ do vận chuyển hoặc lỗi sản xuất từ nghệ nhân.\n• Quý khách vui lòng quay video khi khui kiện hàng để được duyệt đổi trả nhanh nhất qua mục "Đổi trả hàng" trên tài khoản.';
+    } else if (lower.includes('giao hàng') || lower.includes('thời gian') || lower.includes('bao lâu') || lower.includes('ship')) {
+      reply = '🚚 Thời gian giao hàng:\n• Sản phẩm có sẵn: 2 - 3 ngày làm việc trên toàn quốc.\n• Tác phẩm chế tác riêng 2D: 5 - 7 ngày để nghệ nhân nung men, vẽ nét và khắc chữ thủ công trước khi xuất xưởng.';
+    } else if (lower.includes('hotline') || lower.includes('liên hệ') || lower.includes('địa chỉ') || lower.includes('tư vấn')) {
+      reply = '📞 Hotline tư vấn nghệ nhân 24/7: 1800 1705 (Miễn cước).\n• Địa chỉ: Xưởng Gốm Mộc, Làng cổ gốm sứ Bát Tràng, Gia Lâm, Hà Nội.';
+    } else {
+      reply = 'Cảm ơn câu hỏi của bạn! Mình là Trợ lý Nghệ nhân Gốm Mộc. Bạn có thể hỏi thêm về: cách tự thiết kế 2D, các sắc men Bát Tràng, quy định 20 ký tự chữ khắc, hình thức thanh toán hoặc bảo quản gốm sứ nhé.';
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: { reply }
+    });
+  } catch (error) {
+    console.error('Lỗi xử lý chatbot:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi xử lý từ máy chủ tư vấn.' });
+  }
+});
+
 // 7. KHỞI ĐỘNG SERVER
 const PORT = process.env.PORT || 5000;
 mongoose.connect(MONGODB_URI, {
