@@ -1,0 +1,305 @@
+<!-- customer-web/views/checkout.html -->
+<!-- Nhập Thông Tin Đặt Hàng & Thanh Toán - Minh Gốm Haute Porcelain (UC-C06) -->
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif]">
+  <!-- Breadcrumbs & Tiêu đề -->
+  <section class="w-full bg-[#FFFFFF] py-4 border-b border-[#EBEAE5] shadow-2xs">
+    <div class="max-w-7xl mx-auto px-margin-tablet lg:px-margin-desktop flex items-center justify-between">
+      <div class="flex items-center gap-2 text-[12px] text-[#74777e]">
+        <a href="#home" onclick="dieuHuong('home')" class="hover:text-[#a23e18] transition-colors">Trang chủ</a>
+        <span>/</span>
+        <a href="#cart" onclick="CartModule.openDrawer()" class="hover:text-[#a23e18] transition-colors">Giỏ hàng</a>
+        <span>/</span>
+        <span class="text-[#000f22] font-semibold">Thanh toán & Đặt chế tác</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-[#a23e18] uppercase tracking-wider">
+        <span class="material-symbols-outlined text-[16px]">verified</span>
+        <span>Bảo chứng gốc lò Bát Tràng 1705</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Khung Checkout chính (Grid 12 cột) -->
+  <section class="w-full py-8 sm:py-12 bg-[#f8f9fa]">
+    <div class="max-w-7xl mx-auto px-margin-tablet lg:px-margin-desktop">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- CỘT TRÁI (7 cột): Form Thông tin giao hàng & Phương thức thanh toán -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+          
+          <!-- KHỐI 1: Thông tin người nhận gốm sứ -->
+          <div class="bg-white p-6 sm:p-8 shadow-xs rounded-xl border border-[#EBEAE5] flex flex-col gap-5">
+            <div class="flex items-center justify-between pb-4 border-b border-[#EBEAE5]">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-[#0a2540] text-white flex items-center justify-center font-bold text-sm">1</span>
+                <div>
+                  <h2 class="font-['Playfair_Display',serif] text-[20px] font-bold text-[#000f22]">Thông tin nhận gốm sứ</h2>
+                  <p class="text-[12px] text-[#74777e]">Tọa độ tiếp nhận tác phẩm và thư ủy quyền giám định di sản</p>
+                </div>
+              </div>
+              <span class="text-[11px] text-[#ba1a1a] bg-red-50 border border-red-200/80 px-2.5 py-1 rounded font-semibold">
+                (* Bắt buộc)
+              </span>
+            </div>
+
+            <!-- Tùy chọn chọn địa chỉ đã lưu (Nếu có trong tài khoản) -->
+            <div id="checkout-saved-address-selector" class="hidden flex flex-col gap-1.5 p-3.5 bg-[#f3f4f5] rounded-lg border border-[#EBEAE5]">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px] text-[#a23e18]">location_on</span>
+                Địa chỉ đã lưu trong hồ sơ:
+              </label>
+              <select id="checkout-address-select" class="w-full p-2.5 bg-white border border-[#EBEAE5] rounded text-[13px] text-[#000f22] focus:outline-none focus:border-[#0a2540] cursor-pointer">
+                <!-- Render động các địa chỉ -->
+              </select>
+            </div>
+
+            <!-- Form Nhập Liệu Giao Hàng -->
+            <form id="checkout-main-form" class="flex flex-col gap-4" onsubmit="event.preventDefault(); OrdersModule.submitOrder();">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Họ tên -->
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1" for="checkout-fullname">
+                    Họ và tên người nhận <span class="text-[#ba1a1a]">*</span>
+                  </label>
+                  <input type="text" 
+                         id="checkout-fullname" 
+                         placeholder="Ví dụ: Nguyễn Hoàng Nam" 
+                         class="w-full px-3.5 py-2.5 bg-white text-[#000f22] text-[14px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540] transition-all">
+                  <span id="err-fullname" class="hidden text-[11px] text-[#ba1a1a] flex items-center gap-1 mt-0.5"></span>
+                </div>
+
+                <!-- Số điện thoại -->
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1" for="checkout-phone">
+                    Số điện thoại liên hệ <span class="text-[#ba1a1a]">*</span>
+                  </label>
+                  <input type="tel" 
+                         id="checkout-phone" 
+                         placeholder="09xx xxx xxx" 
+                         class="w-full px-3.5 py-2.5 bg-white text-[#000f22] text-[14px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540] transition-all">
+                  <span id="err-phone" class="hidden text-[11px] text-[#ba1a1a] flex items-center gap-1 mt-0.5"></span>
+                </div>
+              </div>
+
+              <!-- Tỉnh / Thành phố & Phường / Xã -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1" for="checkout-province">
+                    Tỉnh / Thành phố <span class="text-[#ba1a1a]">*</span>
+                  </label>
+                  <div class="relative">
+                    <select id="checkout-province" class="w-full px-3.5 py-2.5 bg-white text-[#000f22] text-[14px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540] appearance-none pr-8 cursor-pointer">
+                      <option value="Hà Nội" selected>Hà Nội</option>
+                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                      <option value="Đà Nẵng">Đà Nẵng</option>
+                      <option value="Hải Phòng">Hải Phòng</option>
+                      <option value="Cần Thơ">Cần Thơ</option>
+                      <option value="Bắc Ninh">Bắc Ninh</option>
+                      <option value="Hưng Yên">Hưng Yên</option>
+                      <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                      <option value="Quảng Nam">Quảng Nam</option>
+                      <option value="Bình Dương">Bình Dương</option>
+                      <option value="Khánh Hòa">Khánh Hòa</option>
+                    </select>
+                    <span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[18px] text-[#74777e]">expand_more</span>
+                  </div>
+                  <span id="err-province" class="hidden text-[11px] text-[#ba1a1a] flex items-center gap-1 mt-0.5"></span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1" for="checkout-ward">
+                    Phường / Xã <span class="text-[#ba1a1a]">*</span>
+                  </label>
+                  <input type="text" 
+                         id="checkout-ward" 
+                         placeholder="Ví dụ: Phường Quảng An" 
+                         class="w-full px-3.5 py-2.5 bg-white text-[#000f22] text-[14px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540] transition-all">
+                  <span id="err-ward" class="hidden text-[11px] text-[#ba1a1a] flex items-center gap-1 mt-0.5"></span>
+                </div>
+              </div>
+
+              <!-- Địa chỉ chi tiết -->
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22] flex items-center gap-1" for="checkout-address">
+                  Địa chỉ chi tiết (Số nhà, ngõ, tên đường) <span class="text-[#ba1a1a]">*</span>
+                </label>
+                <input type="text" 
+                       id="checkout-address" 
+                       placeholder="Ví dụ: Biệt thự số 18, Ngõ 12 Đặng Thai Mai" 
+                       class="w-full px-3.5 py-2.5 bg-white text-[#000f22] text-[14px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540] transition-all">
+                <span id="err-address" class="hidden text-[11px] text-[#ba1a1a] flex items-center gap-1 mt-0.5"></span>
+              </div>
+
+              <!-- Ghi chú đơn hàng -->
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-[#000f22]" for="checkout-note">
+                  Ghi chú cho nghệ nhân đóng gói & vận chuyển (tùy chọn)
+                </label>
+                <textarea id="checkout-note" 
+                          rows="2" 
+                          placeholder="Yêu cầu bọc thêm xốp chống sốc, giờ nhận thuận tiện..." 
+                          class="w-full p-2.5 bg-white text-[#000f22] text-[13px] rounded border border-[#EBEAE5] shadow-2xs focus:outline-none focus:border-[#0a2540]"></textarea>
+              </div>
+            </form>
+          </div>
+
+          <!-- KHỐI 2: Lựa chọn Phương thức thanh toán -->
+          <div class="bg-white p-6 sm:p-8 shadow-xs rounded-xl border border-[#EBEAE5] flex flex-col gap-5">
+            <div class="flex items-center gap-3 pb-4 border-b border-[#EBEAE5]">
+              <span class="w-8 h-8 rounded-full bg-[#0a2540] text-white flex items-center justify-center font-bold text-sm">2</span>
+              <div>
+                <h2 class="font-['Playfair_Display',serif] text-[20px] font-bold text-[#000f22]">Phương thức thanh toán</h2>
+                <p class="text-[12px] text-[#74777e]">Lựa chọn hình thức giao dịch an toàn và thuận tiện nhất</p>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3" id="payment-methods-radio-group">
+              <!-- Phương thức 1: COD -->
+              <label class="payment-method-card relative flex items-start gap-3.5 p-4 rounded-xl cursor-pointer transition-all duration-200 bg-[#fdfaf7] border-2 border-[#a23e18] ring-1 ring-[#a23e18]/25 shadow-xs scale-[1.005]">
+                <input type="radio" 
+                       name="payment_method" 
+                       value="COD" 
+                       checked 
+                       onchange="window.OrdersModule && window.OrdersModule.selectPaymentMethod(this.value)"
+                       class="mt-1 w-4 h-4 text-[#a23e18] accent-[#a23e18] cursor-pointer">
+                <div class="flex flex-col gap-1 w-full">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="font-bold text-[14px] text-[#000f22] flex items-center gap-2">
+                      <span>Thanh toán khi nhận hàng (COD)</span>
+                      <span class="bg-[#ffdead] text-[#281900] text-[10px] px-2 py-0.5 rounded font-bold uppercase">Mặc định</span>
+                    </span>
+                    <span class="material-symbols-outlined text-[#a23e18] text-[20px]">verified_user</span>
+                  </div>
+                  <p class="text-[12px] text-[#43474d] leading-relaxed">
+                    Quý khách được đồng kiểm hộp gốm, soi cốt men và rà soát triện giám định cùng chuyên viên trước khi thanh toán.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Phương thức 2: Chuyển khoản VietQR -->
+              <label class="payment-method-card relative flex items-start gap-3.5 p-4 rounded-xl cursor-pointer transition-all duration-200 bg-white border border-[#EBEAE5] hover:border-[#a23e18]/60 hover:bg-[#fafaf8] shadow-xs">
+                <input type="radio" 
+                       name="payment_method" 
+                       value="BANKING" 
+                       onchange="window.OrdersModule && window.OrdersModule.selectPaymentMethod(this.value)"
+                       class="mt-1 w-4 h-4 text-[#a23e18] accent-[#a23e18] cursor-pointer">
+                <div class="flex flex-col gap-1 w-full">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="font-bold text-[14px] text-[#000f22] flex items-center gap-2">
+                      <span>Chuyển khoản Ngân hàng (VietQR Doanh Nghiệp)</span>
+                      <span class="bg-[#e1e3e4] text-[#43474d] text-[10px] px-2 py-0.5 rounded font-semibold uppercase">Tự động</span>
+                    </span>
+                    <span class="material-symbols-outlined text-[#0a2540] text-[20px]">qr_code_2</span>
+                  </div>
+                  <p class="text-[12px] text-[#43474d] leading-relaxed">
+                    Hệ thống sẽ cung cấp mã QR động kèm mã đơn sau khi quý khách bấm xác nhận đặt hàng.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Phương thức 3: MoMo -->
+              <label class="payment-method-card relative flex items-start gap-3.5 p-4 rounded-xl cursor-pointer transition-all duration-200 bg-white border border-[#EBEAE5] hover:border-[#a23e18]/60 hover:bg-[#fafaf8] shadow-xs">
+                <input type="radio" 
+                       name="payment_method" 
+                       value="MOMO" 
+                       onchange="window.OrdersModule && window.OrdersModule.selectPaymentMethod(this.value)"
+                       class="mt-1 w-4 h-4 text-[#a23e18] accent-[#a23e18] cursor-pointer">
+                <div class="flex flex-col gap-1 w-full">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="font-bold text-[14px] text-[#000f22] flex items-center gap-2">
+                      <span>Ví điện tử MoMo</span>
+                    </span>
+                    <span class="material-symbols-outlined text-[#a23e18] text-[20px]">account_balance_wallet</span>
+                  </div>
+                  <p class="text-[12px] text-[#43474d] leading-relaxed">
+                    Xác nhận nhanh chóng qua cổng ví điện tử MoMo chính thức của Dinh Thự Làng Gốm.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI (5 cột): Tóm tắt tác phẩm tuyển chọn & Nút Xác Nhận -->
+        <div class="lg:col-span-5 sticky top-24 flex flex-col gap-5">
+          <div class="bg-white p-6 sm:p-7 rounded-xl shadow-xs border border-[#EBEAE5] flex flex-col gap-4">
+            
+            <div class="flex items-center justify-between pb-3.5 border-b border-[#EBEAE5]">
+              <h2 class="font-['Playfair_Display',serif] text-[18px] font-bold text-[#000f22]">Tác phẩm tuyển chọn</h2>
+              <span id="checkout-items-count-badge" class="text-[11px] bg-[#EBEAE5] text-[#000f22] px-2.5 py-0.5 rounded font-bold">
+                0 Sản phẩm
+              </span>
+            </div>
+
+            <!-- Danh sách tác phẩm (Render động từ giỏ hàng) -->
+            <div id="checkout-items-summary-list" class="flex flex-col gap-3.5 divide-y divide-[#EBEAE5]/80 max-h-96 overflow-y-auto pr-1">
+              <div class="py-6 text-center text-[#74777e] text-sm">Đang tải tuyển tập...</div>
+            </div>
+
+            <!-- Bảng chi tiết chi phí -->
+            <div class="pt-3 border-t border-[#EBEAE5] flex flex-col gap-2 text-[13px]">
+              <div class="flex justify-between items-center text-[#43474d]">
+                <span>Tạm tính tác phẩm:</span>
+                <span id="checkout-subtotal-display" class="font-semibold text-[#000f22]">0₫</span>
+              </div>
+              <div class="flex justify-between items-center text-[#a23e18]">
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">local_shipping</span>
+                  Phí vận chuyển bảo hiểm:
+                </span>
+                <span id="checkout-shipping-fee-display" class="font-bold uppercase text-[12px]">Miễn phí</span>
+              </div>
+            </div>
+
+            <!-- Tổng cộng thanh toán -->
+            <div class="pt-3 border-t border-[#0a2540]/10 flex flex-col gap-1">
+              <div class="flex items-baseline justify-between">
+                <div>
+                  <span class="text-[12px] uppercase text-[#000f22] tracking-wider block font-bold">Tổng thanh toán</span>
+                  <span class="text-[10px] text-[#74777e]">(Đã gồm bảo hiểm vỡ & VAT)</span>
+                </div>
+                <div class="text-right">
+                  <span id="checkout-grand-total-display" class="font-['Playfair_Display',serif] text-[22px] sm:text-[24px] text-[#a23e18] font-bold tracking-tight">0₫</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút bấm Xác nhận đặt hàng -->
+            <div class="pt-2 flex flex-col gap-2">
+              <button id="btn-submit-order" 
+                      onclick="OrdersModule.submitOrder()" 
+                      type="button" 
+                      class="w-full py-4 px-6 rounded-lg font-bold text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 shadow-md bg-[#a23e18] text-white hover:bg-[#6f2000] hover:shadow-lg cursor-pointer">
+                <span class="material-symbols-outlined text-[20px]">lock</span>
+                <span id="btn-submit-text">Xác nhận đặt hàng</span>
+              </button>
+              
+              <div class="text-center pt-1">
+                <span class="text-[11px] text-[#74777e] flex items-center justify-center gap-1">
+                  <span class="material-symbols-outlined text-[14px] text-[#a23e18]">verified</span>
+                  Cam kết bồi hoàn 100% nếu có rạn nứt trong quá trình giao nhận
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    function tryInitCheckout() {
+      if (typeof window.initCheckoutPage === 'function') {
+        window.initCheckoutPage();
+      } else if (window.OrdersModule && typeof window.OrdersModule.initCheckoutPage === 'function') {
+        window.OrdersModule.initCheckoutPage();
+      } else {
+        setTimeout(tryInitCheckout, 50);
+      }
+    }
+    tryInitCheckout();
+  })();
+</script>

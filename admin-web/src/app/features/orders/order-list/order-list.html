@@ -1,1 +1,391 @@
-<p>order-list works!</p>
+<div class="max-w-[1440px] mx-auto p-space-xl">
+  <div class="flex flex-col w-full">
+    <!-- Top Headline & Action Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-xl">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-space-xs mb-space-xs">
+          <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">Gốm Sứ Thượng Hạng</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+          <span class="font-label-sm text-label-sm text-outline tracking-wider">Hệ Thống Phân Phối</span>
+        </div>
+        <h1 class="font-headline-xl text-headline-xl text-primary font-bold">Quản lý Đơn hàng</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-1">
+          Theo dõi tiến độ, tiếp nhận và điều phối vận chuyển tác phẩm gốm Thanh Xuân
+        </p>
+      </div>
+      <div class="flex items-center gap-space-md shrink-0">
+        <a routerLink="/orders/dashboard" class="flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-primary shadow-sm hover:bg-surface-container transition-all duration-200 font-label-lg text-label-lg border border-surface-variant/40">
+          <span class="material-symbols-outlined text-lg">insights</span>
+          <span>Báo cáo Dashboard</span>
+        </a>
+        <button (click)="loadOrders()" class="flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-primary text-on-primary shadow-sm hover:bg-[#000f22] hover:shadow-md transition-all duration-200 font-label-lg text-label-lg" type="button">
+          <span class="material-symbols-outlined text-lg">refresh</span>
+          <span>Làm mới</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Key Metrics Row (Ceramic Logistics Glance from Stitch Screen 1) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-space-lg mb-space-xl">
+      <!-- 1. Đơn chờ xử lý -->
+      <div (click)="onTabChange('pending')" class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 cursor-pointer hover:border-amber-400 transition-all">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đơn chờ xử lý</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
+              {{ stats.pending }} <span class="font-label-md text-label-md text-secondary font-medium">kiện</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
+            <span class="material-symbols-outlined text-xl">pending_actions</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs">
+          <span class="font-label-sm text-label-sm text-secondary font-bold flex items-center">
+            <span class="material-symbols-outlined text-sm">schedule</span> Cần xác nhận
+          </span>
+          <span class="font-body-sm text-body-sm text-outline">• Bước 1 (Pending)</span>
+        </div>
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-secondary/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- 2. Đang đóng gói xưởng -->
+      <div (click)="onTabChange('processing')" class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 cursor-pointer hover:border-indigo-400 transition-all">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đang chuẩn bị xưởng</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
+              {{ stats.processing }} <span class="font-label-md text-label-md text-primary font-medium">tác phẩm</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-800">
+            <span class="material-symbols-outlined text-xl">inventory</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs">
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Lò gốm Thanh Xuân</span>
+        </div>
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-primary/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- 3. Đang giao hỏa tốc -->
+      <div (click)="onTabChange('shipping')" class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 cursor-pointer hover:border-sky-400 transition-all">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đang giao vận</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
+              {{ stats.shipping }} <span class="font-label-md text-label-md text-outline font-medium">chuyến</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-800">
+            <span class="material-symbols-outlined text-xl">local_shipping</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs">
+          <span class="font-body-sm text-body-sm text-on-surface-variant">Đồng kiểm khi nhận</span>
+        </div>
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-primary/5 rounded-full pointer-events-none"></div>
+      </div>
+
+      <!-- 4. Doanh số thực thu -->
+      <div (click)="onTabChange('completed')" class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 cursor-pointer hover:border-emerald-400 transition-all">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh số hoàn tất</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-xl lg:text-2xl text-emerald-700">
+              {{ formatCurrency(stats.totalRevenue) }}
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800">
+            <span class="material-symbols-outlined text-xl">payments</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs">
+          <span class="font-label-sm text-label-sm text-emerald-700 font-bold flex items-center">
+            <span class="material-symbols-outlined text-sm">task_alt</span> {{ stats.completed }} đơn
+          </span>
+          <span class="font-body-sm text-body-sm text-outline">đã hoàn thành</span>
+        </div>
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- Primary Table & Controls Container (Stitch UI) -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col border border-surface-variant/30">
+      <!-- Status Filter Navigation Bar (Tabs) -->
+      <div class="bg-surface-container-low px-space-lg pt-space-md flex items-center gap-2 overflow-x-auto scrollbar-none flex-nowrap border-b border-surface-variant/40">
+        <!-- All -->
+        <button (click)="onTabChange('all')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'all' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Tất cả</span>
+          <span [class]="'px-2 py-0.5 rounded-full font-label-sm text-xs leading-none shrink-0 ' + (activeTab === 'all' ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface')">
+            {{ stats.totalOrders }}
+          </span>
+          <span *ngIf="activeTab === 'all'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Pending -->
+        <button (click)="onTabChange('pending')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'pending' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Chờ xác nhận</span>
+          <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.pending }}
+          </span>
+          <span *ngIf="activeTab === 'pending'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Confirmed -->
+        <button (click)="onTabChange('confirmed')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'confirmed' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Đã xác nhận</span>
+          <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.confirmed }}
+          </span>
+          <span *ngIf="activeTab === 'confirmed'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Processing -->
+        <button (click)="onTabChange('processing')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'processing' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Đang chuẩn bị</span>
+          <span class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.processing }}
+          </span>
+          <span *ngIf="activeTab === 'processing'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Shipping -->
+        <button (click)="onTabChange('shipping')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'shipping' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Đang giao</span>
+          <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.shipping }}
+          </span>
+          <span *ngIf="activeTab === 'shipping'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Completed -->
+        <button (click)="onTabChange('completed')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'completed' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Hoàn thành</span>
+          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.completed }}
+          </span>
+          <span *ngIf="activeTab === 'completed'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+
+        <!-- Cancelled -->
+        <button (click)="onTabChange('cancelled')" [class]="'relative px-3 py-2.5 font-label-md text-label-md flex items-center gap-2 group whitespace-nowrap shrink-0 transition-colors ' + (activeTab === 'cancelled' ? 'text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface')">
+          <span class="leading-none">Đã hủy</span>
+          <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-label-sm text-xs leading-none shrink-0 font-semibold">
+            {{ stats.cancelled }}
+          </span>
+          <span *ngIf="activeTab === 'cancelled'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></span>
+        </button>
+      </div>
+
+      <!-- Toolbar Filters -->
+      <div class="p-space-lg bg-surface-container-lowest flex flex-wrap lg:flex-nowrap items-center gap-space-md">
+        <!-- Search Input -->
+        <div class="relative flex-1 min-w-[320px]">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-xl pointer-events-none">search</span>
+          <input [(ngModel)]="searchKeyword" (keyup.enter)="onSearchChange()" class="w-full h-10 pl-11 pr-4 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all border border-transparent focus:border-primary/30" placeholder="Tìm kiếm mã đơn hàng (ví dụ: DH-BT1705-01) hoặc tên khách, SĐT..." type="text">
+        </div>
+
+        <!-- Payment Method Dropdown -->
+        <div class="relative min-w-[190px]">
+          <select [(ngModel)]="paymentMethodFilter" (change)="applyLocalFilters()" class="w-full h-10 pl-3.5 pr-8 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors">
+            <option value="all">Phương thức: Tất cả</option>
+            <option value="COD">Tiền mặt COD</option>
+            <option value="Banking">Chuyển khoản VietQR</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-base pointer-events-none">expand_more</span>
+        </div>
+
+        <!-- Payment Status Dropdown -->
+        <div class="relative min-w-[190px]">
+          <select [(ngModel)]="paymentStatusFilter" (change)="applyLocalFilters()" class="w-full h-10 pl-3.5 pr-8 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors">
+            <option value="all">Thanh toán: Tất cả</option>
+            <option value="paid">Đã thanh toán</option>
+            <option value="pending">Chờ thanh toán</option>
+            <option value="failed">Thanh toán lỗi</option>
+          </select>
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-base pointer-events-none">expand_more</span>
+        </div>
+
+        <!-- Search Action Button -->
+        <button (click)="onSearchChange()" class="h-10 px-4 rounded-lg bg-primary text-white font-label-md text-sm hover:bg-[#07192c] transition-colors shrink-0 flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">search</span>
+          <span>Tìm</span>
+        </button>
+
+        <!-- Reset Filter Button -->
+        <button (click)="resetFilters()" class="h-10 px-3 rounded-lg bg-surface-container-low text-outline hover:text-on-surface hover:bg-surface-container transition-colors flex items-center justify-center shrink-0" title="Đặt lại bộ lọc" type="button">
+          <span class="material-symbols-outlined text-lg">restart_alt</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="p-12 text-center flex flex-col items-center justify-center gap-3">
+        <div class="w-8 h-8 border-4 border-[#0A2540] border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm text-on-surface-variant font-medium">Đang tải danh sách tác phẩm đơn hàng...</span>
+      </div>
+
+      <!-- Data Table Container -->
+      <div *ngIf="!isLoading" class="overflow-x-auto">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-surface-container-high h-11 font-body-sm text-body-sm uppercase text-outline font-semibold tracking-wider">
+              <th class="pl-space-lg pr-space-sm w-12 text-center">
+                <input [checked]="selectAll" (change)="toggleSelectAll()" class="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer" type="checkbox">
+              </th>
+              <th class="px-space-md font-label-sm text-label-sm">Mã đơn</th>
+              <th class="px-space-md font-label-sm text-label-sm">Tác phẩm</th>
+              <th class="px-space-md font-label-sm text-label-sm">Khách hàng</th>
+              <th class="px-space-md font-label-sm text-label-sm">Ngày đặt</th>
+              <th class="px-space-md font-label-sm text-label-sm">Tổng tiền</th>
+              <th class="px-space-md font-label-sm text-label-sm">Thanh toán</th>
+              <th class="px-space-md font-label-sm text-label-sm">Trạng thái đơn</th>
+              <th class="pr-space-lg pl-space-md text-right font-label-sm text-label-sm">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
+            <tr *ngFor="let order of filteredOrders" class="h-16 hover:bg-surface-container-low transition-colors duration-150">
+              <!-- Checkbox -->
+              <td class="pl-space-lg pr-space-sm text-center">
+                <input [checked]="isOrderSelected(order._id)" (change)="toggleSelectOrder(order._id)" class="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer" type="checkbox">
+              </td>
+
+              <!-- Order Code -->
+              <td class="px-space-md">
+                <a [routerLink]="['/orders', order._id || order.orderCode]" class="font-label-lg font-bold text-primary hover:text-secondary transition-colors">
+                  #{{ order.orderCode }}
+                </a>
+              </td>
+
+              <!-- Product thumbnail & info -->
+              <td class="px-space-md">
+                <div class="flex items-center gap-3">
+                  <img [src]="getFirstProductImage(order)" alt="Tác phẩm" class="w-10 h-10 rounded-lg object-cover border border-surface-container shadow-xs shrink-0">
+                  <div class="flex flex-col min-w-0 max-w-[220px]">
+                    <span class="text-xs font-semibold text-on-surface truncate">
+                      {{ order.items && order.items[0] ? order.items[0].productName : 'Gốm Bát Tràng' }}
+                    </span>
+                    <span class="text-[11px] text-outline">
+                      <span *ngIf="order.items && order.items.length > 1">+{{ order.items.length - 1 }} tác phẩm khác</span>
+                      <span *ngIf="order.items && order.items.length === 1">SL: {{ order.items[0].quantity }}</span>
+                      <span *ngIf="order.items && order.items[0]?.designSnapshot" class="text-secondary ml-1 font-medium">[2D Custom]</span>
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Customer info -->
+              <td class="px-space-md">
+                <div class="flex flex-col">
+                  <span class="font-label-lg text-label-lg text-on-surface font-semibold truncate max-w-[180px]">
+                    {{ order.customer?.fullName || order.shippingAddress?.recipientName || 'Khách vãng lai' }}
+                  </span>
+                  <span class="text-xs text-outline">{{ order.customer?.phone || order.shippingAddress?.phone }}</span>
+                </div>
+              </td>
+
+              <!-- Order date -->
+              <td class="px-space-md">
+                <div class="flex flex-col">
+                  <span class="font-body-md text-xs text-on-surface">{{ order.createdAt | date:'dd/MM/yyyy' }}</span>
+                  <span class="font-body-sm text-[11px] text-outline">{{ order.createdAt | date:'HH:mm' }}</span>
+                </div>
+              </td>
+
+              <!-- Total amount -->
+              <td class="px-space-md">
+                <span class="font-label-lg font-bold text-on-surface">
+                  {{ formatCurrency(order.totalAmount) }}
+                </span>
+              </td>
+
+              <!-- Payment status & method -->
+              <td class="px-space-md">
+                <div class="flex flex-col gap-1">
+                  <span [class]="'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ' + getPaymentStatusBadgeClass(order.paymentStatus)">
+                    {{ getPaymentStatusLabel(order.paymentStatus) }}
+                  </span>
+                  <span class="text-[10px] text-outline uppercase font-medium tracking-wide">
+                    {{ order.paymentMethod || 'COD' }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Order Status Badge -->
+              <td class="px-space-md">
+                <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-xs font-semibold border ' + getStatusBadgeClass(order.orderStatus)">
+                  <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                  {{ getStatusLabel(order.orderStatus) }}
+                </span>
+              </td>
+
+              <!-- Action buttons -->
+              <td class="pr-space-lg pl-space-md text-right">
+                <a [routerLink]="['/orders', order._id || order.orderCode]" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary font-label-md text-xs transition-colors inline-flex items-center gap-1 justify-end ml-auto">
+                  <span>Chi tiết</span>
+                  <span class="material-symbols-outlined text-sm">chevron_right</span>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Empty row -->
+            <tr *ngIf="filteredOrders.length === 0">
+              <td colspan="9" class="py-16 text-center">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-4xl text-outline">receipt_long</span>
+                  <span class="text-sm font-semibold text-on-surface">Không tìm thấy đơn hàng phù hợp</span>
+                  <p class="text-xs text-outline">Hãy thử thay đổi từ khóa tìm kiếm hoặc chọn tab trạng thái khác</p>
+                  <button (click)="resetFilters()" class="mt-2 px-3 py-1.5 rounded-lg bg-surface-container text-xs font-semibold text-primary hover:bg-surface-container-high transition-colors">
+                    Xóa bộ lọc
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Pagination Footer (Stitch UI) -->
+      <div *ngIf="!isLoading && totalItems > 0" class="p-space-lg bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-md border-t border-surface-variant/30">
+        <div class="flex items-center gap-space-md">
+          <span class="font-body-sm text-body-sm text-on-surface-variant">
+            Hiển thị <span class="font-medium text-on-surface">{{ (currentPage - 1) * pageSize + 1 }} - {{ (currentPage - 1) * pageSize + filteredOrders.length }}</span> trên <span class="font-medium text-on-surface">{{ totalItems }}</span> đơn hàng
+          </span>
+          <div class="flex items-center gap-1.5">
+            <span class="font-body-sm text-body-sm text-outline">Số dòng:</span>
+            <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="h-8 px-2 rounded bg-surface-container-low font-body-sm text-xs text-on-surface focus:outline-none cursor-pointer">
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+              <option [value]="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Page Buttons -->
+        <div class="flex items-center gap-space-xs">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage <= 1" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors" type="button">
+            <span class="material-symbols-outlined text-base">chevron_left</span>
+          </button>
+          
+          <button (click)="goToPage(1)" [class]="'w-8 h-8 rounded-lg font-label-sm text-xs font-semibold flex items-center justify-center shadow-xs transition-colors ' + (currentPage === 1 ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container')">
+            1
+          </button>
+
+          <button *ngIf="totalPages >= 2" (click)="goToPage(2)" [class]="'w-8 h-8 rounded-lg font-label-sm text-xs font-semibold flex items-center justify-center shadow-xs transition-colors ' + (currentPage === 2 ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container')">
+            2
+          </button>
+
+          <button *ngIf="totalPages >= 3" (click)="goToPage(3)" [class]="'w-8 h-8 rounded-lg font-label-sm text-xs font-semibold flex items-center justify-center shadow-xs transition-colors ' + (currentPage === 3 ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container')">
+            3
+          </button>
+
+          <span *ngIf="totalPages > 3" class="px-1 text-outline font-body-sm text-xs">...</span>
+
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors" type="button">
+            <span class="material-symbols-outlined text-base">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

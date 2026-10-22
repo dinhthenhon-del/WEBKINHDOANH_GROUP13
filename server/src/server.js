@@ -841,6 +841,10 @@ const Account = require('./models/Account');
 const Order = require('./models/Order');
 const Cart = require('./models/Cart');
 
+// Phân hệ Giỏ hàng khách hàng (UC-C05 - TV3)
+const cartRoutes = require('./modules/cart/cart.routes');
+app.use('/api/cart', cartRoutes);
+
 // 0. API giỏ hàng khách hàng
 app.get('/api/cart/:accountId', async (req, res) => {
   try {
@@ -900,16 +904,27 @@ app.post('/api/cart/items', async (req, res) => {
         message: `Số lượng sản phẩm trong kho không đủ (chỉ còn ${product.stock} chiếc)`
       });
     }
+
+    const customization = req.body.customization || null;
+    const effectivePrice = (customization && Number(customization.price) > 0)
+      ? Number(customization.price)
+      : product.price;
+    const effectiveName = (customization && customization.designName)
+      ? customization.designName
+      : product.name;
+
     if (cartItem) {
       cartItem.quantity = updatedQuantity;
-      cartItem.unitPrice = product.price;
-      cartItem.productName = product.name;
+      cartItem.unitPrice = effectivePrice;
+      cartItem.productName = effectiveName;
+      if (customization) cartItem.customization = customization;
     } else {
       cart.items.push({
         productId: product._id,
-        productName: product.name,
-        unitPrice: product.price,
-        quantity
+        productName: effectiveName,
+        unitPrice: effectivePrice,
+        quantity,
+        customization,
       });
     }
     await cart.save();
@@ -1179,6 +1194,10 @@ app.get('/api/orders/user/:accountId', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+// Phân hệ Quản lý Đơn hàng phía Admin (UC-A03 - TV3)
+const ordersRoutes = require('./modules/orders/orders.routes');
+app.use('/api/orders', ordersRoutes);
 
 // ==========================================
 // THÀNH VIÊN 1: PHÂN HỆ ADMIN QUẢN LÝ KHÁCH HÀNG (UC-A04)
@@ -1593,7 +1612,7 @@ app.get('/api/dashboard/stats', async (req, res) => {
       data: {
         totalRevenue: totalRevenue || 23000000,
         totalProductsCount: totalProductsCount || 125,
-        pendingOrdersCount: pendingOrdersCount || 5,
+        pendingOrdersCount: typeof pendingOrdersCount === 'number' ? pendingOrdersCount : 0,
         lowStockCount: lowStockCount || 5,
         totalCustomersCount: totalCustomersCount || 1250,
         pendingReturnsCount: pendingReturnsCount || 14,

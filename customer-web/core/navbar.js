@@ -156,7 +156,7 @@ function initNavbar() {
             <span class="material-symbols-outlined text-[22px]">favorite</span>
           </a>
 
-          <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="requireAuthAction(() => dieuHuong('cart'))" title="Giỏ hàng">
+          <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="if(window.CartModule) CartModule.openDrawer(); else requireAuthAction(() => dieuHuong('cart'));" title="Giỏ hàng">
             <span class="material-symbols-outlined text-[22px]">shopping_bag</span>
             <span id="navbar-cart-count" class="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-secondary text-on-secondary rounded-full flex items-center justify-center font-label-sm leading-none text-[10px]">0</span>
           </a>
@@ -282,6 +282,7 @@ function updateAvatarState() {
 }
 
 window.dieuHuong = function (tenPhanHe, element, param) {
+  window.currentViewParam = param;
   const viewport = document.getElementById('app-viewport');
   if (!viewport) {
     console.error('Không tìm thấy #app-viewport');
@@ -346,8 +347,22 @@ window.dieuHuong = function (tenPhanHe, element, param) {
             khoiTaoTrangWishlist();
           }
         } else if (tenPhanHe === 'cart') {
-          if (typeof CartView !== 'undefined') {
+          if (window.CartModule) {
+            CartModule.openDrawer();
+          } else if (typeof CartView !== 'undefined') {
             CartView.loadCart();
+          }
+        } else if (tenPhanHe === 'checkout') {
+          if (typeof initCheckoutPage === 'function') {
+            initCheckoutPage(param);
+          }
+        } else if (tenPhanHe === 'order-success') {
+          if (typeof initOrderSuccessPage === 'function') {
+            initOrderSuccessPage(param);
+          }
+        } else if (tenPhanHe === 'order-tracking') {
+          if (typeof initOrderTrackingPage === 'function') {
+            initOrderTrackingPage(param);
           }
         } else if (tenPhanHe === 'custom-2d') {
           if (typeof khoiTaoTrangCustom2D === 'function') {

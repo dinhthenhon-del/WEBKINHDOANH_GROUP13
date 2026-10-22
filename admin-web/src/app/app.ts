@@ -38,6 +38,8 @@ export class App {
       this.currentModuleName = 'Quản trị Đổi / Trả hàng (UC-A05)';
     } else if (url.includes('/products')) {
       this.currentModuleName = 'Quản lý Sản phẩm & Tồn kho';
+    } else if (url.includes('/orders')) {
+      this.currentModuleName = 'Quản trị Đơn hàng (UC-A03)';
     } else if (url.includes('/customers')) {
       this.currentModuleName = 'Quản trị Khách hàng & Hội viên';
     } else {

@@ -9,7 +9,11 @@ const orderItemSchema = new mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: true,
+      required: false,
+    },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
     },
     productName: {
       type: String,
@@ -26,6 +30,10 @@ const orderItemSchema = new mongoose.Schema(
       min: 1,
     },
     designSnapshot: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    customization: {
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
@@ -55,7 +63,11 @@ const orderSchema = new mongoose.Schema(
     accountId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Account',
-      required: [true, 'Mã tài khoản đặt hàng là bắt buộc'],
+      required: false,
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
     },
     items: {
       type: [orderItemSchema],
@@ -88,6 +100,16 @@ const orderSchema = new mongoose.Schema(
       type: shippingAddressSchema,
       required: true,
     },
+    note: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    paymentMethod: {
+      type: String,
+      default: 'COD',
+      trim: true,
+    },
     paymentStatus: {
       type: String,
       required: true,
@@ -101,7 +123,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'],
+        values: ['pending', 'confirmed', 'processing', 'shipping', 'completed', 'cancelled'],
         message: 'Trạng thái đơn hàng không hợp lệ',
       },
       default: 'pending',
@@ -110,6 +132,18 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    cancelReason: {
+      type: String,
+      default: null,
+    },
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        updatedAt: { type: Date, default: Date.now },
+        note: { type: String, default: '' },
+        changedBy: { type: String, default: 'Admin' },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardService, DashboardStats, RecentOrder, LowStockProduct, RevenueDay } from '../../core/services/dashboard.service';
@@ -10,9 +10,13 @@ import { DashboardService, DashboardStats, RecentOrder, LowStockProduct, Revenue
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private cdr = inject(ChangeDetectorRef);
+
+  private pollIntervalId: any = null;
+  private visibilityHandler: any = null;
+  private focusHandler: any = null;
 
   isLoading = false;
   stats: DashboardStats = this.dashboardService.getFallbackStats();
@@ -27,11 +31,46 @@ export class Dashboard implements OnInit {
   isToastVisible = false;
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    this.loadDashboardData(true);
+
+    // Tự động đồng bộ cập nhật dữ liệu realtime từ server mỗi 8 giây (khi khách thanh toán xong đơn lập tức hiện lên dashboard)
+    this.pollIntervalId = setInterval(() => {
+      this.loadDashboardData(false);
+    }, 8000);
+
+    // Khi admin chuyển qua lại tab dashboard, tự động làm mới ngay lập tức
+    this.visibilityHandler = () => {
+      if (document.visibilityState === 'visible') {
+        this.loadDashboardData(false);
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+
+    this.focusHandler = () => {
+      this.loadDashboardData(false);
+    };
+    window.addEventListener('focus', this.focusHandler);
   }
 
-  loadDashboardData(): void {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+      this.pollIntervalId = null;
+    }
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+    if (this.focusHandler) {
+      window.removeEventListener('focus', this.focusHandler);
+      this.focusHandler = null;
+    }
+  }
+
+  loadDashboardData(showLoadingIndicator = true): void {
+    if (showLoadingIndicator) {
+      this.isLoading = true;
+    }
 
     // Timeout an toàn 3.5s tránh gián đoạn
     const timer = setTimeout(() => {
@@ -49,10 +88,14 @@ export class Dashboard implements OnInit {
           this.stats = {
             ...this.dashboardService.getFallbackStats(),
             ...res.data,
-            // Nếu API có recentOrders và lowStockProducts thì dùng, không thì giữ fallback
-            recentOrders: (res.data.recentOrders && res.data.recentOrders.length > 0)
+            // Cập nhật số đơn chờ xác nhận thực tế
+            pendingOrdersCount: typeof res.data.pendingOrdersCount === 'number'
+              ? res.data.pendingOrdersCount
+              : (res.data.recentOrders?.length ?? this.stats.pendingOrdersCount),
+            // Nếu API có recentOrders thì normalize, nếu mảng rỗng thì để mảng rỗng
+            recentOrders: (Array.isArray(res.data.recentOrders) && res.data.recentOrders.length > 0)
               ? this.normalizeRecentOrders(res.data.recentOrders)
-              : this.stats.recentOrders,
+              : (Array.isArray(res.data.recentOrders) ? [] : this.stats.recentOrders),
             lowStockProducts: (res.data.lowStockProducts && res.data.lowStockProducts.length > 0)
               ? this.normalizeLowStockProducts(res.data.lowStockProducts)
               : this.stats.lowStockProducts
@@ -70,16 +113,25 @@ export class Dashboard implements OnInit {
   }
 
   private normalizeRecentOrders(orders: any[]): RecentOrder[] {
-    return orders.map((o) => ({
-      _id: o._id,
-      orderCode: o.orderCode || `#DH${(o._id || '').slice(-4)}`,
-      customerName: o.accountId?.fullName || o.shippingAddress?.recipientName || 'Khách Hàng',
-      customerPhone: o.accountId?.phone || o.shippingAddress?.phone || '090***',
-      customerAddress: o.shippingAddress?.province || 'Hà Nội',
-      timeDisplay: o.createdAt ? this.formatTimeAgo(new Date(o.createdAt)) : '10:42 • Hôm nay',
-      totalAmount: o.totalAmount || 0,
-      status: 'Chờ xác nhận'
-    }));
+    return orders.map((o) => {
+      const addressParts = [
+        o.shippingAddress?.detail,
+        o.shippingAddress?.ward,
+        o.shippingAddress?.province
+      ].filter(Boolean);
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : (o.shippingAddress?.province || 'Hà Nội');
+
+      return {
+        _id: o._id,
+        orderCode: o.orderCode || `#DH${(o._id || '').slice(-4)}`,
+        customerName: o.shippingAddress?.recipientName || o.accountId?.fullName || 'Khách Hàng',
+        customerPhone: o.shippingAddress?.phone || o.accountId?.phone || '090***',
+        customerAddress: fullAddress,
+        timeDisplay: o.createdAt ? this.formatTimeAgo(new Date(o.createdAt)) : '10:42 • Hôm nay',
+        totalAmount: o.totalAmount || 0,
+        status: o.orderStatus === 'pending' || o.status === 'pending' ? 'Chờ xác nhận' : (o.orderStatus || o.status || 'Chờ xác nhận')
+      };
+    });
   }
 
   private normalizeLowStockProducts(prods: any[]): LowStockProduct[] {

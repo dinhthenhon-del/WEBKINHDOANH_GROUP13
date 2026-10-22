@@ -1,0 +1,115 @@
+<!-- customer-web/views/order-success.html -->
+<!-- Đặt Hàng Thành Công - Minh Gốm Haute Porcelain 1705 (UC-C06) -->
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif] bg-[#f8f9fa] min-h-screen py-10 sm:py-16">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 w-full">
+    
+    <!-- Thẻ thành công chính phong cách gốm sứ hoàng gia -->
+    <div class="bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-[#EBEAE5] text-center flex flex-col items-center">
+      
+      <!-- Huy hiệu Triện Đỏ xác nhận -->
+      <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-[#a23e18] to-[#fe8357] p-1 shadow-lg mb-4 flex items-center justify-center">
+        <div class="w-full h-full rounded-full bg-white flex items-center justify-center border-2 border-white">
+          <span class="material-symbols-outlined text-[38px] text-[#a23e18]">verified</span>
+        </div>
+      </div>
+
+      <span class="text-[11px] font-bold text-[#a23e18] uppercase tracking-[0.2em] mb-1">
+        Khởi Ký Thành Công • Lò Củi 1705
+      </span>
+      
+      <h1 class="font-['Playfair_Display',serif] text-[26px] sm:text-[34px] font-bold text-[#000f22] tracking-tight mb-2">
+        Đặt Hàng Tác Phẩm Thành Công!
+      </h1>
+      
+      <p class="text-[14px] text-[#43474d] max-w-lg leading-relaxed mb-6">
+        Kính chúc mừng Quý khách! Đơn hàng gốm sứ độc bản đã được ghi nhận vào hồ sơ chế tác của Làng Gốm Thanh Xuân. Chuyên viên sẽ liên hệ để xác nhận thời điểm xuất lò.
+      </p>
+
+      <!-- Khung thông tin tóm lược đơn hàng -->
+      <div class="w-full bg-[#f8f9fa] rounded-xl p-5 sm:p-6 border border-[#EBEAE5] text-left mb-6 space-y-3.5">
+        <div class="flex items-center justify-between pb-3 border-b border-[#EBEAE5]">
+          <span class="text-[12px] uppercase text-[#74777e] font-semibold">Mã đơn giám tuyển:</span>
+          <span id="success-order-code" class="font-['Playfair_Display',serif] text-[18px] font-bold text-[#a23e18]">#DH...</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[13px]">
+          <span class="text-[#74777e]">Tổng giá trị thanh toán:</span>
+          <span id="success-order-amount" class="font-bold text-[#000f22] text-[15px]">0₫</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[13px]">
+          <span class="text-[#74777e]">Phương thức thanh toán:</span>
+          <span id="success-order-method" class="font-medium text-[#000f22]">Thanh toán khi nhận hàng (COD)</span>
+        </div>
+
+        <div class="flex items-center justify-between text-[13px]">
+          <span class="text-[#74777e]">Người tiếp nhận:</span>
+          <span id="success-order-recipient" class="font-medium text-[#000f22] text-right">Quý khách</span>
+        </div>
+
+        <div class="flex items-start justify-between text-[13px] pt-1">
+          <span class="text-[#74777e] shrink-0 mr-2">Tọa độ nhận gốm:</span>
+          <span id="success-order-address" class="text-right text-[#000f22] font-medium leading-relaxed">...</span>
+        </div>
+      </div>
+
+      <!-- Hướng dẫn chuyển khoản mô phỏng (Chỉ hiện khi là Banking / MoMo) -->
+      <div id="success-banking-guide-box" class="hidden w-full bg-amber-50/60 rounded-xl p-5 border border-amber-200 text-left mb-6 space-y-3">
+        <div class="flex items-center gap-2 text-amber-900 font-bold text-[14px]">
+          <span class="material-symbols-outlined text-[20px] text-amber-700">qr_code_2</span>
+          <span>Thông Tin Chuyển Khoản Đối Soát Nhanh</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px] text-[#43474d] bg-white p-3.5 rounded-lg border border-amber-200/60">
+          <div>
+            <span class="text-[#74777e] block">Ngân hàng thụ hưởng:</span>
+            <strong class="text-[#000f22]">MB Bank (Ngân hàng Quân Đội)</strong>
+          </div>
+          <div>
+            <span class="text-[#74777e] block">Số tài khoản:</span>
+            <strong class="text-[#a23e18] text-[15px] tracking-wider">1705 8888 9999</strong>
+          </div>
+          <div>
+            <span class="text-[#74777e] block">Chủ tài khoản:</span>
+            <strong class="text-[#000f22]">CTCP MINH GOM BAT TRANG</strong>
+          </div>
+          <div>
+            <span class="text-[#74777e] block">Nội dung chuyển khoản:</span>
+            <strong class="text-[#a23e18]">[Mã đơn hàng] - SĐT</strong>
+          </div>
+        </div>
+        <p class="text-[11px] text-amber-800 italic">
+          * Đơn hàng sẽ được tự động kích hoạt tiến trình xếp lò ngay khi hệ thống nhận được giao dịch.
+        </p>
+      </div>
+
+      <!-- Lời nhắn Nghệ Nhân -->
+      <div class="w-full bg-[#f3f4f5] rounded-xl p-4 flex items-center gap-3 text-left mb-8 border border-[#EBEAE5]">
+        <span class="material-symbols-outlined text-[#a23e18] text-[26px] shrink-0">local_fire_department</span>
+        <div class="text-[12px] text-[#43474d] leading-relaxed">
+          <strong>Quy chuẩn lò củi:</strong> Tác phẩm sẽ được xếp vị trí đắc địa nhất trong buồng nung, đảm bảo nước men rạn và họa tiết coban đạt độ hoàn mỹ cao nhất trước khi niêm phong hòm gỗ giao đến quý khách.
+        </div>
+      </div>
+
+      <!-- Cụm nút CTA Điều Hướng -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+        <button id="success-btn-track" 
+                class="w-full sm:w-auto px-6 py-3.5 rounded-lg bg-[#000f22] hover:bg-[#10162B] text-white font-bold text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[18px] text-[#edbf76]">receipt_long</span>
+          <span>Theo Dõi Đơn Hàng Của Tôi</span>
+        </button>
+
+        <button onclick="if(window.dieuHuong) window.dieuHuong('shop')" 
+                class="w-full sm:w-auto px-6 py-3.5 rounded-lg bg-white hover:bg-[#f3f4f5] text-[#000f22] border border-[#EBEAE5] font-bold text-[13px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">storefront</span>
+          <span>Tiếp Tục Mua Sắm</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Dữ liệu được nạp tự động qua OrdersModule.initOrderSuccessPage
+</script>
