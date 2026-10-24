@@ -1142,6 +1142,78 @@ app.get('/api/accounts/check-status/:id', async (req, res) => {
   }
 });
 
+// 3.2. API Lưu hoặc Cập nhật địa chỉ nhận hàng của khách hàng (UC-C06, UC-C07)
+app.post('/api/accounts/address', async (req, res) => {
+  try {
+    const { accountId, recipientName, phone, province, ward, detail, isDefault } = req.body;
+    if (!accountId || !recipientName || !phone || !province || !ward || !detail) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin địa chỉ nhận hàng' });
+    }
+
+    const account = await Account.findById(accountId);
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+    }
+
+    if (!Array.isArray(account.addresses)) account.addresses = [];
+
+    const newAddr = {
+      recipientName: recipientName.trim(),
+      phone: phone.trim().replace(/[\s.\-()]/g, ''),
+      province: province.trim(),
+      ward: ward.trim(),
+      detail: detail.trim(),
+      isDefault: isDefault !== false,
+    };
+
+    if (newAddr.isDefault) {
+      account.addresses.forEach(a => { a.isDefault = false; });
+    }
+
+    const existingIdx = account.addresses.findIndex(a =>
+      (a.detail || '').trim().toLowerCase() === newAddr.detail.toLowerCase() &&
+      (a.ward || '').trim().toLowerCase() === newAddr.ward.toLowerCase() &&
+      (a.province || '').trim().toLowerCase() === newAddr.province.toLowerCase()
+    );
+
+    if (existingIdx > -1) {
+      account.addresses[existingIdx] = newAddr;
+      const matched = account.addresses.splice(existingIdx, 1)[0];
+      account.addresses.unshift(matched);
+    } else {
+      account.addresses.unshift(newAddr);
+    }
+
+    await account.save();
+
+    const accountData = account.toObject();
+    delete accountData.passwordHash;
+
+    res.status(200).json({
+      success: true,
+      message: 'Đã lưu địa chỉ nhận hàng thành công',
+      data: account.addresses,
+      user: accountData
+    });
+  } catch (error) {
+    console.error('Lỗi lưu địa chỉ:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3.3. API Lấy danh sách địa chỉ nhận hàng của khách hàng
+app.get('/api/accounts/addresses/:accountId', async (req, res) => {
+  try {
+    const account = await Account.findById(req.params.accountId).select('addresses');
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+    }
+    res.status(200).json({ success: true, data: account.addresses || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // 4. API Thêm/Xóa sản phẩm khỏi danh sách yêu thích (Wishlist)
 app.post('/api/accounts/wishlist/toggle', async (req, res) => {
   try {
@@ -1197,6 +1269,7 @@ app.get('/api/orders/user/:accountId', async (req, res) => {
 
 // Phân hệ Quản lý Đơn hàng phía Admin (UC-A03 - TV3)
 const ordersRoutes = require('./modules/orders/orders.routes');
+const ordersService = require('./modules/orders/orders.service');
 app.use('/api/orders', ordersRoutes);
 
 // ==========================================
@@ -1448,6 +1521,15 @@ app.post('/api/returns', async (req, res) => {
     });
 
     await newReturn.save();
+
+    // Liên kết với Đơn hàng (Lỗi 4): Cập nhật returnStatus sang 'requested'
+    if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { returnStatus: 'requested', returnRequestId: newReturn._id } }
+      );
+    }
+
     res.status(201).json({ success: true, message: 'Đã tiếp nhận yêu cầu đổi trả thành công', data: newReturn });
   } catch (error) {
     console.error('Lỗi gửi yêu cầu đổi trả:', error);
@@ -1526,6 +1608,27 @@ app.put('/api/returns/:id/status', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu đổi trả' });
     }
 
+    // Kiểm tra ràng buộc duyệt đổi trả (Lỗi 4): Chỉ duyệt cho đơn đã COMPLETED & chưa hoàn đủ tiền
+    let linkedOrder = null;
+    if (status === 'approved' && returnReq.orderId) {
+      linkedOrder = await Order.findById(returnReq.orderId);
+      if (linkedOrder) {
+        const orderCurrentStatus = (linkedOrder.orderStatus || linkedOrder.status || '').toLowerCase();
+        if (orderCurrentStatus !== 'completed') {
+          return res.status(400).json({
+            success: false,
+            message: 'Chỉ có thể duyệt đổi trả / hoàn tiền cho đơn hàng đã hoàn tất (Completed)',
+          });
+        }
+        if (linkedOrder.refundedAmount && linkedOrder.refundedAmount >= linkedOrder.totalAmount) {
+          return res.status(400).json({
+            success: false,
+            message: 'Đơn hàng này đã được hoàn tiền đầy đủ trước đó (chặn hoàn trùng)',
+          });
+        }
+      }
+    }
+
     returnReq.status = status;
     returnReq.processedAt = new Date();
     if (processedBy && mongoose.Types.ObjectId.isValid(processedBy)) {
@@ -1541,6 +1644,40 @@ app.put('/api/returns/:id/status', async (req, res) => {
         if (item.productId) {
           await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity || 1 } });
         }
+      }
+
+      // Tính toán số tiền hoàn tương ứng với các mặt hàng đổi/trả
+      let refundAmount = 0;
+      if (linkedOrder && Array.isArray(linkedOrder.items)) {
+        for (const retItem of returnReq.items) {
+          const matched = linkedOrder.items.find(
+            it => String(it.productId?._id || it.productId) === String(retItem.productId?._id || retItem.productId)
+          );
+          if (matched) {
+            const unitPrice = Number(matched.unitPrice || matched.price || 0);
+            refundAmount += unitPrice * Number(retItem.quantity || 1);
+          }
+        }
+      }
+      if (!refundAmount || refundAmount <= 0) {
+        refundAmount = linkedOrder ? linkedOrder.totalAmount : 0;
+      }
+
+      // Gọi MỘT hàm dùng chung do TV3 viết trong orders.service (Lỗi 4):
+      if (returnReq.orderId) {
+        await ordersService.markOrderReturned(returnReq.orderId, {
+          amount: refundAmount,
+          returnRequestId: returnReq._id,
+          note: 'Duyệt yêu cầu đổi trả từ Admin - Khấu trừ doanh thu thuần',
+          adminUser: req.admin || { fullName: 'Admin' },
+        });
+      }
+    } else if (status === 'rejected') {
+      if (returnReq.orderId) {
+        await Order.updateOne(
+          { _id: returnReq.orderId },
+          { $set: { returnStatus: 'rejected' } }
+        );
       }
     }
 
@@ -1559,14 +1696,8 @@ app.put('/api/returns/:id/status', async (req, res) => {
 // --- III. DASHBOARD THỐNG KÊ QUẢN TRỊ (UC-A06) ---
 app.get('/api/dashboard/stats', async (req, res) => {
   try {
-    // 1. Doanh thu: tổng totalAmount của các Order có status / orderStatus === 'completed'
-    const completedOrders = await Order.find({
-      $or: [
-        { status: { $in: ['completed', 'COMPLETED', 'delivered'] } },
-        { orderStatus: { $in: ['completed', 'COMPLETED'] } }
-      ]
-    }).select('totalAmount createdAt').lean();
-    const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    // 1. Doanh thu thực: Sử dụng hàm dùng chung ordersService.calculateNetRevenue() (Lỗi 4)
+    const totalRevenue = await ordersService.calculateNetRevenue();
 
     // 2. Đơn chờ xử lý: số Order có status / orderStatus === 'pending'
     const pendingOrdersCount = await Order.countDocuments({
@@ -1610,7 +1741,7 @@ app.get('/api/dashboard/stats', async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        totalRevenue: totalRevenue || 23000000,
+        totalRevenue: totalRevenue,
         totalProductsCount: totalProductsCount || 125,
         pendingOrdersCount: typeof pendingOrdersCount === 'number' ? pendingOrdersCount : 0,
         lowStockCount: lowStockCount || 5,

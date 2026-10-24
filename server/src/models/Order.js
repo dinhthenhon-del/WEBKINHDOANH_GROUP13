@@ -114,10 +114,56 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ['pending', 'paid', 'failed', 'refunded'],
+        values: ['pending', 'awaiting_verification', 'paid', 'failed', 'refunded', 'partially_refunded'],
         message: 'Trạng thái thanh toán không hợp lệ',
       },
       default: 'pending',
+    },
+    paymentConfirmedAt: {
+      type: Date,
+      default: null,
+    },
+    paymentConfirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
+      default: null,
+    },
+    paymentNote: {
+      type: String,
+      default: '',
+    },
+    paymentHistory: [
+      {
+        fromStatus: { type: String },
+        toStatus: { type: String, required: true },
+        changedBy: { type: String, default: 'Hệ thống' },
+        note: { type: String, default: '' },
+        changedAt: { type: Date, default: Date.now },
+      },
+    ],
+    returnStatus: {
+      type: String,
+      required: true,
+      enum: {
+        values: ['none', 'requested', 'approved', 'rejected'],
+        message: 'Trạng thái đổi trả không hợp lệ',
+      },
+      default: 'none',
+    },
+    refundedAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
+    },
+    returnRequestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ReturnRequest',
+      default: null,
     },
     orderStatus: {
       type: String,

@@ -91,7 +91,7 @@
       <div (click)="onTabChange('completed')" class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 cursor-pointer hover:border-emerald-400 transition-all">
         <div class="flex items-start justify-between">
           <div>
-            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh số hoàn tất</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh thu thuần</span>
             <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-xl lg:text-2xl text-emerald-700">
               {{ formatCurrency(stats.totalRevenue) }}
             </div>
@@ -104,7 +104,7 @@
           <span class="font-label-sm text-label-sm text-emerald-700 font-bold flex items-center">
             <span class="material-symbols-outlined text-sm">task_alt</span> {{ stats.completed }} đơn
           </span>
-          <span class="font-body-sm text-body-sm text-outline">đã hoàn thành</span>
+          <span class="font-body-sm text-body-sm text-outline">thành công (đã trừ hoàn trả)</span>
         </div>
         <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full pointer-events-none"></div>
       </div>
@@ -198,10 +198,13 @@
 
         <!-- Payment Status Dropdown -->
         <div class="relative min-w-[190px]">
-          <select [(ngModel)]="paymentStatusFilter" (change)="applyLocalFilters()" class="w-full h-10 pl-3.5 pr-8 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors">
+          <select [(ngModel)]="paymentStatusFilter" (change)="loadOrders()" class="w-full h-10 pl-3.5 pr-8 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors">
             <option value="all">Thanh toán: Tất cả</option>
-            <option value="paid">Đã thanh toán</option>
-            <option value="pending">Chờ thanh toán</option>
+            <option value="paid">Đã thanh toán (Paid)</option>
+            <option value="awaiting_verification">Chờ đối soát</option>
+            <option value="pending">Chờ thanh toán (Pending)</option>
+            <option value="refunded">Đã hoàn tiền (Refunded)</option>
+            <option value="partially_refunded">Hoàn tiền một phần</option>
             <option value="failed">Thanh toán lỗi</option>
           </select>
           <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-base pointer-events-none">expand_more</span>

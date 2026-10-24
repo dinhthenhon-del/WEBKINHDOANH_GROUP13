@@ -1,104 +1,23 @@
 <!-- customer-web/views/order-tracking.html -->
-<!-- Chi Tiết Đơn Hàng & Theo Dõi Trạng Thái - Minh Gốm Haute Porcelain (UC-C07) -->
-<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif] bg-[#f8f9fa] min-h-screen py-8 sm:py-12">
-  <div class="max-w-7xl mx-auto px-margin-tablet lg:px-margin-desktop w-full">
-    
-    <!-- Top Header & Filter Segment -->
-    <div class="bg-white p-6 sm:p-8 rounded-xl border border-[#EBEAE5] shadow-xs flex flex-col gap-5 mb-8">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span class="text-[11px] font-bold text-[#a23e18] uppercase tracking-[0.2em] block">
-            Kỷ Lược Giám Tuyển • Hồ Sơ Sở Hữu
-          </span>
-          <h1 class="font-['Playfair_Display',serif] text-[24px] sm:text-[32px] font-bold text-[#000f22] tracking-tight mt-1">
-            Đơn Hàng & Tiến Trình Xuất Lò
-          </h1>
-        </div>
-
-        <!-- Thanh Tìm kiếm mã đơn -->
-        <div class="relative w-full sm:w-72">
-          <input type="text" 
-                 id="order-tracking-search-input" 
-                 placeholder="Tìm theo mã đơn #DH..." 
-                 onkeyup="filterOrdersByKeyword(this.value)"
-                 class="w-full bg-[#f3f4f5] text-[#000f22] text-[13px] py-2.5 pl-9 pr-3 rounded-lg border border-[#EBEAE5] focus:outline-none focus:border-[#000f22] transition-colors">
-          <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[#74777e] text-[18px]">search</span>
-        </div>
-      </div>
-
-      <!-- Thanh Filter trạng thái chuẩn UC-C07 -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-t border-[#EBEAE5] pt-4">
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#000f22] text-white font-semibold shadow-xs cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('all', this)">
-          Tất cả đơn hàng
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('pending', this)">
-          Chờ xử lý (Pending)
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('confirmed', this)">
-          Đã duyệt phôi
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('processing', this)">
-          Đang nung lò
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('shipping', this)">
-          Đang vận chuyển
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('completed', this)">
-          Đã hoàn thành
-        </button>
-        <button class="order-filter-btn px-4 py-2 rounded text-[13px] whitespace-nowrap transition-all duration-200 bg-[#f3f4f5] text-[#74777e] hover:text-[#000f22] cursor-pointer" 
-                onclick="OrdersModule.setOrderFilter('cancelled', this)">
-          Đã hủy
-        </button>
-      </div>
-    </div>
-
-    <!-- Container chứa danh sách các thẻ đơn hàng (Render động) -->
-    <div id="my-orders-cards-container" class="flex flex-col gap-6">
-      <div class="py-12 text-center text-[#74777e]">
-        <div class="w-8 h-8 border-2 border-[#a23e18] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-[13px]">Đang tải dữ liệu đơn hàng từ xưởng...</p>
-      </div>
-    </div>
-
-    <!-- Empty State khi không có đơn hàng -->
-    <div id="my-orders-empty-state" class="hidden bg-white p-12 rounded-xl border border-[#EBEAE5] text-center flex flex-col items-center gap-3">
-      <div class="w-16 h-16 rounded-full bg-[#f3f4f5] text-[#74777e] flex items-center justify-center">
-        <span class="material-symbols-outlined text-[32px]">receipt_long</span>
-      </div>
-      <h3 class="font-['Playfair_Display',serif] text-[18px] text-[#000f22] font-semibold">Chưa tìm thấy đơn hàng nào</h3>
-      <p class="text-[13px] text-[#74777e] max-w-sm">
-        Quý khách hiện chưa có đơn hàng nào trong phân mục này. Hãy chiêm ngưỡng các tác phẩm mới nhất tại cửa hàng.
-      </p>
-      <button onclick="if(window.dieuHuong) window.dieuHuong('shop')" 
-              class="mt-2 px-5 py-2.5 rounded bg-[#000f22] text-white text-[12px] font-bold uppercase tracking-wider hover:bg-[#10162B] transition-colors cursor-pointer">
-        Khám Phá Bộ Sưu Tập
-      </button>
-    </div>
-
-  </div>
+<!-- Tự động đồng bộ và điều hướng về Tab Đơn Hàng trong Profile (Hợp nhất theo yêu cầu Lỗi 4) -->
+<div class="flex flex-col items-center justify-center min-h-[60vh] py-16 font-['Plus_Jakarta_Sans',sans-serif]">
+  <div class="w-10 h-10 border-3 border-[#a23e18] border-t-transparent rounded-full animate-spin mb-4"></div>
+  <h2 class="font-['Playfair_Display',serif] text-xl font-bold text-[#000f22]">Đang mở Hồ Sơ Đơn Hàng...</h2>
+  <p class="text-xs text-[#74777e] mt-1">Đang đồng bộ giao diện giám tuyển tác phẩm tại Làng Gốm Thanh Xuân...</p>
 </div>
 
 <script>
-  function filterOrdersByKeyword(keyword) {
-    const val = String(keyword || '').trim().toLowerCase();
-    document.querySelectorAll('[data-order-code]').forEach(el => {
-      const code = el.getAttribute('data-order-code').toLowerCase();
-      if (!val || code.includes(val)) {
-        el.classList.remove('hidden');
-      } else {
-        el.classList.add('hidden');
-      }
-    });
-  }
-
-  if (typeof initOrderTrackingPage === 'function') {
-    initOrderTrackingPage(window.currentViewParam || null);
-  }
+  (function() {
+    const targetParam = window.currentViewParam || null;
+    if (typeof window.dieuHuong === 'function') {
+      window.dieuHuong('profile', null, targetParam);
+    } else {
+      setTimeout(() => {
+        if (typeof window.dieuHuong === 'function') {
+          window.dieuHuong('profile', null, targetParam);
+        }
+      }, 200);
+    }
+  })();
 </script>
+

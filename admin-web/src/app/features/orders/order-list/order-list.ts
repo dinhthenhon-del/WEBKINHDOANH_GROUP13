@@ -88,6 +88,7 @@ export class OrderList implements OnInit {
         page: this.currentPage,
         limit: this.pageSize,
         status: this.activeTab === 'all' ? undefined : this.activeTab,
+        paymentStatus: this.paymentStatusFilter === 'all' ? undefined : this.paymentStatusFilter,
         keyword: this.searchKeyword.trim() || undefined,
       })
       .subscribe({
@@ -249,9 +250,12 @@ export class OrderList implements OnInit {
     switch (s) {
       case 'paid':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'awaiting_verification':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'failed':
         return 'bg-red-50 text-red-700 border-red-200';
       case 'refunded':
+      case 'partially_refunded':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
         return 'bg-amber-50 text-amber-700 border-amber-200';
@@ -263,10 +267,14 @@ export class OrderList implements OnInit {
     switch (s) {
       case 'paid':
         return 'Đã thanh toán';
+      case 'awaiting_verification':
+        return 'Chờ đối soát';
       case 'failed':
         return 'Thanh toán lỗi';
       case 'refunded':
         return 'Đã hoàn tiền';
+      case 'partially_refunded':
+        return 'Hoàn một phần';
       default:
         return 'Chờ thanh toán';
     }

@@ -91,6 +91,25 @@ export class OrderDetail implements OnInit {
     }
   }
 
+  canProceedToNextStatus(): boolean {
+    if (!this.order) return false;
+    const next = this.getNextStatus();
+    if (!next) return false;
+    if (next.status === 'completed' && this.order.paymentStatus !== 'paid') {
+      return false;
+    }
+    return true;
+  }
+
+  getDisabledNextStatusReason(): string {
+    if (!this.order) return '';
+    const next = this.getNextStatus();
+    if (next?.status === 'completed' && this.order.paymentStatus !== 'paid') {
+      return 'Chưa thể hoàn thành: Đơn hàng chưa thanh toán! Vui lòng xác nhận thanh toán trước.';
+    }
+    return '';
+  }
+
   canCancelOrder(): boolean {
     if (!this.order) return false;
     const s = (this.order.orderStatus || this.order.status || '').toLowerCase();
@@ -99,6 +118,10 @@ export class OrderDetail implements OnInit {
 
   // Mở modal xác nhận đổi trạng thái
   promptStatusChange(nextStatus: string, label: string): void {
+    if (nextStatus === 'completed' && this.order?.paymentStatus !== 'paid') {
+      this.showToast('Không thể hoàn thành đơn hàng chưa thanh toán. Vui lòng xác nhận thanh toán trước!', 'error');
+      return;
+    }
     this.nextTargetStatus = nextStatus;
     this.nextTargetStatusLabel = label;
     this.isConfirmStatusModalOpen = true;
@@ -113,6 +136,12 @@ export class OrderDetail implements OnInit {
   // Thực hiện đổi trạng thái (E1, E2)
   confirmStatusChange(): void {
     if (!this.order || !this.nextTargetStatus) return;
+
+    if (this.nextTargetStatus === 'completed' && this.order.paymentStatus !== 'paid') {
+      this.closeConfirmStatusModal();
+      this.showToast('Không thể hoàn thành đơn hàng chưa thanh toán. Vui lòng xác nhận thanh toán trước!', 'error');
+      return;
+    }
 
     this.isUpdatingStatus = true;
     this.orderService.updateOrderStatus(this.order._id || this.order.orderCode, this.nextTargetStatus).subscribe({
@@ -133,6 +162,64 @@ export class OrderDetail implements OnInit {
         this.showToast(msg, 'error');
       },
     });
+  }
+
+  // Admin xác nhận hoặc đổi trạng thái thanh toán (Lỗi 2 & Lỗi 3)
+  isUpdatingPayment = false;
+
+  confirmPayment(status: 'paid' | 'pending', note?: string): void {
+    if (!this.order) return;
+    this.isUpdatingPayment = true;
+    this.orderService.confirmPayment(this.order._id || this.order.orderCode, { status, note }).subscribe({
+      next: (res) => {
+        this.isUpdatingPayment = false;
+        if (res && res.success) {
+          this.showToast(res.message || 'Cập nhật thanh toán thành công', 'success');
+          this.loadOrderDetail();
+        } else {
+          this.showToast(res.message || 'Lỗi khi cập nhật thanh toán', 'error');
+        }
+      },
+      error: (err) => {
+        this.isUpdatingPayment = false;
+        this.showToast(err.error?.message || 'Lỗi khi cập nhật thanh toán', 'error');
+      }
+    });
+  }
+
+  getPaymentStatusBadgeClass(paymentStatus?: string): string {
+    const s = (paymentStatus || '').toLowerCase();
+    switch (s) {
+      case 'paid':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'awaiting_verification':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'failed':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'refunded':
+      case 'partially_refunded':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      default:
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+    }
+  }
+
+  getPaymentStatusLabel(paymentStatus?: string): string {
+    const s = (paymentStatus || '').toLowerCase();
+    switch (s) {
+      case 'paid':
+        return 'Đã thanh toán (Paid)';
+      case 'awaiting_verification':
+        return 'Chờ đối soát (Awaiting Verification)';
+      case 'failed':
+        return 'Thanh toán lỗi (Failed)';
+      case 'refunded':
+        return 'Đã hoàn tiền (Refunded)';
+      case 'partially_refunded':
+        return 'Hoàn một phần (Refunded)';
+      default:
+        return 'Chờ thanh toán (Pending)';
+    }
   }
 
   // Mở modal hủy đơn hàng

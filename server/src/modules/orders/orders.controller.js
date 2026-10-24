@@ -210,16 +210,67 @@ async function cancelMyOrder(req, res) {
   }
 }
 
+/**
+ * 10. PATCH /api/orders/my/:id/pay-notify
+ * Khách hàng báo đã thanh toán MoMo / Chuyển khoản (UNPAID -> AWAITING_VERIFICATION)
+ */
+async function notifyCustomerPaid(req, res) {
+  try {
+    const accountId = req.accountId;
+    const { transactionCode, note } = req.body || {};
+    const updated = await ordersService.notifyCustomerPaid(accountId, req.params.id, { transactionCode, note });
+    return res.status(200).json({
+      success: true,
+      message: 'Đã ghi nhận thông báo thanh toán thành công. Minh Gốm sẽ đối soát và xác nhận đơn hàng của quý khách.',
+      data: updated,
+    });
+  } catch (error) {
+    console.error('Lỗi thông báo thanh toán:', error);
+    return res.status(error.status || 400).json({
+      success: false,
+      message: error.message || 'Không thể gửi thông báo thanh toán',
+    });
+  }
+}
+
+/**
+ * 11. PATCH /api/orders/admin/:id/payment
+ * Admin xác nhận hoặc đổi trạng thái thanh toán (PAID, UNPAID, ...)
+ */
+async function confirmPayment(req, res) {
+  try {
+    const { status, note } = req.body || {};
+    const updated = await ordersService.confirmPayment(req.params.id, {
+      status,
+      note,
+      adminUser: req.admin,
+    });
+    return res.status(200).json({
+      success: true,
+      message: `Cập nhật trạng thái thanh toán sang "${updated.paymentStatus}" thành công`,
+      data: updated,
+    });
+  } catch (error) {
+    console.error('Lỗi xác nhận thanh toán admin:', error);
+    return res.status(error.status || 400).json({
+      success: false,
+      message: error.message || 'Lỗi cập nhật trạng thái thanh toán',
+    });
+  }
+}
+
 module.exports = {
   getOrderStats,
   getOrders,
   getOrderById,
   updateOrderStatus,
   cancelOrder,
+  confirmPayment,
   // Phía khách hàng
   createCustomerOrder,
   getMyOrders,
   getMyOrderById,
   cancelMyOrder,
+  notifyCustomerPaid,
 };
 

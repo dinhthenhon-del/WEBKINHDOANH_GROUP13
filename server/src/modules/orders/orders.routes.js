@@ -21,6 +21,9 @@ router.get('/my/:id', requireAuth, ordersController.getMyOrderById);
 // 4. Khách hàng tự hủy đơn hàng PENDING
 router.patch('/my/:id/cancel', requireAuth, ordersController.cancelMyOrder);
 
+// 5. Khách hàng thông báo đã thanh toán MoMo / Chuyển khoản (Lỗi 3, Quy tắc 1)
+router.patch('/my/:id/pay-notify', requireAuth, ordersController.notifyCustomerPaid);
+
 // ==========================================
 // CÁC ROUTE QUẢN TRỊ ADMIN (UC-A03 - GIỮ NGUYÊN)
 // ==========================================
@@ -41,5 +44,8 @@ router.patch('/admin/:id/status', ordersController.updateOrderStatus);
 
 // 5. Hủy đơn hàng và tự động hoàn tồn kho
 router.patch('/admin/:id/cancel', ordersController.cancelOrder);
+
+// 6. Admin xác nhận hoặc thay đổi trạng thái thanh toán (Lỗi 3, Quy tắc 2 & 3)
+router.patch('/admin/:id/payment', ordersController.confirmPayment);
 
 module.exports = router;

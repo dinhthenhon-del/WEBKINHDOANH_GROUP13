@@ -30,7 +30,7 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ['pending', 'success', 'failed', 'refunded'],
+        values: ['pending', 'awaiting_verification', 'success', 'paid', 'failed', 'refunded', 'partially_refunded'],
         message: 'Trạng thái thanh toán không hợp lệ',
       },
       default: 'pending',

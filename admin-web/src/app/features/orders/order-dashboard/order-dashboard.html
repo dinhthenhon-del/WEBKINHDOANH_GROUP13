@@ -10,7 +10,7 @@
         </div>
         <h1 class="font-headline-xl text-headline-xl text-primary font-bold">Tổng quan Đơn hàng (Dashboard)</h1>
         <p class="font-body-md text-body-md text-on-surface-variant mt-1">
-          Theo dõi tiến độ, phân bổ trạng thái và doanh thu từ các tác phẩm gốm Thanh Xuân
+          Theo dõi tiến độ, phân bổ trạng thái và doanh thu thuần từ các tác phẩm gốm Thanh Xuân
         </p>
       </div>
       <div class="flex items-center gap-space-md shrink-0">
@@ -31,7 +31,7 @@
       <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30">
         <div class="flex items-start justify-between">
           <div>
-            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh thu hoàn tất</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh thu thuần</span>
             <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-2xl lg:text-3xl text-emerald-700">
               {{ formatCurrency(stats.totalRevenue) }}
             </div>
@@ -42,7 +42,7 @@
         </div>
         <div class="mt-space-md flex items-center gap-space-xs text-on-surface-variant text-xs">
           <span class="material-symbols-outlined text-sm text-emerald-600">verified</span>
-          <span>Doanh thu thực thu từ {{ stats.completed }} đơn hàng thành công</span>
+          <span>Doanh thu thuần thực thu từ {{ stats.completed }} đơn hàng thành công (đã trừ hoàn trả)</span>
         </div>
       </div>
 

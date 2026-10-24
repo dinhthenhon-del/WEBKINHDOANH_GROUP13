@@ -66,7 +66,14 @@ export interface OrderData {
   totalAmount: number;
   shippingAddress: ShippingAddress;
   paymentMethod: string;
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: 'pending' | 'awaiting_verification' | 'paid' | 'failed' | 'refunded' | 'partially_refunded';
+  paymentConfirmedAt?: string;
+  paymentConfirmedBy?: any;
+  paymentNote?: string;
+  returnStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  refundedAmount?: number;
+  refundedAt?: string;
+  returnRequestId?: any;
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'completed' | 'cancelled';
   status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'completed' | 'cancelled';
   cancellationReason?: string | null;
@@ -164,6 +171,7 @@ export class OrderService {
     page?: number;
     limit?: number;
     status?: string;
+    paymentStatus?: string;
     keyword?: string;
   }): Observable<OrderListResponse> {
     let httpParams = new HttpParams();
@@ -171,6 +179,9 @@ export class OrderService {
     if (params.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params.status && params.status !== 'all') {
       httpParams = httpParams.set('status', params.status);
+    }
+    if (params.paymentStatus && params.paymentStatus !== 'all') {
+      httpParams = httpParams.set('paymentStatus', params.paymentStatus);
     }
     if (params.keyword && params.keyword.trim()) {
       httpParams = httpParams.set('keyword', params.keyword.trim());
@@ -209,6 +220,17 @@ export class OrderService {
     return this.http.patch<OrderActionResponse>(
       `${this.baseUrl}/${id}/cancel`,
       { reason },
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  /**
+   * 6. Admin xác nhận hoặc điều chỉnh trạng thái thanh toán (Lỗi 2 & Lỗi 3)
+   */
+  confirmPayment(id: string, payload: { status: string; note?: string }): Observable<OrderActionResponse> {
+    return this.http.patch<OrderActionResponse>(
+      `${this.baseUrl}/${id}/payment`,
+      payload,
       { headers: this.getAuthHeaders() }
     );
   }

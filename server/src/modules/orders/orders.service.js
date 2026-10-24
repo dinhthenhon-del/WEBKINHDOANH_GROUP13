@@ -14,6 +14,47 @@ const VALID_TRANSITIONS = {
 };
 
 /**
+ * Hàm tính Doanh Thu Thuần (Net Revenue) duy nhất dùng chung cho toàn hệ thống:
+ * Doanh thu thuần = Tổng giá trị các đơn hàng hoàn tất đã thanh toán trừ đi các khoản hoàn tiền / hàng trả lại
+ */
+async function calculateNetRevenue() {
+  const completedOrders = await Order.find({
+    $or: [
+      { orderStatus: 'completed' },
+      { status: { $in: ['completed', 'COMPLETED', 'delivered'] } },
+    ],
+    // Bao gồm các đơn đã thanh toán hoặc đã hoàn tiền (một phần hoặc toàn phần)
+    paymentStatus: { $in: ['paid', 'partially_refunded', 'refunded'] },
+  })
+    .select('totalAmount refundedAmount returnStatus paymentStatus')
+    .lean();
+
+  const totalRevenue = completedOrders.reduce((sum, o) => {
+    const total = Number(o.totalAmount || 0);
+    let refunded = Number(o.refundedAmount || 0);
+
+    // 1. Nếu đơn đã hoàn tiền toàn bộ (paymentStatus: 'refunded') -> Không tính vào doanh thu thuần
+    if (o.paymentStatus === 'refunded') {
+      return sum;
+    }
+
+    // 2. Nếu đơn hàng đã được phê duyệt đổi/trả (returnStatus: 'approved')
+    if (o.returnStatus === 'approved') {
+      // Nếu chưa ghi nhận refundedAmount cụ thể thì khấu trừ toàn bộ giá trị đơn
+      if (!refunded || refunded <= 0) {
+        refunded = total;
+      }
+    }
+
+    // 3. Doanh thu thuần của đơn = total - refunded
+    const netRevenue = Math.max(0, total - refunded);
+    return sum + netRevenue;
+  }, 0);
+
+  return totalRevenue;
+}
+
+/**
  * 1. Lấy danh sách thống kê đơn hàng (phục vụ Order Dashboard & KPI)
  */
 async function getOrderStats() {
@@ -25,7 +66,7 @@ async function getOrderStats() {
   let shipping = 0;
   let completed = 0;
   let cancelled = 0;
-  let totalRevenue = 0;
+  let awaitingPaymentVerification = 0;
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -39,16 +80,20 @@ async function getOrderStats() {
     else if (rawStatus === 'confirmed') confirmed++;
     else if (rawStatus === 'processing') processing++;
     else if (rawStatus === 'shipping') shipping++;
-    else if (rawStatus === 'completed') {
-      completed++;
-      totalRevenue += Number(o.totalAmount || 0);
-    } else if (rawStatus === 'cancelled') cancelled++;
+    else if (rawStatus === 'completed') completed++;
+    else if (rawStatus === 'cancelled') cancelled++;
+
+    if (o.paymentStatus === 'awaiting_verification') {
+      awaitingPaymentVerification++;
+    }
 
     const createdAt = new Date(o.createdAt);
     if (createdAt >= todayStart) {
       todayOrders++;
     }
   });
+
+  const totalRevenue = await calculateNetRevenue();
 
   return {
     totalOrders: allOrders.length,
@@ -58,6 +103,7 @@ async function getOrderStats() {
     shipping,
     completed,
     cancelled,
+    awaitingPaymentVerification,
     todayOrders,
     totalRevenue,
   };
@@ -66,14 +112,14 @@ async function getOrderStats() {
 /**
  * 2. Lấy danh sách đơn hàng có tìm kiếm, lọc trạng thái và phân trang
  */
-async function getOrders({ page = 1, limit = 10, status = 'all', keyword = '' }) {
+async function getOrders({ page = 1, limit = 10, status = 'all', keyword = '', paymentStatus = 'all' }) {
   const numPage = Math.max(1, Number(page) || 1);
   const numLimit = Math.max(1, Number(limit) || 10);
   const skip = (numPage - 1) * numLimit;
 
   const queryConditions = [];
 
-  // Lọc theo trạng thái
+  // Lọc theo trạng thái đơn hàng
   if (status && status !== 'all') {
     const cleanStatus = status.trim().toLowerCase();
     // Khớp cả orderStatus mới và status cũ
@@ -82,6 +128,14 @@ async function getOrders({ page = 1, limit = 10, status = 'all', keyword = '' })
         { orderStatus: cleanStatus },
         { status: new RegExp(`^${cleanStatus}$`, 'i') },
       ],
+    });
+  }
+
+  // Lọc theo trạng thái thanh toán (Lỗi 3, Quy tắc 5)
+  if (paymentStatus && paymentStatus !== 'all') {
+    const cleanPaymentStatus = paymentStatus.trim().toLowerCase();
+    queryConditions.push({
+      paymentStatus: cleanPaymentStatus,
     });
   }
 
@@ -119,6 +173,8 @@ async function getOrders({ page = 1, limit = 10, status = 'all', keyword = '' })
   const orders = await Order.find(finalQuery)
     .populate('accountId', 'fullName email phone')
     .populate('customer', 'fullName email phone')
+    .populate('paymentConfirmedBy', 'fullName email phone')
+    .populate('returnRequestId')
     .populate('items.productId', 'name sku image images price stock glazeColor')
     .populate('items.product', 'name sku image images price stock glazeColor')
     .sort({ createdAt: -1 })
@@ -142,6 +198,11 @@ async function getOrders({ page = 1, limit = 10, status = 'all', keyword = '' })
       customer: customerInfo,
       accountId: customerInfo,
       paymentMethod: o.paymentMethod || 'COD',
+      paymentStatus: (o.paymentStatus || 'pending').toLowerCase(),
+      returnStatus: o.returnStatus || 'none',
+      refundedAmount: Number(o.refundedAmount || 0),
+      refundedAt: o.refundedAt || null,
+      returnRequestId: o.returnRequestId || null,
       cancellationReason: o.cancellationReason || o.cancelReason || null,
       cancelReason: o.cancellationReason || o.cancelReason || null,
     };
@@ -172,6 +233,8 @@ async function getOrderById(orderId) {
   const order = await Order.findOne(query)
     .populate('accountId', 'fullName email phone addresses')
     .populate('customer', 'fullName email phone addresses')
+    .populate('paymentConfirmedBy', 'fullName email phone')
+    .populate('returnRequestId')
     .populate('items.productId', 'name sku image images price stock glazeColor firingTemp')
     .populate('items.product', 'name sku image images price stock glazeColor firingTemp')
     .lean();
@@ -194,6 +257,15 @@ async function getOrderById(orderId) {
     customer: customerInfo,
     accountId: customerInfo,
     paymentMethod: order.paymentMethod || 'COD',
+    paymentStatus: (order.paymentStatus || 'pending').toLowerCase(),
+    returnStatus: order.returnStatus || 'none',
+    refundedAmount: Number(order.refundedAmount || 0),
+    refundedAt: order.refundedAt || null,
+    returnRequestId: order.returnRequestId || null,
+    paymentConfirmedAt: order.paymentConfirmedAt || null,
+    paymentConfirmedBy: order.paymentConfirmedBy || null,
+    paymentNote: order.paymentNote || '',
+    paymentHistory: order.paymentHistory || [],
     cancellationReason: order.cancellationReason || order.cancelReason || null,
     cancelReason: order.cancellationReason || order.cancelReason || null,
   };
@@ -241,6 +313,18 @@ async function updateOrderStatus(orderId, nextStatusInput, adminUser) {
     throw { status: 400, message: 'Trạng thái không thể chuyển đổi' };
   }
 
+  // RÀNG BUỘC CHỐT (Lỗi 3, Quy tắc 4):
+  // backend CHỈ cho chuyển SHIPPING -> COMPLETED khi paymentStatus = PAID.
+  if (nextStatus === 'completed') {
+    const isPaid = (existingOrder.paymentStatus || '').toLowerCase() === 'paid';
+    if (!isPaid) {
+      throw {
+        status: 400,
+        message: 'Đơn hàng chưa được xác nhận thanh toán. Vui lòng xác nhận thanh toán trước khi hoàn tất đơn hàng.',
+      };
+    }
+  }
+
   // Chống 2 admin bấm cùng lúc (Optimistic Concurrency Control):
   // Dùng updateOne với điều kiện status hiện tại
   const statusHistoryEntry = {
@@ -271,6 +355,8 @@ async function updateOrderStatus(orderId, nextStatusInput, adminUser) {
     { new: true }
   )
     .populate('accountId', 'fullName email phone')
+    .populate('paymentConfirmedBy', 'fullName email phone')
+    .populate('returnRequestId')
     .populate('items.productId', 'name sku image images price stock')
     .lean();
 
@@ -323,6 +409,9 @@ async function cancelOrder(orderId, reasonInput, adminUser) {
     throw { status: 400, message: 'Đơn hàng này đã ở trạng thái hủy trước đó' };
   }
 
+  const isPaid = (existingOrder.paymentStatus || '').toLowerCase() === 'paid';
+  const newPaymentStatus = isPaid ? 'refunded' : existingOrder.paymentStatus;
+
   // Khóa đơn chống Race condition: update chỉ khi trạng thái chưa phải completed và chưa phải cancelled
   const statusHistoryEntry = {
     status: 'cancelled',
@@ -331,6 +420,29 @@ async function cancelOrder(orderId, reasonInput, adminUser) {
     changedBy: adminUser?.fullName || 'Quản trị viên',
   };
 
+  const updateFields = {
+    orderStatus: 'cancelled',
+    status: 'cancelled',
+    cancellationReason: reason,
+    cancelReason: reason,
+    paymentStatus: newPaymentStatus,
+    updatedAt: new Date(),
+  };
+
+  const pushOperations = {
+    statusHistory: statusHistoryEntry,
+  };
+
+  if (isPaid) {
+    pushOperations.paymentHistory = {
+      fromStatus: 'paid',
+      toStatus: 'refunded',
+      changedBy: adminUser?.fullName || 'Quản trị viên',
+      note: `Hủy đơn khi đã thanh toán, ghi nhận cần hoàn tiền: ${reason}`,
+      changedAt: new Date(),
+    };
+  }
+
   const updatedOrder = await Order.findOneAndUpdate(
     {
       _id: existingOrder._id,
@@ -338,16 +450,8 @@ async function cancelOrder(orderId, reasonInput, adminUser) {
       status: { $nin: ['completed', 'Completed', 'cancelled', 'Cancelled'] },
     },
     {
-      $set: {
-        orderStatus: 'cancelled',
-        status: 'cancelled',
-        cancellationReason: reason,
-        cancelReason: reason,
-        updatedAt: new Date(),
-      },
-      $push: {
-        statusHistory: statusHistoryEntry,
-      },
+      $set: updateFields,
+      $push: pushOperations,
     },
     { new: true }
   ).lean();
@@ -357,6 +461,13 @@ async function cancelOrder(orderId, reasonInput, adminUser) {
       status: 409,
       message: 'Không thể hủy đơn hàng (Đơn có thể đã hoàn thành hoặc được cập nhật bởi quản trị viên khác)',
     };
+  }
+
+  if (isPaid) {
+    await Payment.updateMany(
+      { orderId: existingOrder._id },
+      { $set: { status: 'refunded' } }
+    );
   }
 
   // Hoàn tồn kho (E3): $inc stock +quantity cho từng item trong đơn
@@ -598,6 +709,53 @@ async function createCustomerOrder(accountId, orderData) {
 
   await newOrder.save();
 
+  // Tự động lưu địa chỉ được nhập vào danh mục địa chỉ của tài khoản khách hàng
+  if (accountId) {
+    try {
+      const account = await Account.findById(accountId);
+      if (account) {
+        if (!Array.isArray(account.addresses)) {
+          account.addresses = [];
+        }
+
+        const newAddr = {
+          recipientName: shippingAddress.recipientName.trim(),
+          phone: cleanPhone,
+          province: shippingAddress.province.trim(),
+          ward: shippingAddress.ward.trim(),
+          detail: shippingAddress.detail.trim(),
+          isDefault: true,
+        };
+
+        // Bỏ cờ mặc định ở các địa chỉ trước
+        account.addresses.forEach(a => {
+          a.isDefault = false;
+        });
+
+        // Kiểm tra xem địa chỉ này đã có trong danh bạ chưa
+        const existingIdx = account.addresses.findIndex(a =>
+          (a.detail || '').trim().toLowerCase() === newAddr.detail.toLowerCase() &&
+          (a.ward || '').trim().toLowerCase() === newAddr.ward.toLowerCase() &&
+          (a.province || '').trim().toLowerCase() === newAddr.province.toLowerCase()
+        );
+
+        if (existingIdx > -1) {
+          account.addresses[existingIdx].recipientName = newAddr.recipientName;
+          account.addresses[existingIdx].phone = newAddr.phone;
+          account.addresses[existingIdx].isDefault = true;
+          const matched = account.addresses.splice(existingIdx, 1)[0];
+          account.addresses.unshift(matched);
+        } else {
+          account.addresses.unshift(newAddr);
+        }
+
+        await account.save();
+      }
+    } catch (saveAddrErr) {
+      console.error('Lỗi tự động lưu địa chỉ vào tài khoản:', saveAddrErr);
+    }
+  }
+
   // Tạo bản ghi Payment tương ứng
   await Payment.create({
     orderId: newOrder._id,
@@ -633,6 +791,7 @@ async function getMyOrders(accountId, query = {}) {
   const [orders, total] = await Promise.all([
     Order.find(filter)
       .populate('items.productId')
+      .populate('returnRequestId')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -640,8 +799,15 @@ async function getMyOrders(accountId, query = {}) {
     Order.countDocuments(filter),
   ]);
 
+  const normalized = orders.map((o) => ({
+    ...o,
+    paymentStatus: (o.paymentStatus || 'pending').toLowerCase(),
+    returnStatus: o.returnStatus || 'none',
+    refundedAmount: Number(o.refundedAmount || 0),
+  }));
+
   return {
-    orders,
+    orders: normalized,
     pagination: {
       page,
       limit,
@@ -660,7 +826,10 @@ async function getMyOrderById(accountId, orderId) {
     $or: [{ accountId }, { customer: accountId }],
   };
 
-  const order = await Order.findOne(filter).populate('items.productId').lean();
+  const order = await Order.findOne(filter)
+    .populate('items.productId')
+    .populate('returnRequestId')
+    .lean();
   if (!order) {
     const err = new Error('Không tìm thấy thông tin đơn hàng hoặc bạn không có quyền xem đơn hàng này');
     err.status = 404;
@@ -671,6 +840,9 @@ async function getMyOrderById(accountId, orderId) {
 
   return {
     ...order,
+    paymentStatus: (order.paymentStatus || 'pending').toLowerCase(),
+    returnStatus: order.returnStatus || 'none',
+    refundedAmount: Number(order.refundedAmount || 0),
     payment: payment || null,
   };
 }
@@ -700,6 +872,7 @@ async function cancelMyOrder(accountId, orderId, reason) {
     throw err;
   }
 
+  const isPaid = (order.paymentStatus || '').toLowerCase() === 'paid';
   const cancelReasonText = (reason || 'Khách hàng tự hủy').trim();
   order.orderStatus = 'cancelled';
   order.cancelReason = cancelReasonText;
@@ -710,6 +883,18 @@ async function cancelMyOrder(accountId, orderId, reason) {
     note: cancelReasonText,
     changedBy: 'Khách hàng',
   });
+
+  if (isPaid) {
+    order.paymentStatus = 'refunded';
+    order.paymentHistory.push({
+      fromStatus: 'paid',
+      toStatus: 'refunded',
+      changedBy: 'Khách hàng',
+      note: `Khách tự hủy đơn khi đã thanh toán, ghi nhận chờ hoàn tiền: ${cancelReasonText}`,
+      changedAt: new Date(),
+    });
+    await Payment.updateMany({ orderId: order._id }, { $set: { status: 'refunded' } });
+  }
 
   await order.save();
 
@@ -729,7 +914,215 @@ async function cancelMyOrder(accountId, orderId, reason) {
   return order;
 }
 
+/**
+ * 10. Khách hàng thông báo đã thanh toán (MoMo / Chuyển khoản VietQR)
+ * Chuyển UNPAID (pending) -> AWAITING_VERIFICATION (Lỗi 3, Quy tắc 1)
+ */
+async function notifyCustomerPaid(accountId, orderId, { transactionCode, note } = {}) {
+  const filter = {
+    _id: orderId,
+    $or: [{ accountId }, { customer: accountId }],
+  };
+
+  const order = await Order.findOne(filter);
+  if (!order) {
+    const err = new Error('Không tìm thấy đơn hàng');
+    err.status = 404;
+    throw err;
+  }
+
+  const currentPaymentStatus = (order.paymentStatus || 'pending').toLowerCase();
+  if (currentPaymentStatus === 'paid') {
+    const err = new Error('Đơn hàng này đã được xác nhận thanh toán trước đó');
+    err.status = 400;
+    throw err;
+  }
+
+  const cleanTransCode = (transactionCode || '').trim();
+  const cleanNote = (note || '').trim();
+  const detailNote = [
+    cleanTransCode ? `Mã giao dịch: ${cleanTransCode}` : '',
+    cleanNote ? `Ghi chú: ${cleanNote}` : '',
+  ]
+    .filter(Boolean)
+    .join(' | ') || 'Khách hàng báo đã hoàn tất thanh toán chuyển khoản/MoMo';
+
+  order.paymentStatus = 'awaiting_verification';
+  order.paymentNote = detailNote;
+  order.paymentHistory.push({
+    fromStatus: currentPaymentStatus,
+    toStatus: 'awaiting_verification',
+    changedBy: 'Khách hàng',
+    note: detailNote,
+    changedAt: new Date(),
+  });
+
+  await order.save();
+
+  // Đồng bộ Payment model
+  await Payment.updateMany(
+    { orderId: order._id },
+    {
+      $set: {
+        transactionCode: cleanTransCode || null,
+        status: 'awaiting_verification',
+      },
+    }
+  );
+
+  return order;
+}
+
+/**
+ * 11. Admin xác nhận hoặc thay đổi trạng thái thanh toán (Lỗi 3, Quy tắc 2 & 3)
+ * Admin có thể xác nhận PAID, hoặc chuyển về UNPAID (pending) nếu chưa nhận được tiền
+ */
+async function confirmPayment(orderId, { status, note, adminUser }) {
+  let orderQuery = {};
+  if (mongoose.Types.ObjectId.isValid(orderId)) {
+    orderQuery = { _id: orderId };
+  } else {
+    orderQuery = { orderCode: orderId };
+  }
+
+  const order = await Order.findOne(orderQuery);
+  if (!order) {
+    const err = new Error('Không tìm thấy đơn hàng');
+    err.status = 404;
+    throw err;
+  }
+
+  const validStatuses = ['pending', 'awaiting_verification', 'paid', 'failed', 'refunded', 'partially_refunded'];
+  const cleanStatus = (status || '').toLowerCase().trim();
+  if (!validStatuses.includes(cleanStatus)) {
+    const err = new Error('Trạng thái thanh toán không hợp lệ');
+    err.status = 400;
+    throw err;
+  }
+
+  const oldStatus = order.paymentStatus || 'pending';
+  const adminName = adminUser?.fullName || adminUser?.name || 'Quản trị viên';
+  const adminId = adminUser?._id || null;
+
+  order.paymentStatus = cleanStatus;
+  if (cleanStatus === 'paid') {
+    order.paymentConfirmedAt = new Date();
+    if (adminId && mongoose.Types.ObjectId.isValid(adminId)) {
+      order.paymentConfirmedBy = adminId;
+    }
+  }
+
+  if (note && note.trim()) {
+    order.paymentNote = note.trim();
+  }
+
+  const actionNote = note || (cleanStatus === 'paid' ? 'Admin xác nhận thanh toán thành công' : `Admin chuyển trạng thái thanh toán sang "${cleanStatus}"`);
+
+  order.paymentHistory.push({
+    fromStatus: oldStatus,
+    toStatus: cleanStatus,
+    changedBy: adminName,
+    note: actionNote,
+    changedAt: new Date(),
+  });
+
+  await order.save();
+
+  // Đồng bộ Payment model
+  await Payment.updateMany(
+    { orderId: order._id },
+    {
+      $set: {
+        status: cleanStatus === 'paid' ? 'paid' : (cleanStatus === 'awaiting_verification' ? 'pending' : cleanStatus),
+        paidAt: cleanStatus === 'paid' ? new Date() : null,
+      },
+    }
+  );
+
+  return order;
+}
+
+/**
+ * 12. Hàm dùng chung: Đánh dấu đơn hàng Đã Hoàn Trả khi Admin duyệt đổi/trả (Lỗi 4)
+ * Gọi từ module returns của Trâm
+ */
+async function markOrderReturned(orderId, { amount, returnRequestId, note, adminUser } = {}) {
+  let orderQuery = {};
+  if (mongoose.Types.ObjectId.isValid(orderId)) {
+    orderQuery = { _id: orderId };
+  } else {
+    orderQuery = { orderCode: orderId };
+  }
+
+  const order = await Order.findOne(orderQuery);
+  if (!order) {
+    const err = new Error('Không tìm thấy đơn hàng liên kết để xử lý hoàn tiền');
+    err.status = 404;
+    throw err;
+  }
+
+  const rawStatus = (order.orderStatus || order.status || '').toLowerCase();
+  if (rawStatus !== 'completed') {
+    const err = new Error('Chỉ có thể duyệt hoàn tiền / đổi trả cho đơn hàng đã hoàn tất (Completed)');
+    err.status = 400;
+    throw err;
+  }
+
+  if (order.refundedAmount && order.refundedAmount >= order.totalAmount) {
+    const err = new Error('Đơn hàng này đã được hoàn tiền đầy đủ trước đó (chặn hoàn trùng)');
+    err.status = 400;
+    throw err;
+  }
+
+  const refundValue = Math.min(order.totalAmount, Number(amount || order.totalAmount) || order.totalAmount);
+  const newRefundedTotal = Math.min(order.totalAmount, (order.refundedAmount || 0) + refundValue);
+  const isFullyRefunded = newRefundedTotal >= order.totalAmount;
+  const newPaymentStatus = isFullyRefunded ? 'refunded' : 'partially_refunded';
+
+  const adminName = adminUser?.fullName || adminUser?.name || 'Quản trị viên';
+
+  order.returnStatus = 'approved';
+  order.refundedAmount = newRefundedTotal;
+  order.refundedAt = new Date();
+  if (returnRequestId && mongoose.Types.ObjectId.isValid(returnRequestId)) {
+    order.returnRequestId = returnRequestId;
+  }
+
+  const oldPaymentStatus = order.paymentStatus || 'paid';
+  order.paymentStatus = newPaymentStatus;
+
+  order.statusHistory.push({
+    status: order.orderStatus,
+    updatedAt: new Date(),
+    note: `Duyệt đổi/trả hàng. Hoàn tiền: ${refundValue.toLocaleString('vi-VN')}₫. ${note || ''}`.trim(),
+    changedBy: adminName,
+  });
+
+  order.paymentHistory.push({
+    fromStatus: oldPaymentStatus,
+    toStatus: newPaymentStatus,
+    changedBy: adminName,
+    note: `Hoàn tiền đổi trả: ${refundValue.toLocaleString('vi-VN')}₫. Tổng đã hoàn: ${newRefundedTotal.toLocaleString('vi-VN')}₫`,
+    changedAt: new Date(),
+  });
+
+  await order.save();
+
+  // Đồng bộ Payment model
+  await Payment.updateMany(
+    { orderId: order._id },
+    {
+      $set: {
+        status: newPaymentStatus,
+      },
+    }
+  );
+
+  return order;
+}
+
 module.exports = {
+  calculateNetRevenue,
   getOrderStats,
   getOrders,
   getOrderById,
@@ -741,5 +1134,9 @@ module.exports = {
   getMyOrders,
   getMyOrderById,
   cancelMyOrder,
+  notifyCustomerPaid,
+  // Phân hệ thanh toán & đổi trả liên kết
+  confirmPayment,
+  markOrderReturned,
 };
 

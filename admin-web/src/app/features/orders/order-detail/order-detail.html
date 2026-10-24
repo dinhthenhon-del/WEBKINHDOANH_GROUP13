@@ -82,11 +82,19 @@
 
         <!-- Nút Chuyển trạng thái kế tiếp: CHỈ HIỆN ĐÚNG BƯỚC TIẾP THEO HỢP LỆ (E1, E2) -->
         <ng-container *ngIf="getNextStatus() as nextStep">
-          <button (click)="promptStatusChange(nextStep.status, nextStep.label)" type="button"
-                  class="h-10 px-5 rounded-lg bg-[#0A2540] hover:bg-[#071b30] text-white transition-all font-label-lg text-sm flex items-center gap-1.5 shadow-md cursor-pointer">
-            <span class="material-symbols-outlined text-lg">{{ nextStep.icon }}</span>
-            <span>{{ nextStep.label }}</span>
-          </button>
+          <div class="relative group">
+            <button (click)="canProceedToNextStatus() ? promptStatusChange(nextStep.status, nextStep.label) : null" 
+                    [disabled]="!canProceedToNextStatus()"
+                    type="button"
+                    [class]="'h-10 px-5 rounded-lg text-white transition-all font-label-lg text-sm flex items-center gap-1.5 shadow-md ' +
+                            (canProceedToNextStatus() ? 'bg-[#0A2540] hover:bg-[#071b30] cursor-pointer' : 'bg-gray-400 cursor-not-allowed opacity-70')">
+              <span class="material-symbols-outlined text-lg">{{ nextStep.icon }}</span>
+              <span>{{ nextStep.label }}</span>
+            </button>
+            <div *ngIf="!canProceedToNextStatus()" class="hidden group-hover:block absolute bottom-full mb-2 right-0 w-72 p-2.5 bg-slate-900 text-amber-300 text-xs rounded-lg shadow-xl z-30 font-medium">
+              ⚠️ {{ getDisabledNextStatusReason() }}
+            </div>
+          </div>
         </ng-container>
 
         <!-- Đơn hàng đã Completed (E2: Disable mọi nút chuyển trạng thái) -->
@@ -391,11 +399,76 @@
 
             <div class="flex items-center justify-between">
               <span class="text-outline">Trạng thái thanh toán:</span>
-              <span [class]="'px-2 py-0.5 rounded-full font-semibold border ' +
-                    (order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                     order.paymentStatus === 'failed' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200')">
-                {{ order.paymentStatus === 'paid' ? 'Đã thanh toán' : (order.paymentStatus === 'failed' ? 'Thất bại' : 'Chờ thanh toán') }}
+              <span [class]="'px-2.5 py-0.5 rounded-full font-semibold border text-xs ' + getPaymentStatusBadgeClass(order.paymentStatus)">
+                {{ getPaymentStatusLabel(order.paymentStatus) }}
               </span>
+            </div>
+
+            <!-- Payment Audit Trail Info -->
+            <div *ngIf="order.paymentConfirmedAt" class="text-[11px] text-on-surface-variant bg-surface-container-low p-2 rounded">
+              <div class="flex items-center gap-1 font-medium text-emerald-800">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>Xác nhận: {{ order.paymentConfirmedAt | date:'HH:mm, dd/MM/yyyy' }}</span>
+              </div>
+              <div *ngIf="order.paymentNote" class="text-outline mt-0.5">Ghi chú: {{ order.paymentNote }}</div>
+            </div>
+
+            <!-- Refund Info if any -->
+            <div *ngIf="order.refundedAmount" class="text-[11px] text-purple-900 bg-purple-50 p-2 rounded border border-purple-200">
+              <div class="flex items-center justify-between">
+                <span>Đã hoàn trả khách:</span>
+                <strong class="font-serif text-sm">{{ formatCurrency(order.refundedAmount) }}</strong>
+              </div>
+              <div *ngIf="order.refundedAt" class="text-[10px] text-purple-700 mt-0.5">
+                Ngày hoàn: {{ order.refundedAt | date:'HH:mm, dd/MM/yyyy' }}
+              </div>
+            </div>
+
+            <!-- Admin Payment Action Buttons -->
+            <div *ngIf="order.orderStatus !== 'cancelled'" class="pt-2 border-t border-surface-variant/40 space-y-2">
+              <!-- Case 1: Khách đã báo thanh toán (awaiting_verification) -->
+              <div *ngIf="order.paymentStatus === 'awaiting_verification'" class="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-900">
+                <div class="flex items-center gap-1.5 font-bold text-xs mb-1">
+                  <span class="material-symbols-outlined text-sm text-blue-700 animate-pulse">pending</span>
+                  <span>Khách báo đã chuyển khoản</span>
+                </div>
+                <p class="text-[11px] text-blue-800 leading-snug mb-2">
+                  Vui lòng kiểm tra tài khoản ngân hàng / ví MoMo theo mã tham chiếu của đơn.
+                </p>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="confirmPayment('paid', 'Admin xác nhận đã nhận chuyển khoản')"
+                          [disabled]="isUpdatingPayment"
+                          class="flex-1 py-1.5 px-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-[14px]">check</span>
+                    <span>Xác nhận ĐÃ NHẬN</span>
+                  </button>
+                  <button type="button" (click)="confirmPayment('pending', 'Chưa nhận được giao dịch')"
+                          [disabled]="isUpdatingPayment"
+                          class="py-1.5 px-2 rounded bg-white hover:bg-gray-100 text-rose-700 border border-rose-300 font-bold text-[11px] transition-colors cursor-pointer"
+                          title="Báo chưa nhận được tiền">
+                    <span>Chưa nhận</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Case 2: Đang chờ thanh toán (pending) -->
+              <div *ngIf="order.paymentStatus === 'pending'" class="flex items-center gap-2">
+                <button type="button" (click)="confirmPayment('paid', order.paymentMethod === 'COD' ? 'Đã thu tiền COD' : 'Admin xác nhận đã thu tiền')"
+                        [disabled]="isUpdatingPayment"
+                        class="w-full py-2 px-3 rounded-lg bg-[#0A2540] hover:bg-[#071b30] text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                  <span class="material-symbols-outlined text-sm text-emerald-400">payments</span>
+                  <span>{{ order.paymentMethod === 'COD' ? 'Xác nhận ĐÃ THU TIỀN COD' : 'Xác nhận ĐÃ THANH TOÁN' }}</span>
+                </button>
+              </div>
+
+              <!-- Case 3: Đã thanh toán nhưng đơn chưa kết thúc (có thể reset nếu nhầm lẫn) -->
+              <div *ngIf="order.paymentStatus === 'paid' && order.orderStatus !== 'completed'" class="flex items-center justify-end">
+                <button type="button" (click)="confirmPayment('pending', 'Hủy xác nhận thanh toán do nhầm lẫn')"
+                        [disabled]="isUpdatingPayment"
+                        class="text-[11px] text-outline hover:text-rose-700 underline transition-colors cursor-pointer">
+                  Đánh dấu chưa thanh toán
+                </button>
+              </div>
             </div>
 
             <div class="h-[1px] bg-surface-container my-2"></div>

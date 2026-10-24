@@ -321,7 +321,7 @@ window.dieuHuong = function (tenPhanHe, element, param) {
 
         // Khởi tạo các logic tương ứng sau khi kéo giao diện vào
         if (tenPhanHe === 'profile') {
-          khoiTaoTrangProfile();
+          khoiTaoTrangProfile(param);
         } else if (tenPhanHe === 'login') {
           ganSuKienLogin();
         } else if (tenPhanHe === 'register') {
@@ -360,10 +360,15 @@ window.dieuHuong = function (tenPhanHe, element, param) {
           if (typeof initOrderSuccessPage === 'function') {
             initOrderSuccessPage(param);
           }
-        } else if (tenPhanHe === 'order-tracking') {
-          if (typeof initOrderTrackingPage === 'function') {
-            initOrderTrackingPage(param);
+        } else if (tenPhanHe === 'order-detail') {
+          if (typeof initOrderDetailPage === 'function') {
+            initOrderDetailPage(param);
+          } else if (window.OrdersModule && typeof window.OrdersModule.initOrderDetailPage === 'function') {
+            window.OrdersModule.initOrderDetailPage(param);
           }
+        } else if (tenPhanHe === 'order-tracking') {
+          dieuHuong('profile', null, param);
+          return;
         } else if (tenPhanHe === 'custom-2d') {
           if (typeof khoiTaoTrangCustom2D === 'function') {
             khoiTaoTrangCustom2D();
@@ -521,7 +526,7 @@ window.handleLogout = function() {
 /**
  * 9. Logic Trang Profile (Đổ dữ liệu User, Đơn hàng, Wishlist từ MongoDB)
  */
-function khoiTaoTrangProfile() {
+function khoiTaoTrangProfile(param) {
   if (!currentUser) {
     dieuHuong('login');
     return;
@@ -579,6 +584,11 @@ function khoiTaoTrangProfile() {
       if (countBadge) countBadge.innerText = String(wlCount).padStart(2, '0');
     }
   });
+
+  // Tải danh sách đơn hàng động và tự cuộn đến đơn mục tiêu nếu có
+  if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+    window.OrdersModule.initProfileOrders(param);
+  }
 }
 
 /**
