@@ -32,8 +32,12 @@ const cartItemSchema = new mongoose.Schema(
       ref: 'Design',
       default: null,
     },
+    customization: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
-  { _id: false }
+  { _id: true }
 );
 
 const cartSchema = new mongoose.Schema(

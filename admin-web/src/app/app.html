@@ -31,9 +31,10 @@
           <span class="material-symbols-outlined text-xl">inventory_2</span>
           <span class="font-bold">Sản phẩm &amp; Tồn kho</span>
         </a>
-        <a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer" href="javascript:void(0)" (click)="showFeatureNotice('Đơn hàng', 'Phân hệ Đơn hàng đang được hoàn thiện.')">
+        <!-- Active Module for Member 3: Order Management (UC-A03) -->
+        <a routerLink="/orders" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">receipt_long</span>
-          <span>Đơn hàng</span>
+          <span class="font-bold">Đơn hàng</span>
         </a>
         <!-- Active Module for Member 5: Returns & Refunds (UC-A05) -->
         <a routerLink="/returns" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">

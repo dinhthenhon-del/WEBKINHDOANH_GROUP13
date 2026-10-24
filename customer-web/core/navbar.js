@@ -156,7 +156,7 @@ function initNavbar() {
             <span class="material-symbols-outlined text-[22px]">favorite</span>
           </a>
 
-          <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="requireAuthAction(() => dieuHuong('cart'))" title="Giỏ hàng">
+          <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="if(window.CartModule) CartModule.openDrawer(); else requireAuthAction(() => dieuHuong('cart'));" title="Giỏ hàng">
             <span class="material-symbols-outlined text-[22px]">shopping_bag</span>
             <span id="navbar-cart-count" class="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-secondary text-on-secondary rounded-full flex items-center justify-center font-label-sm leading-none text-[10px]">0</span>
           </a>
@@ -282,6 +282,7 @@ function updateAvatarState() {
 }
 
 window.dieuHuong = function (tenPhanHe, element, param) {
+  window.currentViewParam = param;
   const viewport = document.getElementById('app-viewport');
   if (!viewport) {
     console.error('Không tìm thấy #app-viewport');
@@ -320,7 +321,7 @@ window.dieuHuong = function (tenPhanHe, element, param) {
 
         // Khởi tạo các logic tương ứng sau khi kéo giao diện vào
         if (tenPhanHe === 'profile') {
-          khoiTaoTrangProfile();
+          khoiTaoTrangProfile(param);
         } else if (tenPhanHe === 'login') {
           ganSuKienLogin();
         } else if (tenPhanHe === 'register') {
@@ -346,9 +347,28 @@ window.dieuHuong = function (tenPhanHe, element, param) {
             khoiTaoTrangWishlist();
           }
         } else if (tenPhanHe === 'cart') {
-          if (typeof CartView !== 'undefined') {
+          if (window.CartModule) {
+            CartModule.openDrawer();
+          } else if (typeof CartView !== 'undefined') {
             CartView.loadCart();
           }
+        } else if (tenPhanHe === 'checkout') {
+          if (typeof initCheckoutPage === 'function') {
+            initCheckoutPage(param);
+          }
+        } else if (tenPhanHe === 'order-success') {
+          if (typeof initOrderSuccessPage === 'function') {
+            initOrderSuccessPage(param);
+          }
+        } else if (tenPhanHe === 'order-detail') {
+          if (typeof initOrderDetailPage === 'function') {
+            initOrderDetailPage(param);
+          } else if (window.OrdersModule && typeof window.OrdersModule.initOrderDetailPage === 'function') {
+            window.OrdersModule.initOrderDetailPage(param);
+          }
+        } else if (tenPhanHe === 'order-tracking') {
+          dieuHuong('profile', null, param);
+          return;
         } else if (tenPhanHe === 'custom-2d') {
           if (typeof khoiTaoTrangCustom2D === 'function') {
             khoiTaoTrangCustom2D();
@@ -506,7 +526,7 @@ window.handleLogout = function() {
 /**
  * 9. Logic Trang Profile (Đổ dữ liệu User, Đơn hàng, Wishlist từ MongoDB)
  */
-function khoiTaoTrangProfile() {
+function khoiTaoTrangProfile(param) {
   if (!currentUser) {
     dieuHuong('login');
     return;
@@ -564,6 +584,11 @@ function khoiTaoTrangProfile() {
       if (countBadge) countBadge.innerText = String(wlCount).padStart(2, '0');
     }
   });
+
+  // Tải danh sách đơn hàng động và tự cuộn đến đơn mục tiêu nếu có
+  if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+    window.OrdersModule.initProfileOrders(param);
+  }
 }
 
 /**

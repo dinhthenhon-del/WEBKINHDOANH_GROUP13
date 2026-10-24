@@ -71,10 +71,10 @@
       <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/30"></div>
     </div>
 
-    <!-- Thẻ 3: Doanh thu tuần -->
+    <!-- Thẻ 3: Doanh thu thuần -->
     <div class="relative overflow-hidden rounded-xl bg-primary p-space-lg shadow-md text-on-primary flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
       <div class="flex items-start justify-between">
-        <span class="font-label-md text-label-md text-primary-fixed font-medium">Doanh thu tuần này</span>
+        <span class="font-label-md text-label-md text-primary-fixed font-medium">Doanh thu thuần</span>
         <div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
           <span class="material-symbols-outlined text-xl">payments</span>
         </div>
@@ -85,7 +85,7 @@
         </div>
         <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary-fixed whitespace-nowrap font-medium">
           <span class="material-symbols-outlined text-sm">check_circle</span>
-          <span>Mục tiêu 92% • Đạt chỉ tiêu kho</span>
+          <span>Đã khấu trừ các đơn hoàn hàng / đổi trả</span>
         </div>
       </div>
       <div class="absolute bottom-0 left-0 right-0 h-1 bg-secondary"></div>
@@ -96,11 +96,11 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start w-full">
     <!-- Cột Trái: Biểu đồ & Bảng Đơn Hàng (8 Cột) -->
     <div class="lg:col-span-8 flex flex-col gap-space-lg w-full">
-      <!-- Card Biểu Đồ Doanh Thu -->
+      <!-- Card Biểu Đồ Doanh Thu Thuần -->
       <div class="rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 p-space-lg flex flex-col w-full">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-surface-variant/50">
           <div>
-            <h2 class="font-headline-md text-headline-md text-primary font-bold">Biểu Đồ Doanh Thu 7 Ngày Gần Nhất</h2>
+            <h2 class="font-headline-md text-headline-md text-primary font-bold">Biểu Đồ Doanh Thu Thuần 7 Ngày Gần Nhất</h2>
             <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
               Đạt đỉnh <strong class="text-primary font-bold">4.800.000đ</strong> vào Thứ Sáu • Tổng tích luỹ: <strong class="text-secondary font-bold">23.000.000đ</strong>
             </p>
@@ -146,20 +146,26 @@
 
       <!-- Card Đơn Hàng Chờ Xác Nhận Gần Đây -->
       <div class="w-full rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 overflow-hidden flex flex-col">
-        <div class="p-space-md flex items-center justify-between border-b border-surface-variant/50">
+        <div class="p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border-b border-surface-variant/50">
           <div class="flex items-center gap-space-sm">
             <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
               <span class="material-symbols-outlined text-lg">receipt_long</span>
             </div>
             <div>
               <h2 class="font-headline-md text-headline-md text-primary font-bold">Đơn Hàng Chờ Xác Nhận Gần Đây</h2>
-              <span class="font-body-sm text-body-sm text-on-surface-variant">5 đơn đặt tác phẩm thủ công cần rà soát đóng kiện</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">{{ stats.pendingOrdersCount || (stats.recentOrders || []).length }} đơn đặt tác phẩm thủ công cần rà soát đóng kiện</span>
             </div>
           </div>
-          <span class="font-label-sm text-label-sm text-primary flex items-center gap-1 font-semibold">
-            <span>Hiển thị {{ (stats.recentOrders || []).length }} đơn mới</span>
-            <span class="material-symbols-outlined text-sm">bolt</span>
-          </span>
+          <div class="flex items-center gap-2">
+            <button (click)="loadDashboardData()" [disabled]="isLoading" title="Tải lại đơn hàng mới nhất" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-surface-variant/60 hover:bg-surface-container text-primary text-xs font-semibold cursor-pointer transition-colors">
+              <span class="material-symbols-outlined text-base" [ngClass]="{ 'animate-spin': isLoading }">sync</span>
+              <span>Làm mới</span>
+            </button>
+            <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-[#000f22] transition-all cursor-pointer shadow-xs">
+              <span>Đến Quản lý đơn hàng</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+          </div>
         </div>
 
         <div class="w-full overflow-x-auto">
@@ -171,11 +177,25 @@
                 <th class="py-3 px-space-md text-center font-semibold w-40">Thời gian</th>
                 <th class="py-3 px-space-md text-right font-semibold w-36">Tổng tiền</th>
                 <th class="py-3 px-space-md text-center font-semibold w-36">Trạng thái</th>
+                <th class="py-3 px-space-md text-center font-semibold w-28">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-surface-variant/60 font-body-md text-body-md text-on-surface">
-              <tr *ngFor="let ord of stats.recentOrders" class="hover:bg-surface-container-low/50 transition-colors">
-                <td class="py-3 px-space-md font-bold text-primary font-label-md">{{ ord.orderCode }}</td>
+              <tr *ngIf="!stats.recentOrders || stats.recentOrders.length === 0">
+                <td colspan="6" class="py-8 text-center text-on-surface-variant text-sm">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-3xl text-outline">inbox</span>
+                    <span>Hiện chưa có đơn hàng nào chờ xác nhận</span>
+                    <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="text-xs text-secondary font-semibold hover:underline mt-1">Đến danh sách quản lý đơn hàng</a>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let ord of stats.recentOrders" class="hover:bg-surface-container-low/50 transition-colors group">
+                <td class="py-3 px-space-md font-bold text-primary font-label-md">
+                  <a [routerLink]="ord._id ? ['/orders', ord._id] : ['/orders/list']" [queryParams]="ord._id ? null : { status: 'pending' }" class="hover:text-secondary hover:underline flex items-center gap-1">
+                    <span>{{ ord.orderCode }}</span>
+                  </a>
+                </td>
                 <td class="py-3 px-space-md">
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
@@ -195,9 +215,24 @@
                     {{ ord.status }}
                   </span>
                 </td>
+                <td class="py-3 px-space-md text-center">
+                  <a [routerLink]="ord._id ? ['/orders', ord._id] : ['/orders/list']" [queryParams]="ord._id ? null : { status: 'pending' }" class="px-2.5 py-1 rounded bg-surface-container hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                    <span>Chi tiết</span>
+                    <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Footer dẫn đến Quản lý đơn hàng -->
+        <div class="p-space-sm bg-surface-container-low/40 border-t border-surface-variant/40 flex items-center justify-between text-xs text-on-surface-variant px-space-md">
+          <span>Có <strong class="text-primary font-bold">{{ stats.pendingOrdersCount || (stats.recentOrders || []).length }}</strong> đơn hàng cần xử lý xác nhận</span>
+          <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="text-secondary font-semibold hover:underline flex items-center gap-1">
+            <span>Mở trong Quản lý đơn hàng</span>
+            <span class="material-symbols-outlined text-sm">east</span>
+          </a>
         </div>
       </div>
     </div>

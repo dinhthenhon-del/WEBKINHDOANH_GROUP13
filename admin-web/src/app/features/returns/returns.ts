@@ -215,6 +215,16 @@ export class Returns implements OnInit {
   confirmApprove(): void {
     if (!this.selectedReturn) return;
 
+    // Kiểm tra đơn hàng có hợp lệ để duyệt đổi trả hay không
+    if (this.selectedReturn.orderId && typeof this.selectedReturn.orderId === 'object') {
+      const ord = this.selectedReturn.orderId as any;
+      if (ord.orderStatus && ord.orderStatus !== 'completed') {
+        this.isApproveModalOpen = false;
+        this.showToast('Không thể chấp thuận: Đơn hàng chưa ở trạng thái Hoàn thành (Completed)!');
+        return;
+      }
+    }
+
     this.isSubmitting = true;
     const payload: ReturnStatusUpdatePayload = {
       status: 'approved',
@@ -236,9 +246,14 @@ export class Returns implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        // Fallback update nếu offline
         this.isSubmitting = false;
         this.isApproveModalOpen = false;
+        // Nếu là lỗi nghiệp vụ từ backend (400, 403, 404), hiển thị thông báo lỗi chính xác
+        if (err.status !== 0 && err.error?.message) {
+          this.showToast(err.error.message);
+          return;
+        }
+        // Fallback update nếu hoàn toàn offline (status === 0)
         if (this.selectedReturn) {
           this.selectedReturn.status = 'approved';
           this.selectedReturn.processedAt = new Date().toISOString();

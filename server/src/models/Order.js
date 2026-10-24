@@ -9,7 +9,11 @@ const orderItemSchema = new mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: true,
+      required: false,
+    },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
     },
     productName: {
       type: String,
@@ -26,6 +30,10 @@ const orderItemSchema = new mongoose.Schema(
       min: 1,
     },
     designSnapshot: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    customization: {
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
@@ -55,7 +63,11 @@ const orderSchema = new mongoose.Schema(
     accountId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Account',
-      required: [true, 'Mã tài khoản đặt hàng là bắt buộc'],
+      required: false,
+    },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
     },
     items: {
       type: [orderItemSchema],
@@ -88,20 +100,76 @@ const orderSchema = new mongoose.Schema(
       type: shippingAddressSchema,
       required: true,
     },
+    note: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    paymentMethod: {
+      type: String,
+      default: 'COD',
+      trim: true,
+    },
     paymentStatus: {
       type: String,
       required: true,
       enum: {
-        values: ['pending', 'paid', 'failed', 'refunded'],
+        values: ['pending', 'awaiting_verification', 'paid', 'failed', 'refunded', 'partially_refunded'],
         message: 'Trạng thái thanh toán không hợp lệ',
       },
       default: 'pending',
+    },
+    paymentConfirmedAt: {
+      type: Date,
+      default: null,
+    },
+    paymentConfirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
+      default: null,
+    },
+    paymentNote: {
+      type: String,
+      default: '',
+    },
+    paymentHistory: [
+      {
+        fromStatus: { type: String },
+        toStatus: { type: String, required: true },
+        changedBy: { type: String, default: 'Hệ thống' },
+        note: { type: String, default: '' },
+        changedAt: { type: Date, default: Date.now },
+      },
+    ],
+    returnStatus: {
+      type: String,
+      required: true,
+      enum: {
+        values: ['none', 'requested', 'approved', 'rejected'],
+        message: 'Trạng thái đổi trả không hợp lệ',
+      },
+      default: 'none',
+    },
+    refundedAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
+    },
+    returnRequestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ReturnRequest',
+      default: null,
     },
     orderStatus: {
       type: String,
       required: true,
       enum: {
-        values: ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'],
+        values: ['pending', 'confirmed', 'processing', 'shipping', 'completed', 'cancelled'],
         message: 'Trạng thái đơn hàng không hợp lệ',
       },
       default: 'pending',
@@ -110,6 +178,18 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    cancelReason: {
+      type: String,
+      default: null,
+    },
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        updatedAt: { type: Date, default: Date.now },
+        note: { type: String, default: '' },
+        changedBy: { type: String, default: 'Admin' },
+      },
+    ],
   },
   {
     timestamps: true,

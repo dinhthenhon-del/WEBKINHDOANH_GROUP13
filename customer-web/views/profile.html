@@ -118,13 +118,21 @@
     <span id="profile-order-count" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#c85a32] text-white">03</span>
   </button>
 
-  <button id="tab-btn-wishlist" onclick="switchProfileTab('wishlist')" class="w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all cursor-pointer">
+  <a class="flex items-center justify-between p-4 text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer" href="javascript:void(0)" onclick="if(window.showToast) showToast('toast-warning', 'Chức năng Quản lý địa chỉ', 'Đang kết nối kho dữ liệu tư gia an toàn.')">
     <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-[20px] text-secondary">favorite</span>
-      <span class="font-body-md text-sm tracking-wide">Sản phẩm yêu thích</span>
+      <span class="material-symbols-outlined text-[20px]">pin_drop</span>
+      <span class="font-body-md text-sm tracking-wide">Địa chỉ nhận gốm sứ</span>
     </div>
-    <span id="profile-wishlist-count" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-surface-container text-on-surface-variant">08</span>
-  </button>
+    <span class="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
+  </a>
+
+  <a class="flex items-center justify-between p-4 text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer" href="javascript:void(0)" onclick="if(window.showToast) showToast('toast-warning', 'Bảo mật gia tộc', 'Tính năng xác thực 2 lớp qua chìa khóa số triện ký đang bật.')">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[20px]">encrypted</span>
+      <span class="font-body-md text-sm tracking-wide">Bảo mật &amp; Mật khẩu</span>
+    </div>
+    <span class="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
+  </a>
 
   <button onclick="handleLogout()" class="w-full flex items-center justify-between p-4 bg-transparent text-on-surface hover:text-[#ba1a1a] hover:bg-red-50/40 font-semibold transition-all border-t border-biscuit-sand/40 cursor-pointer group">
     <div class="flex items-center gap-3">
@@ -207,315 +215,13 @@
 </div>
 </div>
 </div>
-<!-- ==========================================
-             ORDER 1: PENDING (Đang xếp lò & Chờ xử lý)
-             ========================================== -->
-<article class="order-card order-pending bg-porcelain-white rounded-xl border border-biscuit-sand shadow-sm hover:shadow-md transition-shadow overflow-hidden" data-order-id="MG-2025-9921" data-status="pending">
-<!-- Order Card Header -->
-<div class="p-5 sm:p-6 bg-surface-container-low/60 border-b border-biscuit-sand flex flex-wrap items-center justify-between gap-4">
-<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Mã đơn giám tuyển</span>
-<p class="font-title-md text-title-md text-primary font-bold cursor-pointer hover:text-secondary flex items-center gap-1" onclick="dieuHuong('order-detail')" title="Bấm xem chi tiết đơn hàng">#MG-2025-9921 <span class="material-symbols-outlined text-[15px]">open_in_new</span></p>
-</div>
-
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Ngày đặt phôi</span>
-<p class="font-body-sm text-body-sm text-on-surface-variant font-medium">24/10/2025</p>
-</div>
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Thời gian dự kiến</span>
-<p class="font-body-sm text-body-sm text-primary font-medium flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px] text-on-tertiary-container">schedule</span>
-                  3 – 5 ngày (Nung lò củi)
-                </p>
-</div>
-</div>
-<!-- Pending Badge (Amber Sandstone) -->
-<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/80 font-label-sm text-label-sm font-semibold shadow-xs">
-<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              Chờ nghệ nhân duyệt phôi &amp; Xếp lò củi (Pending)
-            </div>
-</div>
-<!-- Product Item: Custom 2D Teapot -->
-<div class="p-5 sm:p-6 border-b border-biscuit-sand/70">
-<div class="flex flex-col sm:flex-row items-start gap-5">
-<!-- Provided Image Asset -->
-<a class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand group" href="#">
-<img alt="Ấm Trà Hoàng Cung Sứ Trắng - Cá Nhân Hóa 2D" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNa51nbtSyHGdktTzJ44fnoOBzOYrTNTrv5mR7GbKpvPfV7qZAXftJeNqllPqn09gl9WcfZ4BgYuVqqqCsjdDaJSLoSdYHnxbEgM3HCxle2RqC6pansqJaZSbuIu_vZSgyFXVXMdEC9e_Y0ClkS6g4cd9nyjkBTWG3dVVdAREDxt606G61xjyPTuFY236HfIFyS43hoP0E9RFDSgzt3-9VWe6mY6nNJXcKTYDY91clgyZell_Dwq05rIMdPpHfHmEBCA">
-<div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors flex items-center justify-center">
-<span class="material-symbols-outlined text-on-primary opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">visibility</span>
-</div>
-</a>
-<div class="flex-1 min-w-0 flex flex-col justify-between h-full">
-<div>
-<div class="flex items-center gap-2 mb-1">
-<span class="px-2 py-0.5 rounded text-[10px] font-label-sm uppercase font-bold bg-secondary/10 text-secondary border border-secondary/20">
-                      Bản vẽ thiết kế 2D độc bản
-                    </span>
-<span class="text-outline text-label-sm">Nung cốt sứ trắng 1.300°C</span>
-</div>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-semibold hover:text-secondary transition-colors cursor-pointer">
-<a href="#" class="">Ấm Trà Hoàng Cung Sứ Trắng - Cá Nhân Hóa 2D</a>
-</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
-                    Đặc tả chạm khắc: Khắc laser chìm chìm 'Tri Ân Doanh Nhân 2025' kèm hoa văn Sen Triều Nguyễn men lam truyền thống trên quai cầm và vòi ấm.
-                  </p>
-</div>
-<div class="flex items-center justify-between mt-4 pt-3 border-t border-biscuit-sand/50">
-<span class="font-body-sm text-body-sm text-outline">Số lượng: <strong class="text-primary font-semibold">01 tác phẩm</strong></span>
-<div class="text-right">
-<span class="font-label-sm text-label-sm text-outline uppercase block">Đơn giá định ngạch</span>
-<span class="font-title-lg text-title-lg text-primary font-serif font-bold">4.500.000₫</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Order Summary & Interactive Actions -->
-<div class="p-5 sm:p-6 bg-surface-container-low/30 flex flex-col md:flex-row items-center justify-between gap-4">
-<div class="flex items-center gap-3 w-full md:w-auto">
-<div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shrink-0">
-<span class="material-symbols-outlined text-[20px]">qr_code_2</span>
-</div>
-<div class="flex flex-col">
-<span class="font-label-sm text-label-sm text-outline">Trạng thái thanh toán</span>
-<span class="font-body-sm text-body-sm text-emerald-800 font-semibold">Đã thanh toán VietQR Doanh Nghiệp (Làng Gốm Thanh Xuân)</span>
-</div>
-</div>
-<div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-<!-- Cancel Action (Pending allowed) -->
-<button class="px-4 py-2.5 rounded bg-porcelain-white text-secondary hover:bg-secondary hover:text-on-secondary border border-secondary/30 font-title-md text-body-sm font-medium transition-all shadow-xs flex items-center gap-1.5" onclick="cancelPendingOrder('MG-2025-9921')">
-<span class="material-symbols-outlined text-[18px]">cancel</span>
-<span class="">Hủy đơn</span>
-</button>
-<!-- Curatorial Preview -->
-
-<button class="px-4 py-2.5 rounded bg-primary-container text-on-primary hover:bg-deep-indigo-night transition-all font-title-md text-body-sm font-medium flex items-center gap-1.5 shadow-sm" onclick="showToast('toast-success', 'Đã kết nối Xưởng trưởng', 'Xưởng trưởng lò củi sẽ gọi lại cho quý khách trong 15 phút.')">
-<span class="material-symbols-outlined text-[18px]">support_agent</span>
-<span class="">Liên hệ Xưởng trưởng</span>
-</button>
-</div>
-</div>
-</article>
-<!-- ==========================================
-             ORDER 2: COMPLETED (Đã bàn giao tận gia)
-             ========================================== -->
-<article class="order-card order-completed bg-porcelain-white rounded-xl border border-biscuit-sand shadow-sm hover:shadow-md transition-shadow overflow-hidden" data-order-id="MG-2025-8899" data-status="completed">
-<!-- Order Card Header -->
-<div class="p-5 sm:p-6 bg-surface-container-low/60 border-b border-biscuit-sand flex flex-wrap items-center justify-between gap-4">
-<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Mã đơn giám tuyển</span>
-<p class="font-title-md text-title-md text-primary font-bold cursor-pointer hover:text-secondary flex items-center gap-1" onclick="dieuHuong('order-detail')" title="Bấm xem chi tiết đơn hàng">#MG-2025-8899 <span class="material-symbols-outlined text-[15px]">open_in_new</span></p>
-</div>
-
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Ngày bàn giao tận gia</span>
-<p class="font-body-sm text-body-sm text-on-surface-variant font-medium">18/10/2025</p>
-</div>
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Quy chuẩn bàn giao</span>
-<p class="font-body-sm text-body-sm text-primary font-medium flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px] text-emerald-700">lock</span>
-                  Hòm gỗ khảm triện &amp; Thư bảo chứng
-                </p>
-</div>
-</div>
-<!-- Completed Badge (Emerald Ceramic) -->
-<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 font-label-sm text-label-sm font-semibold shadow-xs">
-<span class="material-symbols-outlined text-[16px] text-emerald-700">check_circle</span>
-              Hoàn tất &amp; Đã nhận hàng (Completed)
-            </div>
-</div>
-<!-- Product Item 1: Cá Chép Vượt Vũ Môn -->
-<div class="p-5 sm:p-6 border-b border-biscuit-sand/70">
-<div class="flex flex-col sm:flex-row items-start gap-5">
-<a class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand group" href="#">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="High-end Vietnamese Bat Trang ceramic vase featuring dark cobalt blue underglaze depicting a carp transforming into a dragon leaping over dragon gates, pristine white porcelain surface with delicate craquelure glaze lines, classical royal museum spotlight lighting, soft warm shadow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkfbQHWJcsVJLmZ79QWTiUBpW1AsRoVBm-niLfR4tTBU75MyS59dBrxxOg0lOm3enz5UxIZ1pMrEQJxuQd43DyoMYhmRoc_ZBnm9LZuMPqeSv-8LEQBrqyPUGcob4loEfD5jYp8NzYeC0NcSwLUAfF7s6Y9IA2RjGQPCyrzOJY_hlTrqsJ1Nu3j_EiSsOGteXYAskFMrgyF_2aN3SwRpQrNSzaQNs3YpDxs-uuRB0wDx45-Ps6dO2u">
-<div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors flex items-center justify-center">
-<span class="material-symbols-outlined text-on-primary opacity-0 group-hover:opacity-100 transition-opacity">visibility</span>
-</div>
-</a>
-<div class="flex-1 min-w-0 flex flex-col justify-between h-full">
-<div>
-<div class="flex items-center gap-2 mb-1">
-<span class="px-2 py-0.5 rounded text-[10px] font-label-sm uppercase font-bold bg-primary-container text-tertiary-fixed-dim">
-                      Bản phục dựng cổ pháp triều Lê
-                    </span>
-<span class="text-outline text-label-sm">Cốt nung 1.380°C</span>
-</div>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-semibold hover:text-secondary transition-colors cursor-pointer">
-<a href="#" class="">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn</a>
-</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
-                    Kích thước: Chiều cao 42cm, đường kính thân 28cm. Cốt men ngọc lam sẫm phục dựng từ đồ án triều đình thế kỷ 18, nét bút phóng khoáng phủ triện nổi chân bình.
-                  </p>
-</div>
-<div class="flex items-center justify-between mt-4 pt-3 border-t border-biscuit-sand/50">
-<span class="font-body-sm text-body-sm text-outline">Số lượng: <strong class="text-primary font-semibold">01 bình độc bản</strong></span>
-<div class="text-right">
-<span class="font-label-sm text-label-sm text-outline uppercase block">Giá tác phẩm</span>
-<span class="font-title-lg text-title-lg text-primary font-serif font-bold">6.800.000₫</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Product Item 2: Bộ Trà Tử Sa Men Ngọc Hoàng Gia -->
-<div class="p-5 sm:p-6 border-b border-biscuit-sand/70">
-<div class="flex flex-col sm:flex-row items-start gap-5">
-<a class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand group" href="#">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Exquisite Vietnamese purple clay tea set with imperial celadon mist accents, presented on handcrafted dark ebony wood stand, luxurious silk brocade box lined with gold satin in soft gallery lighting, artisan heritage aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQMTwZ3Xb3nu1Sk7JCfpMyk1JUArnVWNSIiLp5r8mmYEHlC0N90gs-I1f8nK-69qH1aEUaN0xEwEu1-qcaRgMjnjywZUR7wuk_-ANboueMOIpbTp9aGelU7rtrRgyKaLdzl0_5_TVmUA7ycUHB1f6H_v4jB5NIzaxnXVvjEjYR20GM8_TlzRfswqTytIb_miV7YtDPJhpnvgRGzQ4k28Nt7XjlRrjZK5WvPlkyUfn4qrwYXUsKM28n">
-<div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors flex items-center justify-center">
-<span class="material-symbols-outlined text-on-primary opacity-0 group-hover:opacity-100 transition-opacity">visibility</span>
-</div>
-</a>
-<div class="flex-1 min-w-0 flex flex-col justify-between h-full">
-<div>
-<div class="flex items-center gap-2 mb-1">
-<span class="px-2 py-0.5 rounded text-[10px] font-label-sm uppercase font-bold bg-amber-100 text-amber-900 border border-amber-200">
-                      Trà Cụ Hoàng Cung
-                    </span>
-<span class="text-outline text-label-sm">Đất phù sa sông Hồng nung yếm khí</span>
-</div>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-semibold hover:text-secondary transition-colors cursor-pointer">
-<a href="#" class="">Bộ Trà Tử Sa Men Ngọc Hoàng Gia</a>
-</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
-                    Gồm 01 ấm tử sa dung tích 240ml, 06 chén quân lòng phủ men ngọc tráng lam, kèm 01 tống chuyên trà và khay gỗ hương gấm thêu rồng.
-                  </p>
-</div>
-<div class="flex items-center justify-between mt-4 pt-3 border-t border-biscuit-sand/50">
-<span class="font-body-sm text-body-sm text-outline">Số lượng: <strong class="text-primary font-semibold">01 bộ hoàn chỉnh</strong></span>
-<div class="text-right">
-<span class="font-label-sm text-label-sm text-outline uppercase block">Giá tác phẩm</span>
-<span class="font-title-lg text-title-lg text-primary font-serif font-bold">4.250.000₫</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Total Calculation & Curator Actions for Completed -->
-<div class="p-5 sm:p-6 bg-surface-container-low/40 flex flex-col gap-4">
-<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-biscuit-sand">
-<div class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-on-tertiary-container text-[20px]">verified_user</span>
-<span class="">Đã ký nhận biên bản bảo tồn cổ vật cùng giám tuyển viên tại tư gia.</span>
-</div>
-<div class="text-left sm:text-right">
-<span class="font-label-sm text-label-sm text-outline uppercase block">Tổng giá trị đơn hàng</span>
-<span class="font-headline-sm text-title-lg sm:text-headline-sm text-primary font-serif font-bold">11.050.000₫</span>
-</div>
-</div>
-<!-- Action Buttons for Completed Order -->
-<div class="flex flex-wrap items-center justify-between gap-3">
-<!-- Warning Trigger Button: Trying to cancel completed order -->
-<button class="px-3 py-2 rounded text-outline hover:text-secondary hover:bg-secondary/10 transition-colors font-body-sm text-[13px] flex items-center gap-1" onclick="triggerCompletedCancelError()">
-<span class="material-symbols-outlined text-[16px]">help_outline</span>
-<span class="">Hủy đơn này?</span>
-</button>
-<div class="flex flex-wrap items-center gap-2.5 ml-auto">
-<!-- PDF Certificate Download -->
-
-<button class="px-3.5 py-2.5 rounded bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm font-medium flex items-center gap-1.5 cursor-pointer" onclick="dieuHuong('order-detail')">
-<span class="material-symbols-outlined text-[18px]">visibility</span>
-<span class="">Chi tiết đơn</span>
-</button>
-<!-- Review Works Button -->
-<button class="px-3.5 py-2.5 rounded bg-surface-container-lowest text-primary border border-biscuit-sand hover:border-primary transition-all font-title-md text-body-sm font-medium flex items-center gap-1.5 shadow-xs cursor-pointer" onclick="openReviewModal('Bình Gốm Men Lam &amp; Bộ Trà Tử Sa')">
-<span class="material-symbols-outlined text-amber-500 text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
-<span class="">Đánh giá tác phẩm</span>
-</button>
-<!-- Return / Exchange Request Button (Exclusively on Completed) -->
-<button class="px-4 py-2.5 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer" onclick="openReturnModal('MG-2025-8899')">
-<span class="material-symbols-outlined text-[18px]">published_with_changes</span>
-<span class="">Yêu cầu đổi trả</span>
-</button>
-</div>
-</div>
-
-</div>
-</article>
-<!-- ==========================================
-             ORDER 3: CANCELLED (Đã hủy đơn)
-             ========================================== -->
-<article class="order-card order-cancelled bg-porcelain-white rounded-xl border border-biscuit-sand shadow-sm hover:shadow-md transition-shadow overflow-hidden opacity-95" data-order-id="MG-2025-7734" data-status="cancelled">
-<!-- Order Card Header -->
-<div class="p-5 sm:p-6 bg-surface-container-low/40 border-b border-biscuit-sand flex flex-wrap items-center justify-between gap-4">
-<div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Mã đơn giám tuyển</span>
-<p class="font-title-md text-title-md text-on-surface-variant font-bold line-through">#MG-2025-7734</p>
-</div>
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Ngày hủy lưu ký</span>
-<p class="font-body-sm text-body-sm text-on-surface-variant font-medium">10/09/2025</p>
-</div>
-<span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
-<div>
-<span class="font-label-sm text-label-sm text-outline uppercase">Lý do hủy đơn</span>
-<p class="font-body-sm text-body-sm text-secondary font-medium">Đổi sang phôi ấm trà cá nhân hóa 2D</p>
-</div>
-</div>
-<!-- Cancelled Badge (Muted brick gray) -->
-<div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant/60 font-label-sm text-label-sm font-semibold">
-<span class="w-2 h-2 rounded-full bg-outline"></span>
-              Đã hủy đơn (Cancelled)
-            </div>
-</div>
-<!-- Product Item: Ly Dưỡng Sinh Hoàng Cung -->
-<div class="p-5 sm:p-6 border-b border-biscuit-sand/70">
-<div class="flex flex-col sm:flex-row items-start gap-5">
-<a class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand grayscale hover:grayscale-0 transition-all duration-300" href="#">
-<img class="w-full h-full object-cover" data-alt="Pair of minimalist royal porcelain wellness cups in glossy ivory bone glaze, monogram crest engraving on front, displayed on natural raw stone background in quiet museum lighting, fine Vietnamese ceramic craft." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXpe10ZjKA4wbvrHryzshN_gx1eLpcytDbvez___76vmbIyrjIiGIib2AwnLs4HPKeTeKR88p0q0yQKFXvOaWoqjKP7Bcn24ziWfvDrvY8xe3xbcbsj-IWgpLaoZO8D1f8T1nOzJy4-kzuj0bBEi-CKnT5wxUWVf5bHvB3657i-Ga2ur3bekakuJ_b21SDF21aCYJlzf5BAUKA1Dh9WO3ns2ng0zynOA3-SVVldrxhIDRXwmDJ9UIP">
-</a>
-<div class="flex-1 min-w-0 flex flex-col justify-between h-full">
-<div>
-<div class="flex items-center gap-2 mb-1">
-<span class="px-2 py-0.5 rounded text-[10px] font-label-sm uppercase font-bold bg-surface-container-high text-on-surface-variant">
-                      Dưỡng Sinh Hoàng Cung
-                    </span>
-<span class="text-outline text-label-sm">Đã giải phóng kho phôi</span>
-</div>
-<h3 class="font-headline-sm text-title-lg text-primary font-serif font-semibold hover:text-secondary transition-colors cursor-pointer">
-<a href="#" class="">Cặp Ly Dưỡng Sinh Hoàng Cung Men Trắng</a>
-</h3>
-<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
-                    Khắc tên Monogram gia tộc "Nguyễn Hoàng" theo lối chữ triện cổ. Dung tích 350ml/ly, tráng men nano chống bám ố chè.
-                  </p>
-</div>
-<div class="flex items-center justify-between mt-4 pt-3 border-t border-biscuit-sand/50">
-<span class="font-body-sm text-body-sm text-outline">Số lượng: <strong class="text-primary font-semibold">02 ly</strong></span>
-<div class="text-right">
-<span class="font-label-sm text-label-sm text-outline uppercase block">Giá trị đã hoàn trả</span>
-<span class="font-title-lg text-title-lg text-on-surface-variant font-serif font-bold">1.000.000₫</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Actions on Cancelled Order -->
-<div class="p-5 sm:p-6 bg-surface-container-low/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-<div class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[18px] text-outline">info</span>
-<span class="">Đơn hàng đã đóng hoàn tiền vào thẻ ngày 10/09/2025 lúc 14:20.</span>
-</div>
-<div class="flex items-center gap-3">
-<!-- Disabled Cancel Attempt to show warning -->
-<button class="px-3 py-2 rounded bg-surface-container-low text-outline cursor-not-allowed font-body-sm text-[13px] border border-biscuit-sand" onclick="triggerCancelledOrderClick()" title="Đơn đã đóng">
-                Đơn đã đóng
-              </button>
-<!-- Reorder Action -->
-
-</div>
-</div>
-</article>
+        <!-- Dynamic Orders List Container (Rendered by OrdersModule) -->
+        <div id="profile-orders-list-container" class="flex flex-col gap-5">
+          <div id="profile-orders-loading" class="p-12 text-center flex flex-col items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-3xl animate-spin text-secondary">progress_activity</span>
+            <p class="font-body-sm text-sm text-on-surface-variant font-medium">Đang tải hồ sơ đơn hàng từ xưởng lò Bát Tràng...</p>
+          </div>
+        </div>
 <!-- No Orders Found Empty State (Hidden by default) -->
 <div class="hidden bg-porcelain-white p-12 rounded-xl border border-biscuit-sand text-center flex flex-col items-center justify-center" id="no-orders-state">
 <div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center text-outline mb-4">
@@ -737,9 +443,17 @@
     }
 
     // Modal Control: Return
-    function openReturnModal(orderId) {
+    function openReturnModal(orderCode, orderId, items) {
+      window.activeReturnOrderId = orderId || orderCode;
+      const select = document.getElementById('return-product-select');
+      if (select && Array.isArray(items) && items.length > 0) {
+        select.innerHTML = items.map(it => {
+          const name = it.productName || (it.customization && it.customization.designName) || 'Tác phẩm';
+          return `<option value="${name}">${name} (${Number(it.unitPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
+        }).join('') + '<option value="Toàn bộ đơn hàng">Đổi trả toàn bộ đơn hàng</option>';
+      }
       const modal = document.getElementById('modal-return');
-      document.getElementById('modal-return-order-subtitle').innerText = 'Đơn hàng #' + orderId;
+      document.getElementById('modal-return-order-subtitle').innerText = 'Đơn hàng #' + (orderCode || orderId);
       modal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
     }
@@ -751,7 +465,9 @@
     }
 
     // Modal Control: Review
-    function openReviewModal(targetName) {
+    function openReviewModal(targetName, productId, orderId) {
+      window.activeReviewProductId = productId;
+      window.activeReviewOrderId = orderId;
       const modal = document.getElementById('modal-review');
       document.getElementById('modal-review-target').innerText = targetName;
       modal.classList.remove('hidden');
@@ -852,7 +568,7 @@
 
       if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
         ApiService.createReturnRequest({
-          orderId: '670000000000000000000001',
+          orderId: window.activeReturnOrderId || '670000000000000000000001',
           accountId: currentUser._id,
           type: 'return',
           reason: reasonVal + (descVal ? ': ' + descVal : '')
@@ -883,7 +599,7 @@
       if (typeof ApiService !== 'undefined' && ApiService.createReview && typeof currentUser !== 'undefined' && currentUser) {
         ApiService.createReview({
           accountId: currentUser._id,
-          productId: '670000000000000000000001',
+          productId: window.activeReviewProductId || '670000000000000000000001',
           rating: currentRating,
           comment: commentVal
         }, function(err, res) {
@@ -995,6 +711,9 @@
     window.handleReviewPhotoSelect = handleReviewPhotoSelect;
     window.setOrderFilter = setOrderFilter;
     window.filterOrdersBySearch = filterOrdersBySearch;
+    if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+      window.OrdersModule.initProfileOrders();
+    }
   </script>
 
 </div>

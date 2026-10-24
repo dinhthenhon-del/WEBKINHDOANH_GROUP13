@@ -16,5 +16,15 @@ export const routes: Routes = [
   { path: 'products', component: ProductList, canActivate: [authGuard] },
   { path: 'products/new', component: ProductForm, canActivate: [authGuard] },
   { path: 'products/edit/:id', component: ProductForm, canActivate: [authGuard] },
+  {
+    path: 'orders',
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'list', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/orders/order-dashboard/order-dashboard').then((m) => m.OrderDashboard) },
+      { path: 'list', loadComponent: () => import('./features/orders/order-list/order-list').then((m) => m.OrderList) },
+      { path: ':id', loadComponent: () => import('./features/orders/order-detail/order-detail').then((m) => m.OrderDetail) },
+    ],
+  },
   { path: '**', redirectTo: 'dashboard' }
 ];

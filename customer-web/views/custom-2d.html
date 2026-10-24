@@ -478,7 +478,7 @@
           <!-- GIÁ & NÚT THÊM VÀO GIỎ -->
           <div class="flex flex-col gap-4 pt-3 border-t border-stone-200">
             <div class="flex items-baseline justify-between">
-              <span class="text-sm font-medium text-stone-600">Đơn giá tác chế:</span>
+              <span class="text-sm font-medium text-stone-600">Giá thanh toán chế tác:</span>
               <span id="displayPriceText" class="font-['Playfair_Display',serif] text-2xl font-bold text-[#0a2540]">
                 1.200.000₫
               </span>
@@ -507,7 +507,7 @@
     'dia-su': {
       name: 'Đĩa Sứ Nghệ Thuật (Kèm Giá Gỗ)',
       image: 'assets/2d-blanks/dia-su.png',
-      productId: '6ad58e8c8f5c132fa2cc4969',
+      productId: '6ad1b189edab43aae328dcbd',
       price: 1200000,
       defaultX: 50,
       defaultY: 41,
@@ -518,7 +518,7 @@
     'mai-binh': {
       name: 'Mai Bình Dáng Cao',
       image: 'assets/2d-blanks/mai-binh.png',
-      productId: '6ad58e8d8f5c132fa2cc496e',
+      productId: '6ad1b189edab43aae328dcba',
       price: 2850000,
       defaultX: 50,
       defaultY: 52,
@@ -529,7 +529,7 @@
     'binh-tron': {
       name: 'Bình Hoa Tròn Cổ Sóng',
       image: 'assets/2d-blanks/binh-tron.png',
-      productId: '6ad4bb29635d6bb5b84814be',
+      productId: '6acca1f9cc7918127a7d4be3',
       price: 1850000,
       defaultX: 50,
       defaultY: 53,
@@ -540,7 +540,7 @@
     'am-tra': {
       name: 'Ấm Trà Sứ Trắng',
       image: 'assets/2d-blanks/am-tra.png',
-      productId: '6ad58e8d8f5c132fa2cc496d',
+      productId: '6acca1f9cc7918127a7d4be4',
       price: 1450000,
       defaultX: 47,
       defaultY: 56,
@@ -551,7 +551,7 @@
     'coc-tra': {
       name: 'Tách Trà Có Nắp Hoàng Gia',
       image: 'assets/2d-blanks/coc-tra.png',
-      productId: '6ad4b0e6431f363f7f908bcc',
+      productId: '6acca1f9cc7918127a7d4be6',
       price: 380000,
       defaultX: 48,
       defaultY: 56,
@@ -925,11 +925,11 @@
   };
 
   // 7. HOÀN TẤT & THÊM VÀO GIỎ HÀNG THỰC TẾ
-  window.handleAddToCartSubmit = function() {
+  window.handleAddToCartSubmit = async function() {
     const designNameInput = document.getElementById('designNameInput');
     const designName = designNameInput ? designNameInput.value.trim() : '';
     if (!designName) {
-      alert('Vui lòng nhập tên thiết kế.');
+      alert('Vui lòng nhập tên thiết kế tác phẩm.');
       if (designNameInput) designNameInput.focus();
       return;
     }
@@ -940,6 +940,15 @@
     }
 
     // Tự động kiểm tra đăng nhập, nếu chưa thì kích hoạt tài khoản mẫu thượng khách
+    if (!window.currentUser || !window.currentUser._id) {
+      try {
+        const saved = localStorage.getItem('craftory_user');
+        if (saved) {
+          window.currentUser = JSON.parse(saved);
+        }
+      } catch (e) {}
+    }
+
     if (!window.currentUser || !window.currentUser._id) {
       window.currentUser = {
         _id: '6ad19943d964a3cf2fc5a656',
@@ -954,58 +963,78 @@
     }
 
     const shapeData = window.BLANK_SHAPES[currentStudioState.blankId] || {};
-    let targetProductId = shapeData.productId || '6ad58e8d8f5c132fa2cc496e';
+    let targetProductId = shapeData.productId || '6ad1b189edab43aae328dcbd';
 
-    function submitCart(prodId) {
-      // 1. Lưu snapshot tác phẩm tùy biến 2D để trang giỏ hàng hiển thị đúng ảnh và thông tin chi tiết
-      try {
-        const customMap = JSON.parse(localStorage.getItem('craftory_custom_designs') || '{}');
-        customMap[prodId] = {
-          designName: designName,
-          blankId: currentStudioState.blankId,
-          blankName: currentStudioState.blankName,
-          blankImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
-          motifName: currentStudioState.motifName,
-          motifImage: currentStudioState.motifImage,
-          engravingText: currentStudioState.engravingText,
-          price: currentStudioState.price,
-          updatedAt: Date.now()
-        };
-        localStorage.setItem('craftory_custom_designs', JSON.stringify(customMap));
-      } catch (e) {}
+    // Tạo đối tượng customization hoàn chỉnh cho 2D Studio
+    const customization = {
+      designName: designName,
+      blankId: currentStudioState.blankId,
+      blankName: currentStudioState.blankName,
+      blankImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
+      previewImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
+      glazeColor: currentStudioState.blankName || 'Men lam cổ truyền',
+      men: currentStudioState.blankName || 'Men lam cổ truyền',
+      pattern: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
+      hoaVan: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
+      motifName: currentStudioState.motifName,
+      motifImage: currentStudioState.motifImage,
+      motifScale: currentStudioState.motifScale,
+      motifRotate: currentStudioState.motifRotate,
+      engravingText: currentStudioState.engravingText || '',
+      chuKhac: currentStudioState.engravingText || '',
+      engravingColor: currentStudioState.engravingColor || '#0a2540',
+      price: currentStudioState.price || 1200000,
+      updatedAt: Date.now()
+    };
 
-      ApiService.addToCart(window.currentUser._id, prodId, 1, function(cartErr, cartRes) {
-        if (cartErr) {
-          // Nếu sản phẩm không khả dụng, tự động tìm sản phẩm đang có sẵn trong kho
-          if (cartErr.includes('không khả dụng') || cartErr.includes('chưa được xác minh')) {
-            ApiService.getProducts({}, function(pErr, pRes) {
-              const activeList = (pRes && (pRes.data || pRes.products || pRes)) || [];
-              const validProd = Array.isArray(activeList) && activeList.find(p => p.stock > 0);
-              if (validProd && validProd._id && validProd._id !== prodId) {
-                submitCart(validProd._id);
-                return;
-              }
-              alert('Lỗi thêm vào giỏ: ' + cartErr);
-            });
-            return;
-          }
-          alert('Lỗi thêm vào giỏ: ' + cartErr);
-        } else {
-          if (window.CartView && typeof window.CartView.refreshCount === 'function') {
-            window.CartView.refreshCount();
-          }
-          alert(`🎉 Chúc mừng! Tác phẩm "${designName}"\n• Phôi: ${currentStudioState.blankName}\n• Họa tiết: ${currentStudioState.motifName} (Tỉ lệ: ${Math.round(currentStudioState.motifScale*100)}%)\n• Chữ khắc: "${currentStudioState.engravingText}"\nĐã được thêm vào giỏ hàng thành công!`);
-          dieuHuong('cart');
-          setTimeout(function() {
-            if (window.CartView && typeof window.CartView.loadCart === 'function') {
-              window.CartView.loadCart();
-            }
-          }, 100);
-        }
-      });
+    // 1. Lưu snapshot vào localStorage để tương thích ngược
+    try {
+      const customMap = JSON.parse(localStorage.getItem('craftory_custom_designs') || '{}');
+      customMap[targetProductId] = customization;
+      localStorage.setItem('craftory_custom_designs', JSON.stringify(customMap));
+    } catch (e) {}
+
+    // 2. Thêm vào giỏ hàng qua window.CartModule chính thức của TV3
+    const btn = document.querySelector('button[onclick="handleAddToCartSubmit()"]');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">sync</span><span>Đang thêm vào tuyển tập...</span>';
     }
 
-    submitCart(targetProductId);
+    try {
+      if (window.CartModule && typeof window.CartModule.addToCart === 'function') {
+        const success = await window.CartModule.addToCart(targetProductId, 1, customization);
+        if (success) {
+          window.CartModule.openDrawer();
+        }
+      } else if (window.CartView && typeof window.CartView.addToCart === 'function') {
+        await window.CartView.addToCart(targetProductId, 1, customization);
+        if (window.CartModule) window.CartModule.openDrawer();
+      } else {
+        // Fallback ApiService
+        ApiService.addToCart(window.currentUser._id, targetProductId, 1, function(cartErr, cartRes) {
+          if (cartErr) {
+            alert('Lỗi thêm vào giỏ: ' + cartErr);
+          } else {
+            if (window.CartModule) {
+              window.CartModule.loadCart();
+              window.CartModule.openDrawer();
+            } else {
+              dieuHuong('cart');
+            }
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Lỗi thêm giỏ hàng từ 2D Studio:', err);
+      alert(err.message || 'Không thể thêm tác phẩm vào giỏ hàng lúc này');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
   };
 
   // Khởi tạo studio
