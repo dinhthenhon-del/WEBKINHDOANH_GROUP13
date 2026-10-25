@@ -151,11 +151,6 @@ function initNavbar() {
             <span class="material-symbols-outlined text-[22px]">search</span>
           </button>
 
-          <!-- Nút Danh sách yêu thích (Wishlist UC-C10) -->
-          <a aria-label="Bảo vật yêu thích" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors cursor-pointer" onclick="dieuHuong('wishlist')" title="Tác phẩm yêu thích">
-            <span class="material-symbols-outlined text-[22px]">favorite</span>
-          </a>
-
           <a aria-label="Giỏ hàng" class="relative w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer" onclick="if(window.CartModule) CartModule.openDrawer(); else requireAuthAction(() => dieuHuong('cart'));" title="Giỏ hàng">
             <span class="material-symbols-outlined text-[22px]">shopping_bag</span>
             <span id="navbar-cart-count" class="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-secondary text-on-secondary rounded-full flex items-center justify-center font-label-sm leading-none text-[10px]">0</span>
@@ -461,7 +456,7 @@ function ganSuKienLogin() {
 /**
  * Hàm hỗ trợ điền nhanh tài khoản mẫu để trải nghiệm
  */
-window.fillSampleAccount = function() {
+window.fillSampleAccount = function () {
   const idInput = document.getElementById('collectorUsername') || document.querySelector('input[type="text"]');
   const passInput = document.getElementById('collectorPassword') || document.querySelector('input[type="password"]');
   if (idInput && passInput) {
@@ -513,7 +508,7 @@ function ganSuKienRegister() {
 /**
  * 8. Logic Đăng xuất tài khoản (Stitch Design)
  */
-window.handleLogout = function() {
+window.handleLogout = function () {
   if (confirm('Kính hỏi: Quý khách có muốn đăng xuất khỏi tài khoản không?')) {
     currentUser = null;
     localStorage.removeItem('craftory_user');
@@ -579,9 +574,13 @@ function khoiTaoTrangProfile(param) {
     if (res && res.success && res.data) {
       currentUser = res.data;
       localStorage.setItem('craftory_user', JSON.stringify(currentUser));
-      const wlCount = (currentUser.wishlist && currentUser.wishlist.length) || 0;
-      const countBadge = document.getElementById('profile-wishlist-count');
-      if (countBadge) countBadge.innerText = String(wlCount).padStart(2, '0');
+      if (typeof window.updateWishlistBadges === 'function') {
+        window.updateWishlistBadges((currentUser.wishlist && currentUser.wishlist.length) || 0);
+      } else {
+        const wlCount = (currentUser.wishlist && currentUser.wishlist.length) || 0;
+        const countBadge = document.getElementById('profile-wishlist-count');
+        if (countBadge) countBadge.innerText = String(wlCount).padStart(2, '0');
+      }
     }
   });
 
@@ -602,65 +601,323 @@ function switchProfileTab(tab) {
 
   if (tab === 'orders') {
     if (btnOrders) {
-      btnOrders.className = 'w-full flex items-center justify-between p-4 bg-primary text-on-primary font-semibold transition-all border-b border-biscuit-sand/40';
+      btnOrders.className = 'w-full flex items-center justify-between p-4 bg-primary text-on-primary font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer';
     }
     if (btnWishlist) {
-      btnWishlist.className = 'w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all';
+      btnWishlist.className = 'w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer';
     }
     if (viewOrders) viewOrders.style.display = 'flex';
     if (viewWishlist) viewWishlist.style.display = 'none';
-  } else {
+  } else if (tab === 'wishlist') {
     if (btnWishlist) {
-      btnWishlist.className = 'w-full flex items-center justify-between p-4 bg-primary text-on-primary font-semibold transition-all border-b border-biscuit-sand/40';
+      btnWishlist.className = 'w-full flex items-center justify-between p-4 bg-primary text-on-primary font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer';
     }
     if (btnOrders) {
-      btnOrders.className = 'w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all';
+      btnOrders.className = 'w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer';
     }
     if (viewOrders) viewOrders.style.display = 'none';
     if (viewWishlist) viewWishlist.style.display = 'flex';
 
-    loadProfileWishlistGrid();
+    // Gọi trực tiếp WishlistView.loadWishlist() từ products.js
+    if (window.WishlistView && typeof window.WishlistView.loadWishlist === 'function') {
+      window.WishlistView.loadWishlist();
+    }
   }
 }
 
-function loadProfileWishlistGrid() {
+let currentWishlistData = [];
+let currentWishlistCategory = 'all';
+
+async function fetchFullWishlistProducts() {
+  if (!currentUser) return [];
+  const userId = currentUser._id || currentUser.id || currentUser.accountId;
+  if (!userId) return [];
+
+  // Cách 1: Sử dụng ApiService.getWishlist nếu có
+  if (typeof ApiService !== 'undefined' && typeof ApiService.getWishlist === 'function') {
+    const list = await new Promise((resolve) => {
+      ApiService.getWishlist(userId, (err, res) => {
+        if (!err && res && res.success && Array.isArray(res.data)) {
+          resolve(res.data);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+    if (list) return list;
+  }
+
+  // Cách 2: Gọi trực tiếp qua apiBase an toàn
+  try {
+    const base = (window.CRAFTORY_API_BASE || 'http://localhost:5000/api');
+    const res = await new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `${base}/accounts/wishlist/${userId}`, true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch (e) {
+            resolve(null);
+          }
+        }
+      };
+      xhr.onerror = function () { resolve(null); };
+      xhr.send();
+    });
+
+    if (res && res.success && Array.isArray(res.data)) {
+      return res.data;
+    }
+  } catch (err) {
+    console.warn('Lỗi fetchFullWishlistProducts:', err);
+  }
+
+  // Fallback: nếu populate sẵn trong currentUser.wishlist
+  if (currentUser && Array.isArray(currentUser.wishlist)) {
+    return currentUser.wishlist.filter(item => typeof item === 'object' && item !== null);
+  }
+  return [];
+}
+
+async function loadProfileWishlistGrid() {
   const grid = document.getElementById('profile-wishlist-grid');
-  const label = document.getElementById('wishlist-total-label');
   if (!grid) return;
 
-  const wishlist = (currentUser && currentUser.wishlist) || [];
-  if (label) label.innerText = `${wishlist.length} tác phẩm`;
+  const totalBadge = document.getElementById('wishlist-total-badge');
+  const headerDesc = document.getElementById('wishlist-header-desc');
+  const batchLabel = document.getElementById('wishlist-batch-count-label');
+  const countBadge = document.getElementById('profile-wishlist-count');
 
-  if (wishlist.length === 0) {
+  grid.innerHTML = `
+    <div class="col-span-full py-12 text-center text-on-surface-variant flex flex-col items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-4xl animate-spin text-secondary">progress_activity</span>
+      <p class="font-body-sm font-medium">Đang tải bộ sưu tập tác phẩm yêu thích...</p>
+    </div>
+  `;
+
+  const products = await fetchFullWishlistProducts();
+  currentWishlistData = products;
+
+  const countStr = String(products.length).padStart(2, '0');
+  if (totalBadge) totalBadge.innerText = `${countStr} TÁC PHẨM`;
+  if (headerDesc) headerDesc.innerText = `Danh sách các bảo vật gốm sứ thủ công thượng khách đã lưu giữ (${countStr} tác phẩm)`;
+  if (batchLabel) batchLabel.innerText = `Đã lưu trữ ${countStr} tác phẩm di sản`;
+  if (countBadge) countBadge.innerText = countStr;
+
+  // Render Category Tabs
+  renderWishlistCategoryTabs(products);
+
+  // Render Products
+  renderWishlistItems(getFilteredAndSortedWishlist());
+}
+
+function renderWishlistCategoryTabs(products) {
+  const tabsContainer = document.getElementById('wishlist-category-tabs');
+  if (!tabsContainer) return;
+
+  const catCounts = {};
+  products.forEach(p => {
+    const catName = p.categoryName || p.category || (p.collectionName ? p.collectionName : 'Tác phẩm độc bản');
+    catCounts[catName] = (catCounts[catName] || 0) + 1;
+  });
+
+  let html = `
+    <button onclick="setWishlistCategory('all', this)" class="wishlist-cat-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap ${currentWishlistCategory === 'all' ? 'bg-primary text-on-primary font-semibold shadow-sm' : 'bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50'}">
+      Tất cả (${String(products.length).padStart(2, '0')})
+    </button>
+  `;
+
+  Object.keys(catCounts).forEach(cat => {
+    const isAct = currentWishlistCategory === cat;
+    html += `
+      <button onclick="setWishlistCategory('${escapeHtml(cat)}', this)" class="wishlist-cat-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap ${isAct ? 'bg-primary text-on-primary font-semibold shadow-sm' : 'bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50'}">
+        ${escapeHtml(cat)} (${String(catCounts[cat]).padStart(2, '0')})
+      </button>
+    `;
+  });
+
+  tabsContainer.innerHTML = html;
+}
+
+function setWishlistCategory(cat, btnEl) {
+  currentWishlistCategory = cat;
+  const buttons = document.querySelectorAll('.wishlist-cat-btn');
+  buttons.forEach(btn => {
+    btn.className = 'wishlist-cat-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50';
+  });
+  if (btnEl) {
+    btnEl.className = 'wishlist-cat-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap bg-primary text-on-primary font-semibold shadow-sm';
+  }
+  renderWishlistItems(getFilteredAndSortedWishlist());
+}
+
+function getFilteredAndSortedWishlist() {
+  const query = (document.getElementById('wishlistSearchInput')?.value || '').toLowerCase().trim();
+  const sortMode = document.getElementById('wishlistSortSelect')?.value || 'recent';
+
+  let list = currentWishlistData.filter(p => {
+    const matchCat = (currentWishlistCategory === 'all') ||
+      ((p.categoryName || p.category || p.collectionName || 'Tác phẩm độc bản') === currentWishlistCategory);
+
+    const name = (p.name || '').toLowerCase();
+    const desc = (p.description || '').toLowerCase();
+    const matchQuery = !query || name.includes(query) || desc.includes(query);
+
+    return matchCat && matchQuery;
+  });
+
+  if (sortMode === 'price-asc') {
+    list.sort((a, b) => (a.price || 0) - (b.price || 0));
+  } else if (sortMode === 'price-desc') {
+    list.sort((a, b) => (b.price || 0) - (a.price || 0));
+  }
+  return list;
+}
+
+function filterWishlistProducts() {
+  renderWishlistItems(getFilteredAndSortedWishlist());
+}
+
+function sortWishlistProducts() {
+  renderWishlistItems(getFilteredAndSortedWishlist());
+}
+
+function renderWishlistItems(items) {
+  const grid = document.getElementById('profile-wishlist-grid');
+  if (!grid) return;
+
+  if (!items || items.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full py-12 text-center text-on-surface-variant">
+      <div class="col-span-full py-12 text-center text-on-surface-variant bg-porcelain-white rounded-xl border border-biscuit-sand p-8">
         <span class="material-symbols-outlined text-5xl text-celadon-mist mb-2 block">favorite_border</span>
-        <p class="font-body-md font-medium">Chưa có tác phẩm nào trong danh sách yêu thích</p>
-        <p class="font-body-sm text-outline text-xs mt-1">Quý khách có thể bấm biểu tượng trái tim trên các sản phẩm để lưu lại vào đây.</p>
+        <p class="font-headline-sm text-base text-primary font-bold">Chưa có tác phẩm nào phù hợp</p>
+        <p class="font-body-sm text-outline text-xs mt-1">Quý khách có thể bấm biểu tượng trái tim trên các tác phẩm tại Cửa Hàng để lưu giữ vào đây.</p>
+        <button onclick="if(window.dieuHuong) window.dieuHuong('shop')" class="mt-4 px-5 py-2.5 rounded bg-primary text-on-primary font-title-md text-xs uppercase tracking-wider font-semibold hover:bg-primary-container transition-colors cursor-pointer">
+          Khám Phá Bộ Sưu Tập Ngay
+        </button>
       </div>
     `;
     return;
   }
 
   let html = '';
-  wishlist.forEach(p => {
+  items.forEach(p => {
+    const imgUrl = (p.images && p.images[0]) || p.image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCkfbQHWJcsVJLmZ79QWTiUBpW1AsRoVBm-niLfR4tTBU75MyS59dBrxxOg0lOm3enz5UxIZ1pMrEQJxuQd43DyoMYhmRoc_ZBnm9LZuMPqeSv-8LEQBrqyPUGcob4loEfD5jYp8NzYeC0NcSwLUAfF7s6Y9IA2RjGQPCyrzOJY_hlTrqsJ1Nu3j_EiSsOGteXYAskFMrgyF_2aN3SwRpQrNSzaQNs3YpDxs-uuRB0wDx45-Ps6dO2u';
+    const tag = p.collectionName || p.tag || 'Bát Tràng Cổ Pháp';
+    const spec = p.dimension || p.material || (p.height ? `Cao ${p.height}cm • Men nung 1.380°C` : 'Cốt sứ dày đanh • Khắc ấn triện');
+    const inStock = (p.stock === undefined || p.stock > 0);
+    const priceFormatted = (p.price || 0).toLocaleString('vi-VN') + '₫';
+
     html += `
-      <div class="bg-porcelain-white rounded-xl border border-biscuit-sand overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-        <div class="relative h-48 bg-surface-container-low">
-          ${(p.image || (p.images && p.images[0])) ? `<img src="${p.image || p.images[0]}" alt="${p.name || ''}" class="w-full h-full object-cover" />` : '<div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined">image_not_supported</span></div>'}
-          <button onclick="handleWishlistToggle('${p._id}')" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-secondary flex items-center justify-center shadow">
-            <span class="material-symbols-outlined text-[18px]">close</span>
+      <div class="bg-porcelain-white rounded-xl border border-biscuit-sand shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between group">
+        <div class="relative">
+          <a class="block relative h-64 overflow-hidden bg-surface-container cursor-pointer" onclick="viewProductDetail('${p._id}')">
+            <img alt="${escapeHtml(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(imgUrl)}" />
+          </a>
+          <button onclick="handleWishlistToggle('${p._id}')" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-porcelain-white/90 backdrop-blur-sm shadow flex items-center justify-center text-secondary hover:scale-110 transition-transform cursor-pointer" title="Bỏ thích">
+            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
           </button>
+          <span class="absolute bottom-3 left-3 px-2 py-0.5 rounded text-[10px] font-label-sm uppercase font-bold bg-primary-container text-tertiary-fixed-dim shadow">
+            ${escapeHtml(tag)}
+          </span>
         </div>
-        <div class="p-4 flex flex-col gap-1">
-          <span class="text-[11px] font-label-sm text-secondary uppercase font-semibold">${p.collectionName || ''}</span>
-          <h4 class="font-headline-sm text-sm text-primary font-bold truncate">${p.name}</h4>
-          <span class="text-secondary font-bold text-sm mt-1">${(p.price || 0).toLocaleString()} đ</span>
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          <div class="flex flex-col gap-1.5">
+            <div>
+              <span class="font-label-sm text-[11px] text-outline">${escapeHtml(spec)}</span>
+              <h3 class="font-headline-sm text-title-md text-primary font-serif font-semibold mt-0.5 hover:text-secondary transition-colors cursor-pointer truncate" onclick="viewProductDetail('${p._id}')">
+                ${escapeHtml(p.name)}
+              </h3>
+            </div>
+            <p class="font-body-sm text-[13px] text-on-surface-variant line-clamp-2 leading-relaxed">
+              ${escapeHtml(p.description || 'Tác phẩm gốm sứ nghệ thuật thủ công tinh xảo của làng nghề Bát Tràng, chế tác thủ công cầu kỳ.')}
+            </p>
+            <div class="flex items-center gap-1.5 mt-1 ${inStock ? 'text-emerald-800' : 'text-amber-800'} text-[12px] font-medium">
+              <span class="material-symbols-outlined text-[16px] ${inStock ? 'text-emerald-700' : 'text-amber-600'}">
+                ${inStock ? 'check_circle' : 'inventory_2'}
+              </span>
+              <span>${inStock ? 'Còn hàng (Sẵn sàng giao tác phẩm)' : 'Sắp xếp lò (Có thể đặt trước)'}</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-biscuit-sand/60 flex items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span class="font-label-sm text-[11px] text-outline uppercase">Định giá</span>
+              <span class="font-headline-sm text-title-lg text-primary font-serif font-bold">${priceFormatted}</span>
+            </div>
+            <button onclick="addSingleWishlistToCart('${p._id}', '${escapeHtml(p.name)}')" class="px-3.5 py-2 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+              <span>Thêm vào giỏ</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
   });
   grid.innerHTML = html;
+}
+
+function viewProductDetail(productId) {
+  if (typeof window.dieuHuong === 'function') {
+    window.dieuHuong('product-detail', { id: productId });
+  } else {
+    window.location.hash = `#/product-detail?id=${productId}`;
+  }
+}
+
+function addSingleWishlistToCart(productId, productName) {
+  requireAuthAction(function () {
+    if (typeof ApiService !== 'undefined' && ApiService.addToCart) {
+      ApiService.addToCart(currentUser._id, productId, 1, function (err, res) {
+        if (!err && res && res.success) {
+          if (typeof updateCartCount === 'function') updateCartCount();
+          alert(`✨ Đã thêm tác phẩm "${productName || 'gốm sứ'}" vào giỏ hàng thành công!`);
+        } else {
+          alert('Không thể thêm vào giỏ hàng lúc này. Quý khách vui lòng thử lại.');
+        }
+      });
+    }
+  });
+}
+
+function addAllWishlistToCart() {
+  if (!currentWishlistData || currentWishlistData.length === 0) {
+    alert('Danh sách yêu thích đang trống.');
+    return;
+  }
+  requireAuthAction(async function () {
+    let successCount = 0;
+    for (const p of currentWishlistData) {
+      await new Promise(resolve => {
+        ApiService.addToCart(currentUser._id, p._id, 1, () => {
+          successCount++;
+          resolve();
+        });
+      });
+    }
+    if (typeof updateCartCount === 'function') updateCartCount();
+    alert(`✨ Đã thêm thành công ${successCount} tác phẩm di sản vào giỏ hàng của quý khách!`);
+  });
+}
+
+function clearAllWishlist() {
+  if (!currentWishlistData || currentWishlistData.length === 0) {
+    alert('Danh sách yêu thích đang trống.');
+    return;
+  }
+  if (!confirm('Quý khách có chắc chắn muốn xóa tất cả tác phẩm khỏi danh sách yêu thích?')) return;
+
+  requireAuthAction(async function () {
+    for (const p of currentWishlistData) {
+      await new Promise(resolve => {
+        ApiService.toggleWishlist(currentUser._id, p._id, resolve);
+      });
+    }
+    // Cập nhật lại user
+    currentUser.wishlist = [];
+    localStorage.setItem('craftory_user', JSON.stringify(currentUser));
+    loadProfileWishlistGrid();
+  });
 }
 
 function handleWishlistToggle(productId) {

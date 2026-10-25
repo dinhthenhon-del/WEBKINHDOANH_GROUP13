@@ -102,7 +102,7 @@
           <div>
             <h2 class="font-headline-md text-headline-md text-primary font-bold">Biểu Đồ Doanh Thu Thuần 7 Ngày Gần Nhất</h2>
             <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-              Đạt đỉnh <strong class="text-primary font-bold">4.800.000đ</strong> vào Thứ Sáu • Tổng tích luỹ: <strong class="text-secondary font-bold">23.000.000đ</strong>
+              {{ peakDaySummary }} • Tổng tích luỹ tuần: <strong class="text-secondary font-bold">{{ formatCurrency(weekAccumulatedRevenue) }}</strong>
             </p>
           </div>
           <div class="flex items-center gap-4 text-label-sm font-label-sm">
@@ -116,18 +116,18 @@
         </div>
 
         <div class="pt-6 pb-2">
-          <div class="h-52 flex items-end justify-between gap-4 px-4 border-b border-surface-variant/60">
-            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group">
-              <!-- Peak label badge for Friday (T6) -->
-              <div *ngIf="item.isPeak" class="px-2 py-0.5 rounded bg-secondary text-on-secondary text-[10px] font-bold shadow-sm whitespace-nowrap mb-1">
-                Đỉnh: 4.8M
+          <div class="h-56 flex items-end justify-between gap-3 sm:gap-4 px-2 sm:px-4 border-b border-surface-variant/60">
+            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group cursor-pointer" [title]="(item.fullDateLabel || item.dayLabel) + '\nDoanh thu thuần: ' + formatCurrency(item.totalAmount) + ((item.refundedAmount || 0) > 0 ? '\nĐã trừ hoàn trả: ' + formatCurrency(item.refundedAmount) : '') + ((item.cancelledAmount || 0) > 0 ? '\nĐơn đã hủy: ' + formatCurrency(item.cancelledAmount) : '')">
+              <!-- Peak label badge -->
+              <div *ngIf="item.isPeak && item.totalAmount > 0" class="px-2 py-0.5 rounded bg-secondary text-on-secondary text-[10px] font-bold shadow-sm whitespace-nowrap mb-1">
+                Đỉnh: {{ (item.totalAmount / 1000000).toFixed(1) }}M
               </div>
-              <span *ngIf="!item.isPeak" class="text-[10px] text-outline opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+              <span *ngIf="!item.isPeak && item.totalAmount > 0" class="text-[10px] text-outline opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
                 {{ (item.totalAmount / 1000000).toFixed(1) }}M
               </span>
               <div class="w-full flex gap-1 items-end justify-center h-full">
-                <div class="w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.menLamHeightPercent" [title]="'Men Lam: ' + formatCurrency(item.menLamAmount)"></div>
-                <div class="w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.saThachHeightPercent" [title]="'Sa Thạch: ' + formatCurrency(item.saThachAmount)"></div>
+                <div class="w-3.5 sm:w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.menLamHeightPercent" [title]="'Men Lam: ' + formatCurrency(item.menLamAmount)"></div>
+                <div class="w-3.5 sm:w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.saThachHeightPercent" [title]="'Sa Thạch: ' + formatCurrency(item.saThachAmount)"></div>
               </div>
               <span [ngClass]="item.isPeak ? 'text-secondary font-bold' : 'text-on-surface-variant font-medium'" class="text-xs mt-1">
                 {{ item.dayLabel }}
@@ -275,6 +275,222 @@
           </a>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL XEM & XUẤT BÁO CÁO TUẦN QUẢN TRỊ CHI TIẾT (STITCH UI) -->
+  <!-- ============================================================== -->
+  <div *ngIf="isWeeklyReportModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-variant/50 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-space-lg bg-[#0A2540] text-white flex items-center justify-between border-b border-surface-variant/20">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+            <span class="material-symbols-outlined text-2xl">analytics</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-lg sm:text-xl font-bold tracking-tight">Báo Cáo Doanh Thu &amp; Vận Hành Tuần</h3>
+            <p class="text-xs text-secondary-fixed mt-0.5 font-medium flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">calendar_month</span>
+              <span>Kỳ đối soát: {{ weeklyReport?.dateRangeLabel || dateRangeLabel }}</span>
+            </p>
+          </div>
+        </div>
+        <button (click)="closeWeeklyReportModal()" class="w-8 h-8 rounded-lg hover:bg-white/10 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Đóng">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-space-lg overflow-y-auto space-y-space-md text-on-surface">
+        
+        <!-- Dãy 4 Thẻ KPI Tóm Tắt Tuần -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <!-- KPI 1: Doanh Thu Thuần Tuần -->
+          <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col justify-between">
+            <span class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">Doanh thu thuần tuần</span>
+            <div class="font-bold text-lg text-emerald-950 mt-1 font-mono">
+              {{ formatCurrency(weeklyReport?.totalNetRevenue || 0) }}
+            </div>
+            <span class="text-[11px] text-emerald-700 mt-1">{{ weeklyReport?.paidOrdersCount || 0 }} đơn đã thanh toán</span>
+          </div>
+
+          <!-- KPI 2: Hàng Hoàn Trả -->
+          <div class="p-3.5 rounded-xl bg-purple-50 border border-purple-200 flex flex-col justify-between">
+            <span class="text-xs text-purple-800 font-semibold uppercase tracking-wider">Hàng hoàn trả / đổi trả</span>
+            <div class="font-bold text-lg text-purple-950 mt-1 font-mono">
+              -{{ formatCurrency(weeklyReport?.totalRefundedAmount || 0) }}
+            </div>
+            <span class="text-[11px] text-purple-700 mt-1">Đã khấu trừ khỏi DT thuần</span>
+          </div>
+
+          <!-- KPI 3: Đơn Đã Hủy -->
+          <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 flex flex-col justify-between">
+            <span class="text-xs text-red-800 font-semibold uppercase tracking-wider">Đơn hàng bị hủy</span>
+            <div class="font-bold text-lg text-red-950 mt-1 font-mono">
+              {{ formatCurrency(weeklyReport?.totalCancelledAmount || 0) }}
+            </div>
+            <span class="text-[11px] text-red-700 mt-1">Không tính vào doanh thu</span>
+          </div>
+
+          <!-- KPI 4: Ngày Đạt Đỉnh -->
+          <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col justify-between">
+            <span class="text-xs text-amber-800 font-semibold uppercase tracking-wider">Ngày doanh thu cao nhất</span>
+            <div class="font-bold text-base text-amber-950 mt-1 truncate">
+              {{ weeklyReport?.peakDayLabel || 'Chưa ghi nhận' }}
+            </div>
+            <span class="text-[11px] text-amber-700 mt-1 font-mono font-bold">{{ formatCurrency(weeklyReport?.peakDayRevenue || 0) }}</span>
+          </div>
+        </div>
+
+        <!-- Bảng Liệt Kê Doanh Thu & Vận Hành Từng Ngày Trong Tuần -->
+        <div class="rounded-xl border border-surface-variant/50 overflow-hidden shadow-2xs">
+          <div class="p-3 bg-surface-container-low border-b border-surface-variant/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 class="font-bold text-sm text-primary flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base text-secondary">table_chart</span>
+                <span>Bảng Kê Chi Tiết Từng Ngày Trong Tuần</span>
+              </h4>
+              <p class="text-[11px] text-on-surface-variant mt-0.5">
+                Công thức: <strong>Doanh Thu Thuần = Tiền Thu Được - Giá Trị Hàng Hoàn Trả - Giá Trị Hàng Hủy</strong>
+              </p>
+            </div>
+            <span class="text-xs text-on-surface-variant font-medium">Đối soát đồng bộ từ dữ liệu đơn hàng thực tế</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-surface-container text-on-surface-variant uppercase font-semibold tracking-wider border-b border-surface-variant/40">
+                <tr>
+                  <th class="py-2.5 px-3">Thứ</th>
+                  <th class="py-2.5 px-3">Ngày</th>
+                  <th class="py-2.5 px-3 text-right">Tiền Thu Được</th>
+                  <th class="py-2.5 px-3 text-right text-purple-900">Hàng Hoàn Trả (-)</th>
+                  <th class="py-2.5 px-3 text-center">Đơn Hủy</th>
+                  <th class="py-2.5 px-3 text-right text-red-900">Giá Trị Hủy (-)</th>
+                  <th class="py-2.5 px-3 text-right text-emerald-900 font-bold bg-emerald-50/70 border-x border-emerald-200/60">Doanh Thu Thuần (=)</th>
+                  <th class="py-2.5 px-3 text-center">Đơn Thực Thu</th>
+                  <th class="py-2.5 px-3 text-center">Đánh Giá</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-variant/40 text-on-surface font-body-sm">
+                <tr *ngFor="let day of weeklyReport?.dailyBreakdown" [ngClass]="day.isPeak ? 'bg-secondary/5 font-medium' : 'hover:bg-surface-container-low/40'" class="transition-colors">
+                  <td class="py-2.5 px-3 font-bold" [ngClass]="day.isPeak ? 'text-secondary' : 'text-primary'">
+                    {{ day.dayLabel }}
+                  </td>
+                  <td class="py-2.5 px-3 font-mono text-on-surface-variant">
+                    {{ day.fullDateLabel }}
+                  </td>
+                  <!-- Tiền Thu Được -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.grossRevenue > 0 ? 'text-primary font-semibold' : 'text-outline'">
+                    {{ formatCurrency(day.grossRevenue || 0) }}
+                  </td>
+                  <!-- Tiền Hoàn Trả (-) -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.refundedAmount > 0 ? 'text-purple-700 font-bold' : 'text-outline'">
+                    {{ day.refundedAmount > 0 ? '-' + formatCurrency(day.refundedAmount) : '0đ' }}
+                  </td>
+                  <!-- Đơn Hủy -->
+                  <td class="py-2.5 px-3 text-center">
+                    <span *ngIf="day.cancelledOrders > 0" class="px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold text-[10px]" title="Đơn đã hủy">
+                      {{ day.cancelledOrders }} đơn
+                    </span>
+                    <span *ngIf="day.cancelledOrders === 0" class="text-outline">0</span>
+                  </td>
+                  <!-- Giá Trị Hủy (-) -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.cancelledAmount > 0 ? 'text-red-700 font-medium' : 'text-outline'">
+                    {{ day.cancelledAmount > 0 ? '-' + formatCurrency(day.cancelledAmount) : '0đ' }}
+                  </td>
+                  <!-- Doanh Thu Thuần (=) -->
+                  <td class="py-2.5 px-3 text-right font-mono font-bold bg-emerald-50/70 border-x border-emerald-200/60" [ngClass]="day.netRevenue > 0 ? 'text-emerald-700' : 'text-outline'">
+                    {{ formatCurrency(day.netRevenue) }}
+                  </td>
+                  <!-- Số Đơn Thực Thu -->
+                  <td class="py-2.5 px-3 text-center font-bold text-primary">
+                    {{ day.paidOrders }}
+                  </td>
+                  <!-- Đánh Giá -->
+                  <td class="py-2.5 px-3 text-center">
+                    <span *ngIf="day.isPeak" class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-bold text-[10px]">
+                      Đạt Đỉnh Tuần
+                    </span>
+                    <span *ngIf="!day.isPeak && day.netRevenue > 0" class="text-emerald-700 text-[11px] font-medium">
+                      Ổn định
+                    </span>
+                    <span *ngIf="day.netRevenue === 0" class="text-outline text-[11px]">
+                      --
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <!-- Hàng Tổng Kết Tuần -->
+              <tfoot class="bg-surface-container font-bold border-t-2 border-surface-variant/60 text-primary">
+                <tr>
+                  <td colspan="2" class="py-3 px-3 uppercase tracking-wider text-xs font-bold">
+                    Tổng Cộng Tuần
+                  </td>
+                  <!-- Tổng Tiền Thu Được -->
+                  <td class="py-3 px-3 text-right text-xs text-primary font-mono font-bold">
+                    {{ formatCurrency(weeklyReport?.totalGrossRevenue || 0) }}
+                  </td>
+                  <!-- Tổng Hoàn Trả (-) -->
+                  <td class="py-3 px-3 text-right text-xs text-purple-800 font-mono font-bold">
+                    -{{ formatCurrency(weeklyReport?.totalRefundedAmount || 0) }}
+                  </td>
+                  <!-- Số Đơn Hủy -->
+                  <td class="py-3 px-3 text-center text-xs text-red-800 font-bold">
+                    --
+                  </td>
+                  <!-- Tổng Hàng Hủy (-) -->
+                  <td class="py-3 px-3 text-right text-xs text-red-800 font-mono font-bold">
+                    -{{ formatCurrency(weeklyReport?.totalCancelledAmount || 0) }}
+                  </td>
+                  <!-- Tổng Doanh Thu Thuần (=) -->
+                  <td class="py-3 px-3 text-right text-sm text-emerald-800 font-mono font-extrabold bg-emerald-100/70 border-x border-emerald-300">
+                    {{ formatCurrency(weeklyReport?.totalNetRevenue || 0) }}
+                  </td>
+                  <td class="py-3 px-3 text-center text-xs font-extrabold text-primary">
+                    {{ weeklyReport?.paidOrdersCount || 0 }}
+                  </td>
+                  <td class="py-3 px-3 text-center text-[11px] text-emerald-800 font-bold">
+                    Đã Trừ Hủy &amp; Hoàn
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Thông Tin Đơn Hàng Giá Trị Cao Nhất -->
+        <div *ngIf="weeklyReport?.highestOrder" class="p-3.5 rounded-xl bg-surface-container-low border border-surface-variant/50 flex items-start gap-3">
+          <span class="material-symbols-outlined text-secondary text-xl shrink-0">workspace_premium</span>
+          <div class="text-xs">
+            <strong class="text-primary font-bold block text-sm">Đơn Hàng Giá Trị Kỷ Lục Trong Tuần:</strong>
+            <p class="text-on-surface-variant mt-0.5 leading-relaxed">
+              Mã đơn <strong class="text-primary font-bold">#{{ weeklyReport.highestOrder.orderCode }}</strong> — Khách hàng: <strong class="text-primary">{{ weeklyReport.highestOrder.customerName }}</strong>.
+              Tác phẩm: <span class="italic text-primary font-semibold">{{ weeklyReport.highestOrder.productName }}</span> với giá trị thực thu đạt <strong class="text-emerald-700 font-mono font-bold text-sm">{{ formatCurrency(weeklyReport.highestOrder.amount) }}</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer & Actions -->
+      <div class="p-space-md bg-surface-container-low border-t border-surface-variant/40 flex flex-wrap items-center justify-between gap-3">
+        <span class="text-xs text-on-surface-variant">
+          Dữ liệu được trích xuất tự động và khớp 100% với trạng thái đơn hàng hiện hành.
+        </span>
+        <div class="flex items-center gap-2">
+          <button (click)="closeWeeklyReportModal()" class="px-4 py-2 rounded-lg border border-surface-variant/60 hover:bg-surface-container text-primary text-xs font-semibold transition-colors cursor-pointer">
+            Đóng
+          </button>
+          <button (click)="downloadReportCsv()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold shadow-sm hover:opacity-90 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-base">download</span>
+            <span>Tải Báo Cáo Excel / CSV</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

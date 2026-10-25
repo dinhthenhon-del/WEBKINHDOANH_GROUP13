@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router, RouterModule } from '@angular/router';
 
 export interface Customer {
   _id: string;
@@ -42,13 +43,14 @@ export interface CustomerOrder {
 }
 
 @Component({
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   selector: 'app-customer-list',
   styleUrl: './customer-list.css',
   templateUrl: './customer-list.html',
 })
 export class CustomerList implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   customers: Customer[] = [];
@@ -476,6 +478,24 @@ export class CustomerList implements OnInit {
       this.isToastVisible = false;
       this.cdr.detectChanges();
     }, 3500);
+  }
+
+  viewOrderDetail(order: CustomerOrder) {
+    if (order && order._id) {
+      this.router.navigate(['/orders', order._id]);
+    } else if (order && order.orderCode) {
+      this.router.navigate(['/orders/list'], { queryParams: { keyword: order.orderCode } });
+    }
+  }
+
+  viewAllCustomerOrders() {
+    if (this.selectedCustomer) {
+      // Điều hướng sang phân hệ Quản lý đơn hàng, lọc theo mã / tên / email khách hàng
+      const keyword = this.selectedCustomer.fullName || this.selectedCustomer.email || this.selectedCustomer.phone;
+      this.router.navigate(['/orders/list'], { queryParams: { keyword } });
+    } else {
+      this.router.navigate(['/orders/list']);
+    }
   }
 
   formatPrice(price: number = 0): string {

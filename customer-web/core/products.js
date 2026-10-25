@@ -7,13 +7,47 @@
 // Helper kiểm tra sản phẩm có trong wishlist hiện tại không
 function isProductInWishlist(productId) {
   try {
-    if (!window.currentUser || !window.currentUser.wishlist) return false;
-    const wl = window.currentUser.wishlist;
-    return wl.some(item => (typeof item === 'string' ? item : item._id) === productId);
+    const user = window.currentUser || (function () {
+      try {
+        return JSON.parse(localStorage.getItem('craftory_user') || 'null');
+      } catch (e) {
+        return null;
+      }
+    })();
+    if (!user || !user.wishlist) return false;
+    const targetId = String(productId || '');
+    return user.wishlist.some(item => {
+      if (!item) return false;
+      const itemId = typeof item === 'string' ? item : (item._id || item.id);
+      return String(itemId) === targetId;
+    });
   } catch (e) {
     return false;
   }
 }
+
+// Cập nhật số lượng huy hiệu wishlist trên sidebar Profile và view Wishlist
+function updateWishlistBadges(count) {
+  const user = window.currentUser || (function () {
+    try {
+      return JSON.parse(localStorage.getItem('craftory_user') || 'null');
+    } catch (e) {
+      return null;
+    }
+  })();
+  let total = typeof count === 'number' ? count : ((user && user.wishlist && user.wishlist.length) || 0);
+
+  const profileBadge = document.getElementById('profile-wishlist-count');
+  if (profileBadge) {
+    profileBadge.innerText = String(total).padStart(2, '0');
+  }
+
+  const wishlistCountEl = document.getElementById('wishlistCount');
+  if (wishlistCountEl) {
+    wishlistCountEl.innerText = `${total} tác phẩm`;
+  }
+}
+window.updateWishlistBadges = updateWishlistBadges;
 
 function escapeProductText(value) {
   return String(value || '').replace(/[&<>"']/g, character => ({
@@ -125,8 +159,9 @@ const ProductComponent = {
       badgeClass = 'bg-[#000f22] text-white';
     }
 
-    const heartColorClass = inWishlist ? 'text-[#b91c1c]' : 'text-stone-400 hover:text-[#a23e18]';
+    const heartColorClass = inWishlist ? 'text-red-600' : 'text-stone-400 hover:text-red-500';
     const heartIcon = inWishlist ? 'favorite' : 'favorite_border';
+    const heartIconStyle = inWishlist ? 'style="color: #dc2626; font-variation-settings: \'FILL\' 1;"' : '';
 
     return `
       <div class="product-card group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[#EBEAE5] cursor-pointer" data-product-id="${id}">
@@ -143,7 +178,7 @@ const ProductComponent = {
           <button onclick="event.stopPropagation(); ProductComponent.toggleFavorite('${id}', this)"
                   title="Lưu vào danh sách yêu thích"
                   class="absolute top-3 left-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow transition-all hover:scale-110 cursor-pointer ${heartColorClass}">
-            <span class="material-symbols-outlined text-[18px]">${heartIcon}</span>
+            <span class="material-symbols-outlined text-[20px]" ${heartIconStyle}>${heartIcon}</span>
           </button>
         </div>
 
@@ -322,19 +357,64 @@ const ProductComponent = {
             localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
 
             const isNowInWl = isProductInWishlist(productId);
+
+            // Đồng bộ số lượng yêu thích
+            updateWishlistBadges();
+
+            // Cập nhật trạng thái hiển thị của nút vừa bấm
             if (btnEl) {
-              const icon = btnEl.querySelector('.material-symbols-outlined');
+              const icon = btnEl.querySelector('.material-symbols-outlined') || (btnEl.classList.contains('material-symbols-outlined') ? btnEl : null);
               if (icon) {
                 icon.innerText = isNowInWl ? 'favorite' : 'favorite_border';
               }
               if (isNowInWl) {
                 btnEl.classList.remove('text-stone-400');
-                btnEl.classList.add('text-[#b91c1c]');
+                btnEl.classList.add('text-red-600');
+                if (icon) {
+                  icon.classList.remove('text-stone-400');
+                  icon.classList.add('text-red-600');
+                  icon.style.color = '#dc2626';
+                  icon.style.fontVariationSettings = "'FILL' 1";
+                }
               } else {
-                btnEl.classList.remove('text-[#b91c1c]');
+                btnEl.classList.remove('text-red-600');
                 btnEl.classList.add('text-stone-400');
+                if (icon) {
+                  icon.classList.remove('text-red-600');
+                  icon.classList.add('text-stone-400');
+                  icon.style.color = '';
+                  icon.style.fontVariationSettings = "'FILL' 0";
+                }
               }
             }
+
+            // Đồng bộ tất cả các thẻ sản phẩm khác cùng ID trên trang nếu có
+            document.querySelectorAll(`[data-product-id="${productId}"]`).forEach(card => {
+              const cardBtn = card.querySelector('button[title="Lưu vào danh sách yêu thích"]');
+              if (cardBtn) {
+                const cardIcon = cardBtn.querySelector('.material-symbols-outlined');
+                if (cardIcon) cardIcon.innerText = isNowInWl ? 'favorite' : 'favorite_border';
+                if (isNowInWl) {
+                  cardBtn.classList.remove('text-stone-400');
+                  cardBtn.classList.add('text-red-600');
+                  if (cardIcon) {
+                    cardIcon.classList.remove('text-stone-400');
+                    cardIcon.classList.add('text-red-600');
+                    cardIcon.style.color = '#dc2626';
+                    cardIcon.style.fontVariationSettings = "'FILL' 1";
+                  }
+                } else {
+                  cardBtn.classList.remove('text-red-600');
+                  cardBtn.classList.add('text-stone-400');
+                  if (cardIcon) {
+                    cardIcon.classList.remove('text-red-600');
+                    cardIcon.classList.add('text-stone-400');
+                    cardIcon.style.color = '';
+                    cardIcon.style.fontVariationSettings = "'FILL' 0";
+                  }
+                }
+              }
+            });
 
             showCartNotification(
               isNowInWl ? 'Đã thêm sản phẩm vào yêu thích' : 'Đã xóa sản phẩm khỏi yêu thích',
@@ -854,6 +934,149 @@ const DetailView = {
     if (relatedGrid && relatedList.length > 0) {
       relatedGrid.innerHTML = relatedList.map(item => ProductComponent.renderCard(item)).join('');
     }
+
+    // Tải và hiển thị đánh giá feedback từ khách hàng
+    this.loadProductReviews(p._id);
+  },
+
+  loadProductReviews: function (productId) {
+    const grid = document.getElementById('productReviewsGrid');
+    if (!grid) return;
+
+    if (typeof ApiService !== 'undefined' && typeof ApiService.getReviewsByProduct === 'function') {
+      ApiService.getReviewsByProduct(productId, (err, res) => {
+        if (err || !res || !res.success) {
+          grid.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-stone-500">Chưa có đánh giá nào cho tác phẩm này. Hãy là người đầu tiên gửi cảm nhận!</div>';
+          return;
+        }
+
+        const reviews = res.data || [];
+        const stats = res.stats || {};
+        this.renderReviewsSummary(stats, reviews);
+        this.renderReviewsGrid(reviews);
+      });
+    }
+  },
+
+  renderReviewsSummary: function (stats, reviews) {
+    const avg = stats.averageRating !== undefined ? Number(stats.averageRating).toFixed(1) : '5.0';
+    const total = stats.totalReviews !== undefined ? stats.totalReviews : reviews.length;
+    const breakdown = stats.breakdown || {};
+
+    const avgEl = document.getElementById('reviewSummaryAverage');
+    if (avgEl) avgEl.innerText = avg;
+
+    const starsEl = document.getElementById('reviewSummaryStars');
+    if (starsEl) {
+      const fullStars = Math.round(Number(avg));
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        const isFilled = i <= fullStars;
+        starsHtml += `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${isFilled ? 1 : 0};">star</span>`;
+      }
+      starsEl.innerHTML = starsHtml;
+    }
+
+    const descEl = document.getElementById('reviewSummaryTotalDesc');
+    if (descEl) {
+      descEl.innerText = `(DỰA TRÊN ${total} ĐÁNH GIÁ ĐÃ XÁC THỰC)`;
+    }
+
+    // Breakdown bars
+    const b5 = breakdown[5] || 0;
+    const b4 = breakdown[4] || 0;
+    const b3 = breakdown[3] || 0;
+    const pct5 = total > 0 ? Math.round((b5 / total) * 100) : 100;
+    const pct4 = total > 0 ? Math.round((b4 / total) * 100) : 0;
+    const pct3 = total > 0 ? Math.round((b3 / total) * 100) : 0;
+
+    const bar5 = document.getElementById('bar5Star');
+    const bar4 = document.getElementById('bar4Star');
+    const bar3 = document.getElementById('bar3Star');
+    const p5 = document.getElementById('pct5Star');
+    const p4 = document.getElementById('pct4Star');
+    const p3 = document.getElementById('pct3Star');
+
+    if (bar5) bar5.style.width = pct5 + '%';
+    if (bar4) bar4.style.width = pct4 + '%';
+    if (bar3) bar3.style.width = pct3 + '%';
+    if (p5) p5.innerText = pct5 + '%';
+    if (p4) p4.innerText = pct4 + '%';
+    if (p3) p3.innerText = pct3 + '%';
+
+    // Cập nhật rating trên đầu chi tiết sản phẩm nếu có
+    const detailScore = document.getElementById('detailRatingScore');
+    const detailCount = document.getElementById('detailReviewCount');
+    if (detailScore) detailScore.innerText = avg;
+    if (detailCount) detailCount.innerText = total > 0 ? `(${total} đánh giá)` : '(Chưa có đánh giá)';
+  },
+
+  renderReviewsGrid: function (reviews) {
+    const grid = document.getElementById('productReviewsGrid');
+    if (!grid) return;
+
+    if (!reviews || reviews.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full py-10 text-center bg-white rounded-xl border border-[#EBEAE5] p-6">
+          <span class="material-symbols-outlined text-4xl text-[#74777e] mb-2 block">rate_review</span>
+          <p class="font-['Playfair_Display',serif] text-base font-semibold text-[#000f22]">Chưa có hồi âm đánh giá cho tác phẩm này</p>
+          <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] mt-1">Kính mời quý thượng khách đã sở hữu gửi cảm nhận giám tuyển đầu tiên.</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = reviews.map(r => {
+      const name = r.customerName || 'Nhà Sưu Tầm';
+      const initial = name.trim().charAt(0).toUpperCase();
+      const rating = Number(r.rating || 5);
+      const comment = r.comment || 'Tác phẩm gốm sứ chế tác rất tinh xảo, giao hàng đóng gói cẩn trọng.';
+      
+      let dateStr = 'Gần đây';
+      try {
+        if (r.createdAt) {
+          const d = new Date(r.createdAt);
+          const diffDays = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays <= 7) dateStr = `${Math.max(1, diffDays)} ngày trước`;
+          else if (diffDays <= 30) dateStr = `${Math.floor(diffDays / 7)} tuần trước`;
+          else dateStr = `${Math.floor(diffDays / 30)} tháng trước`;
+        }
+      } catch (e) {}
+
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        const isF = i <= rating;
+        starsHtml += `<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' ${isF ? 1 : 0};">star</span>`;
+      }
+
+      return `
+        <div class="bg-white rounded-xl border border-[#EBEAE5] p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center text-amber-500 gap-0.5">
+                ${starsHtml}
+              </div>
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[10px] text-[#74777e] uppercase font-medium tracking-wider">${dateStr}</span>
+            </div>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs sm:text-[13px] text-[#000f22] italic leading-relaxed line-clamp-4">
+              "${escapeProductText(comment)}"
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-[#EBEAE5]/60 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-[#f3f4f5] text-[#000f22] font-semibold text-xs flex items-center justify-center shrink-0">
+              ${initial}
+            </div>
+            <div class="min-w-0">
+              <h4 class="font-['Plus_Jakarta_Sans',sans-serif] text-xs font-bold text-[#000f22] truncate">${escapeProductText(name)}</h4>
+              <p class="font-['Plus_Jakarta_Sans',sans-serif] text-[10px] text-[#a23e18] flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">verified</span>
+                <span>Đã mua hàng xác thực</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
   switchImage: function (imgUrl, btnEl) {
@@ -917,13 +1140,17 @@ const DetailView = {
     const inWishlist = isProductInWishlist(this.currentProduct._id);
     const icon = document.getElementById('detailHeartIcon');
     const btn = document.getElementById('btnDetailFavorite');
-    if (icon) icon.innerText = inWishlist ? 'favorite' : 'favorite_border';
+    if (icon) {
+      icon.innerText = inWishlist ? 'favorite' : 'favorite_border';
+      icon.style.color = inWishlist ? '#dc2626' : '';
+      icon.style.fontVariationSettings = inWishlist ? "'FILL' 1" : "'FILL' 0";
+    }
     if (btn) {
       if (inWishlist) {
-        btn.classList.add('text-[#b91c1c]');
-        btn.classList.remove('text-[#a23e18]');
+        btn.classList.add('text-red-600', 'border-red-300');
+        btn.classList.remove('text-[#a23e18]', 'text-stone-400');
       } else {
-        btn.classList.remove('text-[#b91c1c]');
+        btn.classList.remove('text-red-600', 'border-red-300');
         btn.classList.add('text-[#a23e18]');
       }
     }
@@ -1160,6 +1387,7 @@ const WishlistView = {
       }
       window.currentUser = res.data;
       localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
+      updateWishlistBadges();
       WishlistView.loadWishlist();
     });
   },
@@ -1243,7 +1471,7 @@ const WishlistView = {
       }
       const items = res.data || [];
 
-      if (countEl) countEl.innerText = `${items.length} tác phẩm`;
+      updateWishlistBadges(items.length);
 
       if (items.length === 0) {
         if (grid) grid.innerHTML = '';

@@ -77,22 +77,25 @@
             <span>Hủy Đơn Hàng</span>
           </button>
 
-          <button onclick="alert('Đã kết nối Xưởng trưởng Bát Tràng. Nghệ nhân phụ trách lò nung sẽ liên hệ lại với quý khách qua SĐT.')" 
-                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded bg-[#0a2540] hover:bg-[#10162B] text-white text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 shadow-xs cursor-pointer" type="button">
-            <span class="material-symbols-outlined text-[18px] text-[#edbf76]">support_agent</span>
-            <span>Yêu cầu hỗ trợ nghệ nhân</span>
+          <button id="detail-btn-return" onclick="OrdersModule.openReturnModalFromDetail()" 
+                  class="hidden inline-flex items-center gap-2 px-5 py-2.5 rounded bg-white hover:bg-secondary/10 text-primary border border-secondary/40 text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">assignment_return</span>
+            <span>Yêu cầu đổi / trả</span>
           </button>
+
+          <!-- Nút Chứng thư bảo trợ và Tư vấn đã được gỡ theo yêu cầu -->
         </div>
       </div>
 
       <!-- 5-Stage Stepper Track -->
       <div class="mt-8 pt-6 bg-[#f8f9fa] rounded-xl p-4 sm:p-6 border border-[#EBEAE5]">
-        <h2 class="text-[12px] uppercase tracking-[0.2em] text-[#43474d] mb-6 flex items-center gap-2 font-bold">
+        <h2 id="detail-stepper-title" class="text-[12px] uppercase tracking-[0.2em] text-[#43474d] mb-6 flex items-center gap-2 font-bold">
           <span class="material-symbols-outlined text-[18px] text-[#a23e18]">route</span>
-          Tiến trình chế tác & phụng vận
+          <span>Tiến trình chế tác & phụng vận</span>
         </h2>
 
-        <div class="relative w-full max-w-4xl mx-auto px-2">
+        <!-- Track Đơn hàng mặc định -->
+        <div id="track-order-flow" class="relative w-full max-w-4xl mx-auto px-2">
           <!-- Background Bar -->
           <div class="absolute top-5 left-8 right-8 h-1 bg-[#e1e3e4] rounded z-0"></div>
           <!-- Active Progress Bar -->
@@ -105,7 +108,7 @@
               <div class="w-10 h-10 rounded-full bg-[#0a2540] text-white flex items-center justify-center text-[15px] shadow-xs">
                 <span class="material-symbols-outlined text-[20px]">done</span>
               </div>
-              <span class="mt-2 text-[13px] text-[#000f22] font-semibold">Chờ xử lý</span>
+              <span class="mt-2 text-[13px] text-[#000f22] font-semibold">Chờ duyệt</span>
               <span class="text-[11px] text-[#74777e]" id="stepper-time-1">Khởi tạo</span>
             </div>
 
@@ -121,28 +124,63 @@
             <!-- Step 3: Shipping / Crafting -->
             <div class="flex flex-col items-center" id="stepper-step-3">
               <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]">Đang chế tác</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-3">Lò củi 1380°C</span>
+            </div>
+
+            <!-- Step 4: Shipping -->
+            <div class="flex flex-col items-center" id="stepper-step-4">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
                 <span class="material-symbols-outlined text-[20px]">local_shipping</span>
               </div>
               <span class="mt-2 text-[13px] text-[#74777e]">Vận chuyển</span>
-              <span class="text-[11px] text-[#74777e]" id="stepper-time-3">Hòm gỗ</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-4">Hòm gỗ</span>
             </div>
 
-            <!-- Step 4: Completed -->
-            <div class="flex flex-col items-center" id="stepper-step-4">
-              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
-                <span class="material-symbols-outlined text-[20px]">package_2</span>
-              </div>
-              <span class="mt-2 text-[13px] text-[#74777e]">Hoàn tất</span>
-              <span class="text-[11px] text-[#74777e]" id="stepper-time-4">Bàn giao</span>
-            </div>
-
-            <!-- Step 5: Cancelled or Finished -->
+            <!-- Step 5: Completed -->
             <div class="flex flex-col items-center" id="stepper-step-5">
               <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
                 <span class="material-symbols-outlined text-[20px]">task_alt</span>
               </div>
-              <span class="mt-2 text-[13px] text-[#74777e]" id="stepper-title-5">Lưu trữ</span>
-              <span class="text-[11px] text-[#74777e]" id="stepper-time-5">--</span>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="stepper-title-5">Hoàn tất</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-5">Đã nhận</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track Đổi trả (Hiện khi đơn có yêu cầu đổi trả) -->
+        <div id="track-return-flow" class="hidden relative w-full max-w-3xl mx-auto px-2">
+          <!-- Background Bar -->
+          <div class="absolute top-5 left-12 right-12 h-1 bg-[#e1e3e4] rounded z-0"></div>
+          <!-- Active Progress Bar -->
+          <div id="return-stepper-progress" class="absolute top-5 left-12 h-1 bg-purple-700 transition-all duration-500 rounded z-0" style="width: 33%;"></div>
+
+          <!-- 3 Steps Grid for Return -->
+          <div class="relative grid grid-cols-3 gap-2 text-center z-10" id="return-stepper-steps">
+            <div class="flex flex-col items-center" id="return-step-1">
+              <div class="w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-[15px] shadow-xs">
+                <span class="material-symbols-outlined text-[20px]">assignment_return</span>
+              </div>
+              <span class="mt-2 text-[13px] text-purple-950 font-bold">Gửi yêu cầu đổi trả</span>
+              <span class="text-[11px] text-[#74777e]">Đã tiếp nhận hồ sơ</span>
+            </div>
+
+            <div class="flex flex-col items-center" id="return-step-2">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">hourglass_top</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="return-step-2-title">Ban thẩm định xử lý</span>
+              <span class="text-[11px] text-[#74777e]" id="return-step-2-sub">Kiểm định phôi/vết nứt</span>
+            </div>
+
+            <div class="flex flex-col items-center" id="return-step-3">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">price_check</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="return-step-3-title">Kết quả & Hoàn tiền</span>
+              <span class="text-[11px] text-[#74777e]" id="return-step-3-sub">Quyết định xưởng lò</span>
             </div>
           </div>
         </div>
@@ -153,6 +191,31 @@
           <div class="flex-1 text-[13px]">
             <strong class="font-bold">Đơn hàng này đã bị hủy.</strong>
             <p id="detail-cancelled-reason" class="text-red-700 mt-0.5">Lý do: Khách hàng tự hủy</p>
+          </div>
+        </div>
+
+        <!-- Thông báo Chấp nhận đổi trả & Hoàn tiền -->
+        <div id="detail-return-approved-banner" class="hidden mt-6 p-4 rounded-lg bg-emerald-50 border border-emerald-300 flex items-start gap-3 text-emerald-950">
+          <span class="material-symbols-outlined text-[24px] text-emerald-600 shrink-0">verified</span>
+          <div class="flex-1 text-[13px]">
+            <strong class="font-bold text-emerald-900 block text-[14px]">Xưởng gốm đã chấp nhận yêu cầu đổi trả!</strong>
+            <p class="text-emerald-800 mt-1 leading-relaxed">
+              Số tiền <strong id="detail-return-refund-amount" class="text-emerald-900 font-bold font-serif text-[15px]">-- ₫</strong> đã được duyệt hoàn trả về tài khoản của quý khách. Nhân sự xưởng sẽ liên hệ tiếp nhận tác phẩm tại tư gia.
+            </p>
+          </div>
+        </div>
+
+        <!-- Thông báo Từ chối đổi trả kèm Lý do từ chối -->
+        <div id="detail-return-rejected-banner" class="hidden mt-6 p-4 rounded-lg bg-amber-50 border border-amber-300 flex items-start gap-3 text-amber-950">
+          <span class="material-symbols-outlined text-[24px] text-amber-600 shrink-0">report</span>
+          <div class="flex-1 text-[13px]">
+            <strong class="font-bold text-amber-900 block text-[14px]">Yêu cầu đổi trả không được chấp thuận</strong>
+            <p class="text-amber-900 mt-1">
+              <strong>Lý do từ chối:</strong> <span id="detail-return-rejected-reason" class="italic text-amber-950 font-medium font-serif">--</span>
+            </p>
+            <p class="text-[12px] text-amber-800/90 mt-1">
+              Mọi thắc mắc cần phúc khảo, quý khách vui lòng liên hệ hotline ban nghệ nhân để được hỗ trợ trực tiếp.
+            </p>
           </div>
         </div>
       </div>
@@ -316,10 +379,6 @@
             <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full py-3 px-4 rounded bg-[#0a2540] hover:bg-[#10162B] text-white text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer" type="button">
               <span class="material-symbols-outlined text-[18px]">location_searching</span>
               <span>Theo Dõi Tiến Trình Trực Tiếp</span>
-            </button>
-            <button onclick="if(window.dieuHuong) window.dieuHuong('review')" class="w-full py-3 px-4 rounded bg-[#edeeef] hover:bg-[#e7e8e9] text-[#000f22] text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer" type="button">
-              <span class="material-symbols-outlined text-[18px]">rate_review</span>
-              <span>Đánh Giá Tác Phẩm Sau Khi Nhận Hàng</span>
             </button>
           </div>
         </div>

@@ -93,6 +93,7 @@ export interface OrderStats {
   cancelled: number;
   todayOrders: number;
   totalRevenue: number;
+  paidOrdersCount?: number;
 }
 
 export interface OrderListResponse {

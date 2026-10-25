@@ -455,7 +455,7 @@
               <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
                 <tr *ngFor="let order of filteredCustomerOrders" class="hover:bg-surface-container-low/50 transition-colors h-16">
                   <td class="px-space-lg py-space-sm">
-                    <a class="font-label-md font-bold text-[#0A2540] hover:underline cursor-pointer" href="javascript:void(0)">
+                    <a (click)="viewOrderDetail(order)" class="font-label-md font-bold text-[#0A2540] hover:underline cursor-pointer" href="javascript:void(0)" title="Xem chi tiết đơn hàng này">
                       #{{ order.orderCode || order._id.slice(-6).toUpperCase() }}
                     </a>
                   </td>
@@ -485,7 +485,7 @@
                     </span>
                   </td>
                   <td class="px-space-lg py-space-sm text-right">
-                    <button class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" (click)="showToast('Mở chi tiết đơn hàng #' + (order.orderCode || order._id))">
+                    <button class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" (click)="viewOrderDetail(order)" title="Xem chi tiết đơn hàng">
                       <span>Xem đơn</span>
                       <span class="material-symbols-outlined text-sm">visibility</span>
                     </button>
@@ -498,7 +498,7 @@
           <!-- Chân bảng: Hiển thị tổng số đơn & Liên kết xem tất cả -->
           <div class="px-space-lg py-space-md bg-surface-container-lowest border-t border-surface-container flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
             <span>Hiển thị {{ filteredCustomerOrders.length }} trên tổng số {{ customerOrders.length }} đơn hàng</span>
-            <a href="javascript:void(0)" (click)="showToast('Chuyển sang phân hệ Quản lý đơn hàng')" class="text-[#0A2540] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
+            <a href="javascript:void(0)" (click)="viewAllCustomerOrders()" class="text-[#0A2540] font-semibold hover:underline flex items-center gap-1 cursor-pointer" title="Xem tất cả đơn hàng của khách hàng này trong Quản lý đơn hàng">
               <span>Xem tất cả lịch sử mua hàng</span>
               <span class="material-symbols-outlined text-sm">east</span>
             </a>

@@ -78,16 +78,21 @@ async function addToCart(productIdOrPayload, maybeQuantity = 1, maybeCustomizati
     throw err;
   }
 
-  if (product.status !== 'active') {
-    const err = new Error('Sản phẩm hiện đang ngừng kinh doanh');
-    err.statusCode = 400;
-    throw err;
-  }
+  const isCustomOrder = Boolean(customization || product.isCustomizable);
 
-  if (product.stock <= 0) {
-    const err = new Error('Số lượng sản phẩm trong kho không đủ (Sản phẩm đã hết hàng)');
-    err.statusCode = 400;
-    throw err;
+  // Hàng custom chế tác theo yêu cầu không bao giờ hết hàng (khách đặt xưởng mới chế tác)
+  if (!isCustomOrder) {
+    if (product.status !== 'active') {
+      const err = new Error('Sản phẩm hiện đang ngừng kinh doanh');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (product.stock <= 0) {
+      const err = new Error('Số lượng sản phẩm trong kho không đủ (Sản phẩm đã hết hàng)');
+      err.statusCode = 400;
+      throw err;
+    }
   }
 
   if (!accountId) {
@@ -289,16 +294,20 @@ async function updateItemQuantity(accountId, itemId, quantity) {
   }
 
   const product = await Product.findById(item.productId);
-  if (!product || product.status !== 'active') {
-    const err = new Error('Sản phẩm đã ngừng kinh doanh');
-    err.statusCode = 400;
-    throw err;
-  }
+  const isCustomItem = Boolean(item.customization || (product && product.isCustomizable));
 
-  if (qty > product.stock) {
-    const err = new Error(`Số lượng sản phẩm trong kho không đủ (Hiện còn ${product.stock} sản phẩm)`);
-    err.statusCode = 400;
-    throw err;
+  if (!isCustomItem) {
+    if (!product || product.status !== 'active') {
+      const err = new Error('Sản phẩm đã ngừng kinh doanh');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (qty > product.stock) {
+      const err = new Error(`Số lượng sản phẩm trong kho không đủ (Hiện còn ${product.stock} sản phẩm)`);
+      err.statusCode = 400;
+      throw err;
+    }
   }
 
   item.quantity = qty;

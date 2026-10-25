@@ -1612,12 +1612,15 @@
 
   function updateProfileOrderCounts(orders) {
     const all = orders.length;
-    const pending = orders.filter(o => (o.orderStatus || 'pending').toLowerCase() === 'pending').length;
+    const pending = orders.filter(o => {
+      const s = (o.orderStatus || 'pending').toLowerCase();
+      return s === 'pending' || s === 'confirmed' || s === 'processing' || s === 'shipping';
+    }).length;
     const completed = orders.filter(o => (o.orderStatus || '').toLowerCase() === 'completed').length;
     const cancelled = orders.filter(o => (o.orderStatus || '').toLowerCase() === 'cancelled').length;
 
     // Cập nhật tab filter trên profile.html
-    const filterButtons = document.querySelectorAll('#order-history .order-filter-btn');
+    const filterButtons = document.querySelectorAll('.order-filter-btn');
     if (filterButtons.length >= 4) {
       filterButtons[0].innerText = `Tất cả đơn (${String(all).padStart(2, '0')})`;
       filterButtons[1].innerText = `Chờ xử lý / Đang xếp lò (${String(pending).padStart(2, '0')})`;
@@ -1850,15 +1853,15 @@
             </div>
 
             <!-- Cụm nút hành động theo đúng trạng thái -->
-            <div class="flex flex-wrap items-center gap-2.5 self-end sm:self-auto">
-              <!-- 0. Chi tiết đơn hàng (Màn hình Stitch) -->
+              <!-- 0. Chi tiết đơn hàng (Màn hình Stitch - Mặc định lúc nào cũng có) -->
               <button type="button" 
                       onclick="if(window.dieuHuong) window.dieuHuong('order-detail', null, '${order._id}')" 
                       class="px-4 py-2 rounded-lg bg-[#000f22] hover:bg-[#10162B] text-white font-title-md text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                 <span class="material-symbols-outlined text-[16px] text-[#edbf76]">visibility</span>
                 <span>Chi tiết đơn</span>
               </button>
-              <!-- 1. Hủy đơn (CHỈ KHI PENDING) -->
+
+              <!-- 1. Hủy đơn (CHỈ KHI PENDING / CHỜ DUYỆT - Nếu đã qua Chế tác/Processing thì KHÔNG CÒN NÚT HỦY) -->
               ${isPending ? `
                 <button type="button" 
                         onclick="OrdersModule.openCancelModal('${order._id}', '${order.orderCode}')" 
@@ -1868,56 +1871,32 @@
                 </button>
               ` : ''}
 
-              <!-- 2. Tôi đã thanh toán (MoMo / Banking & chưa paid) -->
-              ${canPayNotify ? `
-                <button type="button" 
-                        onclick="OrdersModule.openPayNotifyModal('${order._id}', '${order.orderCode}')" 
-                        class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-title-md text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                  <span class="material-symbols-outlined text-[16px]">verified</span>
-                  <span>Tôi đã thanh toán</span>
-                </button>
-              ` : ''}
-
-              <!-- 3. Đề nghị đổi trả (KHI COMPLETED) -->
+              <!-- 2. Hàng hoàn thành: Thêm nút Đánh giá & Yêu cầu đổi trả -->
               ${isCompleted ? `
                 ${order.returnStatus === 'requested' ? `
-                  <button type="button" disabled class="px-4 py-2 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-title-md text-xs font-semibold cursor-not-allowed flex items-center gap-1">
+                  <button type="button" disabled class="px-3.5 py-2 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-title-md text-xs font-semibold opacity-60 cursor-not-allowed flex items-center gap-1.5" title="Yêu cầu đổi trả đang chờ ban giám định kiểm tra">
                     <span class="material-symbols-outlined text-[16px]">hourglass_top</span>
                     <span>Đang thẩm định đổi trả</span>
                   </button>
                 ` : order.returnStatus === 'approved' ? `
-                  <button type="button" disabled class="px-4 py-2 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 font-title-md text-xs font-semibold cursor-not-allowed flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                  <button type="button" disabled class="px-3.5 py-2 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 font-title-md text-xs font-semibold opacity-70 cursor-not-allowed flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">verified</span>
                     <span>Đã chấp thuận đổi trả</span>
+                  </button>
+                ` : order.returnStatus === 'rejected' ? `
+                  <button type="button" disabled class="px-3.5 py-2 rounded-lg bg-red-100 text-red-800 border border-red-200 font-title-md text-xs font-semibold opacity-70 cursor-not-allowed flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">cancel</span>
+                    <span>Từ chối đổi trả</span>
                   </button>
                 ` : `
                   <button type="button" 
-                          onclick="openReturnModal('${order.orderCode}', '${order._id}')" 
-                          class="px-4 py-2 rounded-lg bg-porcelain-white text-primary hover:bg-secondary/10 border border-secondary/30 font-title-md text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer">
+                          onclick="openReturnModal('${order.orderCode}', '${order._id}', ${encodedOrderItems})" 
+                          class="px-3.5 py-2 rounded-lg bg-porcelain-white text-primary hover:bg-secondary/10 border border-secondary/40 font-title-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
                     <span class="material-symbols-outlined text-[16px]">assignment_return</span>
-                    <span>Yêu cầu đổi / trả</span>
+                    <span>Yêu cầu đổi trả</span>
                   </button>
                 `}
               ` : ''}
-
-              <!-- 4. Tải chứng thư di sản số hóa (Completed) -->
-              ${isCompleted ? `
-                <button type="button" 
-                        onclick="downloadHeritageCertificate('${order.orderCode}')" 
-                        class="px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-primary font-title-md text-xs font-medium border border-biscuit-sand transition-colors flex items-center gap-1 cursor-pointer">
-                  <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
-                  <span>Chứng thư bảo trợ</span>
-                </button>
-              ` : ''}
-
-              <!-- 5. Kết nối nghệ nhân hotline -->
-              <button type="button" 
-                      onclick="alert('Đã kết nối Xưởng trưởng Bát Tràng. Nghệ nhân sẽ liên lạc hỗ trợ đơn #${order.orderCode} qua số điện thoại của quý khách.')" 
-                      class="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-title-md text-xs transition-colors flex items-center gap-1 cursor-pointer" 
-                      title="Liên hệ hotline xưởng">
-                <span class="material-symbols-outlined text-[16px] text-[#edbf76]">support_agent</span>
-                <span>Tư vấn</span>
-              </button>
             </div>
           </div>
         </div>
@@ -2071,27 +2050,143 @@
       }
     }
 
-    // Stepper 5 bước
+    // Nút Yêu cầu đổi trả & Chứng thư bảo trợ (Chỉ hiện khi Completed)
+    const returnBtn = document.getElementById('detail-btn-return');
+    if (returnBtn) {
+      if (oStatus === 'completed') {
+        returnBtn.classList.remove('hidden');
+        if (orderData.returnStatus === 'requested') {
+          returnBtn.disabled = true;
+          returnBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-purple-100 text-purple-800 border border-purple-200 text-[12px] uppercase tracking-wider font-semibold opacity-60 cursor-not-allowed';
+          returnBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+        } else if (orderData.returnStatus === 'approved') {
+          returnBtn.disabled = true;
+          returnBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 text-[12px] uppercase tracking-wider font-semibold opacity-70 cursor-not-allowed';
+          returnBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">verified</span><span>Đã chấp thuận đổi trả</span>';
+        } else if (orderData.returnStatus === 'rejected') {
+          returnBtn.disabled = true;
+          returnBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-red-100 text-red-800 border border-red-200 text-[12px] uppercase tracking-wider font-semibold opacity-70 cursor-not-allowed';
+          returnBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">cancel</span><span>Từ chối đổi trả</span>';
+        } else {
+          returnBtn.disabled = false;
+          returnBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-white hover:bg-secondary/10 text-primary border border-secondary/40 text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer';
+          returnBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">assignment_return</span><span>Yêu cầu đổi / trả</span>';
+        }
+      } else {
+        returnBtn.classList.add('hidden');
+      }
+    }
+
+
+
+    // Steppers & Banners Logic
     const progressEl = document.getElementById('detail-stepper-progress');
     const cancelBanner = document.getElementById('detail-cancelled-banner');
     const cancelReasonEl = document.getElementById('detail-cancelled-reason');
+    const trackOrderFlow = document.getElementById('track-order-flow');
+    const trackReturnFlow = document.getElementById('track-return-flow');
+    const stepperTitle = document.getElementById('detail-stepper-title');
+    const returnApprovedBanner = document.getElementById('detail-return-approved-banner');
+    const returnRejectedBanner = document.getElementById('detail-return-rejected-banner');
 
-    if (oStatus === 'cancelled') {
-      if (progressEl) progressEl.style.width = '100%';
-      if (cancelBanner) cancelBanner.classList.remove('hidden');
-      if (cancelReasonEl) {
-        cancelReasonEl.textContent = `Lý do: ${orderData.cancelReason || orderData.cancellationReason || 'Khách hàng tự hủy'}`;
+    // Reset banners
+    if (cancelBanner) cancelBanner.classList.add('hidden');
+    if (returnApprovedBanner) returnApprovedBanner.classList.add('hidden');
+    if (returnRejectedBanner) returnRejectedBanner.classList.add('hidden');
+
+    const retStatus = (orderData.returnStatus || '').toLowerCase();
+    const isReturnActive = retStatus === 'requested' || retStatus === 'approved' || retStatus === 'rejected' || retStatus === 'completed';
+
+    if (isReturnActive) {
+      // Chuyển sang thanh trạng thái yêu cầu đổi trả thay vì trạng thái giao hàng thông thường
+      if (trackOrderFlow) trackOrderFlow.classList.add('hidden');
+      if (trackReturnFlow) trackReturnFlow.classList.remove('hidden');
+      if (stepperTitle) {
+        stepperTitle.innerHTML = '<span class="material-symbols-outlined text-[18px] text-purple-700">assignment_return</span><span>Tiến trình xử lý yêu cầu đổi trả tác phẩm</span>';
       }
-      const title5 = document.getElementById('stepper-title-5');
-      if (title5) title5.textContent = 'Đã hủy đơn';
+
+      const retProgress = document.getElementById('return-stepper-progress');
+      const retStep2 = document.getElementById('return-step-2');
+      const retStep3 = document.getElementById('return-step-3');
+      const retStep2Title = document.getElementById('return-step-2-title');
+      const retStep3Title = document.getElementById('return-step-3-title');
+
+      if (retStatus === 'requested') {
+        if (retProgress) retProgress.style.width = '50%';
+        if (retStep2) {
+          retStep2.querySelector('.rounded-full').className = 'w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-[15px] shadow-xs animate-pulse';
+          if (retStep2Title) retStep2Title.className = 'mt-2 text-[13px] text-purple-950 font-bold';
+        }
+      } else if (retStatus === 'approved' || retStatus === 'completed') {
+        if (retProgress) retProgress.style.width = '100%';
+        if (retStep2) {
+          retStep2.querySelector('.rounded-full').className = 'w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-[15px] shadow-xs';
+          if (retStep2Title) retStep2Title.className = 'mt-2 text-[13px] text-purple-950 font-bold';
+        }
+        if (retStep3) {
+          retStep3.querySelector('.rounded-full').className = 'w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[15px] shadow-xs';
+          if (retStep3Title) {
+            retStep3Title.className = 'mt-2 text-[13px] text-emerald-950 font-bold';
+            retStep3Title.textContent = 'Đã hoàn tiền thành công';
+          }
+        }
+        // Hiển thị thông báo tiền được hoàn
+        if (returnApprovedBanner) {
+          returnApprovedBanner.classList.remove('hidden');
+          const refundEl = document.getElementById('detail-return-refund-amount');
+          const refundAmt = Number(orderData.refundedAmount || orderData.totalAmount || 0);
+          if (refundEl) refundEl.textContent = formatMoney(refundAmt);
+        }
+      } else if (retStatus === 'rejected') {
+        if (retProgress) {
+          retProgress.style.width = '100%';
+          retProgress.className = 'absolute top-5 left-12 h-1 bg-red-600 transition-all duration-500 rounded z-0';
+        }
+        if (retStep2) {
+          retStep2.querySelector('.rounded-full').className = 'w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-[15px] shadow-xs';
+        }
+        if (retStep3) {
+          retStep3.querySelector('.rounded-full').className = 'w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center text-[15px] shadow-xs';
+          if (retStep3Title) {
+            retStep3Title.className = 'mt-2 text-[13px] text-red-700 font-bold';
+            retStep3Title.textContent = 'Từ chối đổi trả';
+          }
+        }
+        // Hiển thị thanh thông báo kèm lý do từ chối
+        if (returnRejectedBanner) {
+          returnRejectedBanner.classList.remove('hidden');
+          const reasonEl = document.getElementById('detail-return-rejected-reason');
+          const rejReason = (orderData.returnRequestId && orderData.returnRequestId.rejectionReason) ||
+                            orderData.rejectionReason ||
+                            orderData.returnRejectionReason ||
+                            'Tác phẩm đã qua kiểm định không có vết nứt do xưởng hoặc quá thời hạn đổi trả 7 ngày.';
+          if (reasonEl) reasonEl.textContent = rejReason;
+        }
+      }
     } else {
-      if (cancelBanner) cancelBanner.classList.add('hidden');
-      let progressPercent = '15%';
-      if (oStatus === 'confirmed') progressPercent = '35%';
-      else if (oStatus === 'processing') progressPercent = '55%';
-      else if (oStatus === 'shipping') progressPercent = '75%';
-      else if (oStatus === 'completed') progressPercent = '100%';
-      if (progressEl) progressEl.style.width = progressPercent;
+      // Giữ thanh trạng thái tiến trình giao hàng thông thường
+      if (trackOrderFlow) trackOrderFlow.classList.remove('hidden');
+      if (trackReturnFlow) trackReturnFlow.classList.add('hidden');
+      if (stepperTitle) {
+        stepperTitle.innerHTML = '<span class="material-symbols-outlined text-[18px] text-[#a23e18]">route</span><span>Tiến trình chế tác & phụng vận</span>';
+      }
+
+      if (oStatus === 'cancelled') {
+        if (progressEl) progressEl.style.width = '100%';
+        if (cancelBanner) cancelBanner.classList.remove('hidden');
+        if (cancelReasonEl) {
+          cancelReasonEl.textContent = `Lý do: ${orderData.cancelReason || orderData.cancellationReason || 'Khách hàng tự hủy'}`;
+        }
+        const title5 = document.getElementById('stepper-title-5');
+        if (title5) title5.textContent = 'Đã hủy đơn';
+      } else {
+        let progressPercent = '15%';
+        if (oStatus === 'confirmed') progressPercent = '35%';
+        else if (oStatus === 'processing') progressPercent = '55%';
+        else if (oStatus === 'shipping') progressPercent = '75%';
+        else if (oStatus === 'completed') progressPercent = '100%';
+        if (progressEl) progressEl.style.width = progressPercent;
+      }
     }
 
     // Render danh sách sản phẩm
@@ -2267,6 +2362,24 @@
     }
   }
 
+  function openReturnModalFromDetail() {
+    if (!currentOrderDetail) return;
+    if (typeof window.openReturnModal === 'function') {
+      window.openReturnModal(currentOrderDetail.orderCode, currentOrderDetail._id, currentOrderDetail.items);
+    } else {
+      alert(`Đã gửi yêu cầu đổi trả cho đơn hàng #${currentOrderDetail.orderCode}. Ban giám định xưởng gốm sẽ liên hệ.`);
+    }
+  }
+
+  function downloadHeritageFromDetail() {
+    if (!currentOrderDetail) return;
+    if (typeof window.downloadHeritageCertificate === 'function') {
+      window.downloadHeritageCertificate(currentOrderDetail.orderCode);
+    } else {
+      window.print();
+    }
+  }
+
   // Đối tượng đối ngoại
   const OrdersModule = {
     initCheckoutPage,
@@ -2274,6 +2387,8 @@
     initOrderTrackingPage,
     initOrderDetailPage,
     cancelCurrentOrderDetail,
+    openReturnModalFromDetail,
+    downloadHeritageFromDetail,
     initProfileOrders,
     toggleOrderAccordion,
     submitOrder,

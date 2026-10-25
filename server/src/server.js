@@ -1227,7 +1227,8 @@ app.post('/api/accounts/wishlist/toggle', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
     }
 
-    const index = account.wishlist.indexOf(productId);
+    const targetProdId = String(productId);
+    const index = account.wishlist.findIndex(id => String(id) === targetProdId);
     let isAdded = false;
 
     if (index > -1) {
@@ -1447,22 +1448,54 @@ app.post('/api/reviews', async (req, res) => {
 // 2. Lấy danh sách đánh giá theo sản phẩm + tính sao trung bình (cho TV2 hiển thị product-detail)
 app.get('/api/reviews/product/:productId', async (req, res) => {
   try {
-    const reviews = await Review.find({ productId: req.params.productId })
+    const pId = req.params.productId;
+    const isObjectId = mongoose.Types.ObjectId.isValid(pId);
+    const query = {
+      $or: [
+        { productId: isObjectId ? new mongoose.Types.ObjectId(pId) : pId },
+        { product: isObjectId ? new mongoose.Types.ObjectId(pId) : pId }
+      ]
+    };
+
+    const rawReviews = await Review.find(query)
       .populate('accountId', 'fullName email')
+      .populate('customer', 'fullName email')
       .sort({ createdAt: -1 })
       .lean();
+
+    const reviews = rawReviews.map(r => {
+      const customerName = r.customerName || (r.accountId && r.accountId.fullName) || (r.customer && r.customer.fullName) || 'Nhà Sưu Tầm';
+      const rating = Number(r.rating || 5);
+      return {
+        _id: r._id,
+        productId: r.productId || r.product,
+        orderId: r.orderId || r.order,
+        rating,
+        comment: r.comment || '',
+        customerName,
+        createdAt: r.createdAt || new Date(),
+        images: r.images || []
+      };
+    });
 
     const totalReviews = reviews.length;
     const averageRating = totalReviews > 0
       ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
       : 5.0;
 
+    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach(r => {
+      const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
+      breakdown[star] = (breakdown[star] || 0) + 1;
+    });
+
     res.status(200).json({
       success: true,
       data: reviews,
       stats: {
         totalReviews,
-        averageRating: Number(averageRating)
+        averageRating: Number(averageRating),
+        breakdown
       }
     });
   } catch (error) {
@@ -1707,11 +1740,15 @@ app.get('/api/dashboard/stats', async (req, res) => {
       ]
     });
 
-    // 3. Cảnh báo hết hàng: số Product có stock <= 5
-    const lowStockCount = await Product.countDocuments({ stock: { $lte: 5 } });
+    // 3. Cảnh báo hết hàng: số Product có stock <= 5 (Đồng bộ với catalog sản phẩm hợp lệ)
+    const verifiedProductFilter = getVerifiedCatalogProductFilter();
+    const lowStockCount = await Product.countDocuments({
+      ...verifiedProductFilter,
+      stock: { $lte: 5 }
+    });
 
-    // 4. Tổng sản phẩm
-    const totalProductsCount = await Product.countDocuments();
+    // 4. Tổng sản phẩm (Đồng bộ với 33 sản phẩm hợp lệ trong Quản lý sản phẩm)
+    const totalProductsCount = await Product.countDocuments(verifiedProductFilter);
 
     // 5. Tổng khách hàng: số Account có role === 'customer'
     const totalCustomersCount = await Account.countDocuments({ role: 'customer' });
@@ -1731,12 +1768,173 @@ app.get('/api/dashboard/stats', async (req, res) => {
       .limit(5)
       .lean();
 
-    // 8. Danh sách 5 sản phẩm sắp hết hàng (Low Stock Products)
-    const lowStockProducts = await Product.find({ stock: { $lte: 5 } })
-      .select('name sku stock price image images glazeColor')
+    // 8. Danh sách sản phẩm sắp hết hàng (Low Stock Products <= 5) sắp xếp tăng dần theo tồn kho
+    const lowStockRaw = await Product.find({
+      ...verifiedProductFilter,
+      stock: { $lte: 5 }
+    })
+      .select('name sku stock price image images glazeColor collectionName')
       .sort({ stock: 1 })
-      .limit(5)
+      .limit(10)
       .lean();
+
+    const lowStockProducts = lowStockRaw.map(p => ({
+      _id: p._id,
+      name: p.name,
+      sku: p.sku || 'SKU-' + String(p._id).slice(-4).toUpperCase(),
+      glazeColor: p.glazeColor || p.collectionName || 'Men truyền thống Bát Tràng',
+      stock: typeof p.stock === 'number' ? p.stock : 0,
+      price: p.price || 0,
+      image: p.image || (Array.isArray(p.images) && p.images[0]) || 'assets/img/logo.png',
+    }));
+
+    // 9. Tính toán Biểu Đồ 7 Ngày Thực Tế & Báo Cáo Tuần Chi Tiết
+    const now = new Date();
+    const daysLabelMap = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const revenueDays = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayLabel = daysLabelMap[d.getDay()];
+      revenueDays.push({
+        date: dateStr,
+        dayLabel,
+        fullDateLabel: d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        menLamAmount: 0,
+        saThachAmount: 0,
+        totalAmount: 0,
+        menLamHeightPercent: 10,
+        saThachHeightPercent: 10,
+        refundedAmount: 0,
+        cancelledOrders: 0,
+        cancelledAmount: 0,
+        returnedOrders: 0,
+        paidOrders: 0,
+        isPeak: false,
+      });
+    }
+
+    const start7Days = new Date(revenueDays[0].date + 'T00:00:00.000Z');
+    const ordersIn7Days = await Order.find({ createdAt: { $gte: start7Days } })
+      .populate('accountId', 'fullName phone')
+      .lean();
+
+    let maxDayRevenue = 0;
+    let peakIndex = -1;
+    let highestSingleOrder = null;
+    let weekTotalGross = 0;
+    let weekTotalNet = 0;
+    let weekTotalRefund = 0;
+    let weekTotalCancelled = 0;
+    let weekPaidOrdersCount = 0;
+
+    ordersIn7Days.forEach(o => {
+      const dStr = o.createdAt ? new Date(o.createdAt).toISOString().slice(0, 10) : '';
+      const dayBucket = revenueDays.find(r => r.date === dStr);
+      if (!dayBucket) return;
+
+      const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
+      const payment = (o.paymentStatus || '').toLowerCase();
+      const total = Number(o.totalAmount || 0);
+      let refunded = Number(o.refundedAmount || 0);
+
+      const isCancelled = rawStatus === 'cancelled';
+      const isPaid = ['paid', 'partially_refunded'].includes(payment);
+
+      if (isCancelled) {
+        dayBucket.cancelledOrders++;
+        dayBucket.cancelledAmount += total;
+        weekTotalCancelled += total;
+      } else if (isPaid) {
+        if (o.returnStatus === 'approved') {
+          dayBucket.returnedOrders++;
+          if (!refunded || refunded <= 0) refunded = total;
+        }
+        dayBucket.paidOrders++;
+        dayBucket.refundedAmount += refunded;
+        
+        // Số tiền thu được thực tế
+        dayBucket.grossRevenue = (dayBucket.grossRevenue || 0) + total;
+        weekTotalGross += total;
+
+        const net = Math.max(0, total - refunded);
+        dayBucket.totalAmount += net;
+        weekTotalNet += net;
+        weekTotalRefund += refunded;
+        weekPaidOrdersCount++;
+
+        if (!highestSingleOrder || total > highestSingleOrder.amount) {
+          const firstItem = Array.isArray(o.items) && o.items[0];
+          highestSingleOrder = {
+            orderCode: o.orderCode,
+            amount: total,
+            productName: firstItem ? (firstItem.productName || firstItem.name) : 'Tác phẩm Gốm Sứ',
+            customerName: o.shippingAddress?.recipientName || o.accountId?.fullName || 'Khách hàng',
+          };
+        }
+      }
+    });
+
+    // Tính toán lại Doanh Thu Thuần cho từng ngày và phân bổ theo dòng sản phẩm:
+    // DOANH THU THUẦN = TIỀN THU ĐƯỢC - GIÁ TRỊ HÀNG HOÀN TRẢ - GIÁ TRỊ HÀNG HỦY
+    revenueDays.forEach(d => {
+      const gross = d.grossRevenue || 0;
+      const ref = d.refundedAmount || 0;
+      const can = d.cancelledAmount || 0;
+      const dailyNet = Math.max(0, gross - ref - can);
+      d.totalAmount = dailyNet;
+      d.menLamAmount = Math.round(dailyNet * 0.7);
+      d.saThachAmount = Math.round(dailyNet * 0.3);
+    });
+
+    weekTotalNet = Math.max(0, weekTotalGross - weekTotalRefund - weekTotalCancelled);
+
+    // Tìm ngày đỉnh cao nhất và tính % chiều cao cột biểu đồ
+    revenueDays.forEach((d, idx) => {
+      if (d.totalAmount > maxDayRevenue) {
+        maxDayRevenue = d.totalAmount;
+        peakIndex = idx;
+      }
+    });
+
+    if (peakIndex >= 0 && maxDayRevenue > 0) {
+      revenueDays[peakIndex].isPeak = true;
+    }
+
+    const chartCeiling = Math.max(maxDayRevenue, 1000000);
+    revenueDays.forEach(d => {
+      if (chartCeiling > 0) {
+        d.menLamHeightPercent = Math.max(8, Math.min(95, Math.round((d.menLamAmount / chartCeiling) * 90)));
+        d.saThachHeightPercent = Math.max(8, Math.min(95, Math.round((d.saThachAmount / chartCeiling) * 90)));
+      }
+    });
+
+    // Cấu trúc báo cáo tuần chi tiết
+    const weeklyReport = {
+      dateRangeLabel: `${revenueDays[0].fullDateLabel} – ${revenueDays[6].fullDateLabel}`,
+      totalGrossRevenue: weekTotalGross,
+      totalNetRevenue: weekTotalNet,
+      totalRefundedAmount: weekTotalRefund,
+      totalCancelledAmount: weekTotalCancelled,
+      paidOrdersCount: weekPaidOrdersCount,
+      peakDayLabel: peakIndex >= 0 ? `${revenueDays[peakIndex].dayLabel} (${revenueDays[peakIndex].fullDateLabel})` : 'Chưa có',
+      peakDayRevenue: maxDayRevenue,
+      highestOrder: highestSingleOrder,
+      dailyBreakdown: revenueDays.map(d => ({
+        date: d.date,
+        dayLabel: d.dayLabel,
+        fullDateLabel: d.fullDateLabel,
+        grossRevenue: d.grossRevenue || d.totalAmount + d.refundedAmount,
+        netRevenue: d.totalAmount,
+        refundedAmount: d.refundedAmount,
+        cancelledOrders: d.cancelledOrders,
+        cancelledAmount: d.cancelledAmount,
+        paidOrders: d.paidOrders,
+        isPeak: !!d.isPeak,
+      })),
+    };
 
     res.status(200).json({
       success: true,
@@ -1744,11 +1942,13 @@ app.get('/api/dashboard/stats', async (req, res) => {
         totalRevenue: totalRevenue,
         totalProductsCount: totalProductsCount || 125,
         pendingOrdersCount: typeof pendingOrdersCount === 'number' ? pendingOrdersCount : 0,
-        lowStockCount: lowStockCount || 5,
+        lowStockCount: lowStockCount || lowStockProducts.length,
         totalCustomersCount: totalCustomersCount || 1250,
         pendingReturnsCount: pendingReturnsCount || 14,
         recentOrders,
-        lowStockProducts
+        lowStockProducts,
+        revenueDays,
+        weeklyReport,
       }
     });
   } catch (error) {

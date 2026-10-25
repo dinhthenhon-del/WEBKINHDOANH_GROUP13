@@ -18,13 +18,18 @@ export class Dashboard implements OnInit, OnDestroy {
   private visibilityHandler: any = null;
   private focusHandler: any = null;
 
-  isLoading = false;
-  stats: DashboardStats = this.dashboardService.getFallbackStats();
-  revenueDays: RevenueDay[] = this.dashboardService.getRevenueWeeklyChart();
+  private static cachedStats: DashboardStats | null = null;
+  private static cachedRevenueDays: RevenueDay[] | null = null;
+  private static cachedWeeklyReport: any = null;
 
-  currentWeekLabel = 'Kỳ Quản Trị Men Lam • Tuần 24';
-  dateRangeLabel = '01/06/2024 – 07/06/2024';
-  highestOrderHighlight = 'Bộ Đồ Thờ Hoàng Gia (Bát Tràng Cổ) — Chiếm 38% cơ cấu tuần.';
+  isLoading = !Dashboard.cachedStats;
+  isInitialLoaded = !!Dashboard.cachedStats;
+  stats: DashboardStats = Dashboard.cachedStats || this.dashboardService.getFallbackStats();
+  revenueDays: RevenueDay[] = Dashboard.cachedRevenueDays || this.dashboardService.getRevenueWeeklyChart();
+
+  currentWeekLabel = 'Tổng Quan Quản Trị';
+  dateRangeLabel = Dashboard.cachedWeeklyReport?.dateRangeLabel || 'Tuần hiện tại';
+  highestOrderHighlight = '';
 
   // Toast notice
   toastMessage = '';
@@ -67,6 +72,13 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
+  // Modal Báo cáo tuần chi tiết
+  isWeeklyReportModalOpen = false;
+  weeklyReport: any = null;
+
+  peakDaySummary = 'Đang tải dữ liệu...';
+  weekAccumulatedRevenue = 0;
+
   loadDashboardData(showLoadingIndicator = true): void {
     if (showLoadingIndicator) {
       this.isLoading = true;
@@ -85,21 +97,47 @@ export class Dashboard implements OnInit, OnDestroy {
         clearTimeout(timer);
         this.isLoading = false;
         if (res && res.success && res.data) {
+          const data = res.data;
           this.stats = {
             ...this.dashboardService.getFallbackStats(),
-            ...res.data,
-            // Cập nhật số đơn chờ xác nhận thực tế
-            pendingOrdersCount: typeof res.data.pendingOrdersCount === 'number'
-              ? res.data.pendingOrdersCount
-              : (res.data.recentOrders?.length ?? this.stats.pendingOrdersCount),
-            // Nếu API có recentOrders thì normalize, nếu mảng rỗng thì để mảng rỗng
-            recentOrders: (Array.isArray(res.data.recentOrders) && res.data.recentOrders.length > 0)
-              ? this.normalizeRecentOrders(res.data.recentOrders)
-              : (Array.isArray(res.data.recentOrders) ? [] : this.stats.recentOrders),
-            lowStockProducts: (res.data.lowStockProducts && res.data.lowStockProducts.length > 0)
-              ? this.normalizeLowStockProducts(res.data.lowStockProducts)
+            ...data,
+            pendingOrdersCount: typeof data.pendingOrdersCount === 'number'
+              ? data.pendingOrdersCount
+              : (data.recentOrders?.length ?? this.stats.pendingOrdersCount),
+            recentOrders: (Array.isArray(data.recentOrders) && data.recentOrders.length > 0)
+              ? this.normalizeRecentOrders(data.recentOrders)
+              : (Array.isArray(data.recentOrders) ? [] : this.stats.recentOrders),
+            lowStockProducts: (data.lowStockProducts && data.lowStockProducts.length > 0)
+              ? this.normalizeLowStockProducts(data.lowStockProducts)
               : this.stats.lowStockProducts
           };
+
+          // Cập nhật biểu đồ 7 ngày từ backend thực tế
+          if (Array.isArray(data.revenueDays) && data.revenueDays.length > 0) {
+            this.revenueDays = data.revenueDays;
+          }
+
+          // Cập nhật báo cáo tuần
+          if (data.weeklyReport) {
+            this.weeklyReport = data.weeklyReport;
+            this.dateRangeLabel = data.weeklyReport.dateRangeLabel || this.dateRangeLabel;
+            this.weekAccumulatedRevenue = data.weeklyReport.totalNetRevenue || 0;
+
+            if (data.weeklyReport.peakDayLabel && data.weeklyReport.peakDayRevenue > 0) {
+              this.peakDaySummary = `Đạt đỉnh ${this.formatCurrency(data.weeklyReport.peakDayRevenue)} vào ${data.weeklyReport.peakDayLabel}`;
+            } else {
+              this.peakDaySummary = 'Chưa ghi nhận ngày đạt đỉnh';
+            }
+
+            if (data.weeklyReport.highestOrder) {
+              const ho = data.weeklyReport.highestOrder;
+              this.highestOrderHighlight = `${ho.productName} (#${ho.orderCode} - ${ho.customerName}) — Trị giá: ${this.formatCurrency(ho.amount)}`;
+            }
+          }
+          Dashboard.cachedStats = this.stats;
+          Dashboard.cachedRevenueDays = this.revenueDays;
+          Dashboard.cachedWeeklyReport = this.weeklyReport;
+          this.isInitialLoaded = true;
         }
         this.cdr.detectChanges();
       },
@@ -140,9 +178,9 @@ export class Dashboard implements OnInit, OnDestroy {
       name: p.name,
       sku: p.sku || 'SKU-UNKNOWN',
       glazeColor: p.glazeColor || 'Men lam cổ truyền',
-      stock: p.stock ?? 1,
+      stock: p.stock ?? 0,
       price: p.price || 0,
-      image: p.image || (p.images && p.images[0]) || 'minimalist_archway_pottery_icon.png'
+      image: p.image || (p.images && p.images[0]) || 'assets/img/logo.png'
     }));
   }
 
@@ -152,12 +190,46 @@ export class Dashboard implements OnInit, OnDestroy {
     return `${hours}:${minutes} • Gần đây`;
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+  formatCurrency(amount?: number | null): string {
+    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
+  }
+
+  // Mở modal xem chi tiết Báo cáo tuần
+  openWeeklyReportModal(): void {
+    this.isWeeklyReportModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  closeWeeklyReportModal(): void {
+    this.isWeeklyReportModalOpen = false;
+    this.cdr.detectChanges();
   }
 
   exportWeeklyReport(): void {
-    this.showToast('Đang tạo báo cáo quản trị tuần 24 (PDF/Excel)... Đã xuất thành công!');
+    this.openWeeklyReportModal();
+  }
+
+  downloadReportCsv(): void {
+    if (!this.weeklyReport || !Array.isArray(this.weeklyReport.dailyBreakdown)) {
+      this.showToast('Không có dữ liệu báo cáo để tải!');
+      return;
+    }
+
+    let csvContent = '\uFEFFNgày,Thứ,Doanh Thu Thuần (VND),Hàng Hoàn Trả (VND),Số Đơn Hủy,Giá Trị Đơn Hủy (VND),Số Đơn Thực Thu\n';
+    this.weeklyReport.dailyBreakdown.forEach((d: any) => {
+      csvContent += `"${d.fullDateLabel}","${d.dayLabel}",${d.netRevenue},${d.refundedAmount},${d.cancelledOrders},${d.cancelledAmount},${d.paidOrders}\n`;
+    });
+    csvContent += `\n"TỔNG CỘNG TUẦN","",${this.weeklyReport.totalNetRevenue},${this.weeklyReport.totalRefundedAmount},"",${this.weeklyReport.totalCancelledAmount},${this.weeklyReport.paidOrdersCount}\n`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Bao_Cao_Tuan_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast('Đã tải xuống file Báo cáo tuần (CSV/Excel) thành công!');
   }
 
   showToast(message: string): void {

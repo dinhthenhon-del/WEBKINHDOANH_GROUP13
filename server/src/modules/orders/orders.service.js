@@ -15,43 +15,42 @@ const VALID_TRANSITIONS = {
 
 /**
  * Hàm tính Doanh Thu Thuần (Net Revenue) duy nhất dùng chung cho toàn hệ thống:
- * Doanh thu thuần = Tổng giá trị các đơn hàng hoàn tất đã thanh toán trừ đi các khoản hoàn tiền / hàng trả lại
+ * Công thức: Doanh thu thuần = Tiền thu được - Giá trị hàng hoàn trả - Giá trị hàng hủy
+ * 1. Tiền thu được: Tổng giá trị các đơn hàng đã thanh toán (paymentStatus: 'paid' / 'partially_refunded').
+ * 2. Giá trị hàng hoàn trả: Khấu trừ số tiền hoàn từ các đơn hàng đổi trả / phê duyệt hoàn tiền.
+ * 3. Giá trị hàng hủy: Khấu trừ toàn bộ giá trị các đơn hàng bị hủy.
  */
 async function calculateNetRevenue() {
-  const completedOrders = await Order.find({
-    $or: [
-      { orderStatus: 'completed' },
-      { status: { $in: ['completed', 'COMPLETED', 'delivered'] } },
-    ],
-    // Bao gồm các đơn đã thanh toán hoặc đã hoàn tiền (một phần hoặc toàn phần)
-    paymentStatus: { $in: ['paid', 'partially_refunded', 'refunded'] },
-  })
-    .select('totalAmount refundedAmount returnStatus paymentStatus')
+  const allOrders = await Order.find()
+    .select('totalAmount refundedAmount returnStatus paymentStatus orderStatus status')
     .lean();
 
-  const totalRevenue = completedOrders.reduce((sum, o) => {
+  let totalCollected = 0;
+  let totalRefunded = 0;
+  let totalCancelled = 0;
+
+  allOrders.forEach((o) => {
+    const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
+    const payment = (o.paymentStatus || '').toLowerCase();
     const total = Number(o.totalAmount || 0);
     let refunded = Number(o.refundedAmount || 0);
 
-    // 1. Nếu đơn đã hoàn tiền toàn bộ (paymentStatus: 'refunded') -> Không tính vào doanh thu thuần
-    if (o.paymentStatus === 'refunded') {
-      return sum;
+    if (o.returnStatus === 'approved' && (!refunded || refunded <= 0)) {
+      refunded = total;
     }
 
-    // 2. Nếu đơn hàng đã được phê duyệt đổi/trả (returnStatus: 'approved')
-    if (o.returnStatus === 'approved') {
-      // Nếu chưa ghi nhận refundedAmount cụ thể thì khấu trừ toàn bộ giá trị đơn
-      if (!refunded || refunded <= 0) {
-        refunded = total;
-      }
+    // Đơn bị hủy -> cộng vào tổng giá trị hàng hủy để khấu trừ
+    if (rawStatus === 'cancelled') {
+      totalCancelled += total;
+    } else if (['paid', 'partially_refunded'].includes(payment)) {
+      // Đơn đã thanh toán thành công
+      totalCollected += total;
+      totalRefunded += refunded;
     }
+  });
 
-    // 3. Doanh thu thuần của đơn = total - refunded
-    const netRevenue = Math.max(0, total - refunded);
-    return sum + netRevenue;
-  }, 0);
-
-  return totalRevenue;
+  const netRevenue = Math.max(0, totalCollected - totalRefunded - totalCancelled);
+  return netRevenue;
 }
 
 /**
@@ -95,6 +94,13 @@ async function getOrderStats() {
 
   const totalRevenue = await calculateNetRevenue();
 
+  // Đếm số đơn hợp lệ đã thanh toán (đóng góp vào doanh thu thuần)
+  const paidOrdersCount = allOrders.filter((o) => {
+    const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
+    const payment = (o.paymentStatus || '').toLowerCase();
+    return rawStatus !== 'cancelled' && ['paid', 'partially_refunded'].includes(payment);
+  }).length;
+
   return {
     totalOrders: allOrders.length,
     pending,
@@ -106,6 +112,7 @@ async function getOrderStats() {
     awaitingPaymentVerification,
     todayOrders,
     totalRevenue,
+    paidOrdersCount,
   };
 }
 
@@ -577,7 +584,9 @@ async function createCustomerOrder(accountId, orderData) {
 
   for (const item of cart.items) {
     const product = await Product.findById(item.productId);
-    if (!product || product.status !== 'active') {
+    const isCustom = Boolean(item.customization || (product && product.isCustomizable));
+
+    if (!product || (!isCustom && product.status !== 'active')) {
       const err = new Error(`Sản phẩm "${item.productName || 'này'}" hiện không còn kinh doanh. Vui lòng cập nhật lại giỏ hàng.`);
       err.status = 400;
       throw err;
@@ -599,8 +608,8 @@ async function createCustomerOrder(accountId, orderData) {
       cartModified = true;
     }
 
-    // E3: Tồn kho không đủ
-    if (product.stock < item.quantity) {
+    // E3: Tồn kho không đủ (Chỉ kiểm tra hàng có sẵn, hàng custom khách đặt xưởng mới chế tác nên không giới hạn tồn kho)
+    if (!isCustom && product.stock < item.quantity) {
       stockShortages.push({
         productId: product._id,
         productName: product.name,
@@ -630,8 +639,17 @@ async function createCustomerOrder(accountId, orderData) {
   }
 
   // Trừ tồn kho NGUYÊN TỬ (Atomic decrement) & Rollback nếu có lỗi
+  // Lưu ý: Sản phẩm custom (khách đặt xưởng mới làm) không trừ stock kho thành phẩm và không bao giờ chuyển status sang 'inactive'
   const decrementedItems = [];
   for (const item of cart.items) {
+    const product = await Product.findById(item.productId);
+    const isCustom = Boolean(item.customization || (product && product.isCustomizable));
+
+    if (isCustom) {
+      // Hàng custom chế tác theo yêu cầu, luôn sẵn sàng sản xuất
+      continue;
+    }
+
     const decResult = await Product.updateOne(
       { _id: item.productId, stock: { $gte: item.quantity } },
       { $inc: { stock: -item.quantity } }
@@ -650,9 +668,9 @@ async function createCustomerOrder(accountId, orderData) {
 
     decrementedItems.push(item);
 
-    // Cập nhật trạng thái sản phẩm nếu tồn kho về 0
+    // Cập nhật trạng thái sản phẩm có sẵn nếu tồn kho về 0
     const updatedProd = await Product.findById(item.productId);
-    if (updatedProd && updatedProd.stock <= 0) {
+    if (updatedProd && updatedProd.stock <= 0 && !updatedProd.isCustomizable) {
       await Product.updateOne({ _id: item.productId, stock: 0 }, { $set: { status: 'inactive' } });
     }
   }

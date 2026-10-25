@@ -42,7 +42,7 @@
         </div>
         <div class="mt-space-md flex items-center gap-space-xs text-on-surface-variant text-xs">
           <span class="material-symbols-outlined text-sm text-emerald-600">verified</span>
-          <span>Doanh thu thuần thực thu từ {{ stats.completed }} đơn hàng thành công (đã trừ hoàn trả)</span>
+          <span>Doanh thu thuần thực thu từ {{ stats.paidOrdersCount ?? stats.completed }} đơn hàng đã thanh toán (đã trừ hoàn trả)</span>
         </div>
       </div>
 
