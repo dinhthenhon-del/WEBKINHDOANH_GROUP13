@@ -18,6 +18,32 @@ window.togglePasswordVisibility = function () {
   passIcon.textContent = passInput.type === 'password' ? 'visibility' : 'visibility_off';
 };
 
+window.toggleRegisterPassword = function () {
+  const p = document.getElementById('password');
+  const icon = document.getElementById('password-icon');
+  if (!p) return;
+  if (p.type === 'password') {
+    p.type = 'text';
+    if (icon) icon.textContent = 'visibility_off';
+  } else {
+    p.type = 'password';
+    if (icon) icon.textContent = 'visibility';
+  }
+};
+
+window.toggleRegisterConfirmPassword = function () {
+  const p = document.getElementById('confirm-password');
+  const icon = document.getElementById('confirm-password-icon');
+  if (!p) return;
+  if (p.type === 'password') {
+    p.type = 'text';
+    if (icon) icon.textContent = 'visibility_off';
+  } else {
+    p.type = 'password';
+    if (icon) icon.textContent = 'visibility';
+  }
+};
+
 Object.defineProperty(window, 'currentUser', {
   configurable: true,
   get: function () {
@@ -475,26 +501,114 @@ function ganSuKienRegister() {
 
   form.onsubmit = function (e) {
     e.preventDefault();
-    const fullName = (document.getElementById('fullname') || form.querySelector('input[name="fullname"]')).value.trim();
-    const email = (document.getElementById('account-email') || form.querySelector('input[name="account-email"]')).value.trim();
-    const phone = (document.getElementById('account-phone') || form.querySelector('input[name="account-phone"]')).value.trim();
-    const password = (document.getElementById('password') || form.querySelector('input[name="password"]')).value;
-    const confirmPassword = (document.getElementById('confirm-password') || form.querySelector('input[name="confirm-password"]')).value;
-
-    if (!fullName || !email || !phone || !password) {
-      showCartNotification('Vui lòng điền đầy đủ các thông tin bắt buộc', 'warning', 'info');
+    if (typeof window.handleCustomerRegister === 'function') {
+      window.handleCustomerRegister();
       return;
     }
 
+    const fullNameInput = document.getElementById('fullname') || form.querySelector('input[name="fullname"]');
+    const emailInput = document.getElementById('account-email') || form.querySelector('input[name="account-email"]');
+    const phoneInput = document.getElementById('account-phone') || form.querySelector('input[name="account-phone"]');
+    const passwordInput = document.getElementById('password') || form.querySelector('input[name="password"]');
+    const confirmPasswordInput = document.getElementById('confirm-password') || form.querySelector('input[name="confirm-password"]');
+
+    const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+    const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+    const password = passwordInput ? passwordInput.value : '';
+    const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+
+    const errBox = document.getElementById('registerErrorMessage');
+    const errText = document.getElementById('registerErrorText');
+    const showErr = (msg) => {
+      if (errBox && errText) {
+        errText.textContent = msg;
+        errBox.classList.remove('hidden');
+      }
+      showCartNotification(msg, 'warning', 'error');
+    };
+
+    if (errBox) errBox.classList.add('hidden');
+
+    // 1. Kiểm tra Họ và tên
+    if (!fullName) {
+      showErr('Kính xin thượng khách điền họ và tên.');
+      if (fullNameInput) fullNameInput.focus();
+      return;
+    }
+    if (fullName.length < 2) {
+      showErr('Họ và tên phải có ít nhất 2 ký tự.');
+      if (fullNameInput) fullNameInput.focus();
+      return;
+    }
+
+    // 2. Kiểm tra định dạng Email
+    if (!email) {
+      showErr('Kính xin quý khách điền địa chỉ Email.');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      showErr('Email không đúng định dạng. Ví dụ hợp lệ: khachhang@gomthanhxuan.vn hoặc tenban@gmail.com');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    // 3. Kiểm tra định dạng Số điện thoại Việt Nam
+    if (!rawPhone) {
+      showErr('Kính xin quý khách điền số điện thoại liên lạc.');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    const cleanPhone = rawPhone.replace(/[\s.\-()]/g, '').replace(/^\+84/, '0');
+    const phoneRegex = /^0[35789][0-9]{8}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      showErr('Số điện thoại không hợp lệ. Vui lòng nhập số di động Việt Nam gồm 10 chữ số (bắt đầu bằng 03, 05, 07, 08, 09).');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+
+    // 4. Kiểm tra Mật khẩu
+    if (!password) {
+      showErr('Kính xin quý khách nhập mật khẩu.');
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+    if (password.length < 6) {
+      showErr('Mật khẩu bảo mật phải có ít nhất 6 ký tự.');
+      if (passwordInput) passwordInput.focus();
+      return;
+    }
+
+    // 5. Kiểm tra Xác nhận mật khẩu
+    if (!confirmPassword) {
+      showErr('Kính xin quý khách nhập xác nhận mật khẩu.');
+      if (confirmPasswordInput) confirmPasswordInput.focus();
+      return;
+    }
     if (password !== confirmPassword) {
-      showCartNotification('Mật khẩu xác nhận không trùng khớp. Kính xin quý khách kiểm tra lại.', 'warning', 'info');
+      showErr('Mật khẩu xác nhận không trùng khớp. Kính xin quý khách kiểm tra lại.');
+      if (confirmPasswordInput) confirmPasswordInput.focus();
       return;
     }
 
-    ApiService.register({ fullName, email, phone, password }, function (err, res) {
+    const btn = document.querySelector('#registration-form button[type="submit"]');
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>ĐANG LƯU HỒ SƠ...</span>';
+      btn.disabled = true;
+    }
+
+    ApiService.register({ fullName, email: email.toLowerCase(), phone: cleanPhone, password }, function (err, res) {
       if (err || !res || !res.success) {
-        showCartNotification(err || (res && res.message) || 'Đăng ký thất bại', 'warning', 'error');
+        showErr(err || (res && res.message) || 'Đăng ký không thành công. Vui lòng thử lại!');
+        if (btn) {
+          btn.innerHTML = originalHTML;
+          btn.disabled = false;
+        }
       } else {
+        if (errBox) errBox.classList.add('hidden');
         showCartNotification('Kính chúc mừng Thượng khách ' + fullName + ' đã gia nhập Hội Quán Gốm Bát Tràng!', 'success', 'verified');
         currentUser = null;
         localStorage.removeItem('craftory_user');

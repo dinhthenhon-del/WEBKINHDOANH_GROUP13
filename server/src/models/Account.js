@@ -17,12 +17,14 @@ const accountSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Địa chỉ Email không hợp lệ'],
     },
     phone: {
       type: String,
       required: [true, 'Số điện thoại người dùng là bắt buộc'],
       unique: true,
       trim: true,
+      match: [/^0[35789][0-9]{8}$/, 'Số điện thoại không hợp lệ (cần 10 chữ số bắt đầu bằng 03, 05, 07, 08, 09)'],
     },
     passwordHash: {
       type: String,

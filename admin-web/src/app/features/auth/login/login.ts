@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,8 +10,11 @@ import { Router } from '@angular/router';
   templateUrl: './login.html',
 })
 export class Login {
-  email = 'admin@gombattrang.vn';
-  password = 'GomBatTrang2024@';
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
+
+  email = '';
+  password = '';
   showPassword = false;
   isLoading = false;
   errorMessage = '';
@@ -19,17 +22,20 @@ export class Login {
 
   openPasswordHelp() {
     this.isPasswordHelpOpen = true;
+    this.cdr.detectChanges();
   }
 
   closePasswordHelp() {
     this.isPasswordHelpOpen = false;
+    this.cdr.detectChanges();
   }
 
   closeErrorNotice() {
     this.errorMessage = '';
+    this.cdr.detectChanges();
   }
 
-  constructor(private router: Router) {
+  constructor() {
     // Nếu đã đăng nhập từ trước, tự động chuyển vào dashboard quản trị
     const existingAdmin = localStorage.getItem('admin_user');
     if (existingAdmin) {
@@ -46,65 +52,87 @@ export class Login {
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+    this.cdr.detectChanges();
   }
 
-  fillAdminDemo() {
-    this.email = 'admin@gombattrang.vn';
-    this.password = 'GomBatTrang2024@';
-  }
-
-  fillAdminThanhXuan() {
-    this.email = 'admin@gomthanhxuan.vn';
-    this.password = 'admin123';
-  }
 
   onLogin() {
     this.errorMessage = '';
 
-    if (!this.email || !this.password) {
+    const trimmedEmail = (this.email || '').trim();
+    const enteredPassword = (this.password || '').trim();
+
+    if (!trimmedEmail || !enteredPassword) {
       this.errorMessage = 'Vui lòng nhập đầy đủ Email và Mật khẩu quản trị';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Kiểm tra định dạng email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      this.errorMessage = 'Email không hợp lệ. Vui lòng nhập đúng định dạng (ví dụ: admin@gombattrang.vn)';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges();
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        emailOrPhone: this.email.trim(),
+        emailOrPhone: trimmedEmail,
         password: this.password,
       }),
+      signal: controller.signal,
     })
-      .then((res) => res.json())
-      .then((res) => {
+      .then(async (res) => {
+        clearTimeout(timeoutId);
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch (e) {
+          data = null;
+        }
+
         this.isLoading = false;
-        if (res.success && res.data) {
-          if (res.data.role !== 'admin') {
-            this.errorMessage = 'Tài khoản này là Khách hàng, không có quyền truy cập cổng Quản trị viên!';
+
+        if (res.ok && data && data.success && data.data) {
+          // Kiểm tra phân quyền: Chỉ tài khoản admin mới được đăng nhập vào hệ thống quản trị
+          if (data.data.role !== 'admin') {
+            this.errorMessage = 'Tài khoản này là Khách hàng, không có quyền truy cập hệ thống Quản trị viên!';
+            this.cdr.detectChanges();
             return;
           }
 
           // Lưu thông tin admin vào localStorage
-          localStorage.setItem('admin_user', JSON.stringify(res.data));
+          localStorage.setItem('admin_user', JSON.stringify(data.data));
 
           // Chuyển hướng vào Dashboard
           this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = res.message || 'Email hoặc mật khẩu không chính xác!';
+          this.errorMessage = (data && data.message) ? data.message : 'Email hoặc mật khẩu không chính xác!';
         }
+        this.cdr.detectChanges();
       })
       .catch((err) => {
+        clearTimeout(timeoutId);
         this.isLoading = false;
         console.error('Lỗi đăng nhập admin:', err);
+
         // Fallback kiểm tra thông tin mặc định nếu server tạm thời gián đoạn
         if (
-          (this.email === 'admin@gombattrang.vn' && this.password === 'GomBatTrang2024@') ||
-          (this.email === 'admin@gomthanhxuan.vn' && this.password === 'admin123')
+          (trimmedEmail === 'admin@gombattrang.vn' && this.password === 'GomBatTrang2024@') ||
+          (trimmedEmail === 'admin@gomthanhxuan.vn' && this.password === 'admin123')
         ) {
           const fallbackAdmin = {
-            fullName: 'Trưởng ban Quản trị Bát Tràng',
-            email: this.email,
+            fullName: trimmedEmail === 'admin@gomthanhxuan.vn' ? 'Quản trị viên Thanh Xuân' : 'Trưởng ban Quản trị Bát Tràng',
+            email: trimmedEmail,
             phone: '0901234567',
             role: 'admin',
             status: 'active',
@@ -112,8 +140,13 @@ export class Login {
           localStorage.setItem('admin_user', JSON.stringify(fallbackAdmin));
           this.router.navigate(['/dashboard']);
         } else {
-          this.errorMessage = 'Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại!';
+          if (err?.name === 'AbortError') {
+            this.errorMessage = 'Quá thời gian kết nối máy chủ xác thực. Vui lòng thử lại!';
+          } else {
+            this.errorMessage = 'Đăng nhập không thành công. Vui lòng kiểm tra lại Email và Mật khẩu!';
+          }
         }
+        this.cdr.detectChanges();
       });
   }
 }

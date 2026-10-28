@@ -1021,11 +1021,32 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
     if (!fullName || !email || !phone || !password) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin' });
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin bắt buộc' });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const cleanPhone = phone.trim();
+    const cleanFullName = String(fullName).trim();
+    const cleanEmail = String(email).toLowerCase().trim();
+    const cleanPhone = String(phone).replace(/[\s.\-()]/g, '').replace(/^\+84/, '0').trim();
+
+    if (cleanFullName.length < 2) {
+      return res.status(400).json({ success: false, message: 'Họ và tên phải có ít nhất 2 ký tự' });
+    }
+
+    // Kiểm tra định dạng email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ success: false, message: 'Địa chỉ Email không hợp lệ' });
+    }
+
+    // Kiểm tra định dạng số điện thoại Việt Nam (10 chữ số, đầu 03, 05, 07, 08, 09)
+    const phoneRegex = /^0[35789][0-9]{8}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ (cần 10 chữ số bắt đầu bằng 03, 05, 07, 08, 09)' });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu phải có ít nhất 6 ký tự' });
+    }
 
     const existingEmail = await Account.findOne({ email: cleanEmail });
     if (existingEmail) {
@@ -1038,7 +1059,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const newAccount = new Account({
-      fullName: fullName.trim(),
+      fullName: cleanFullName,
       email: cleanEmail,
       phone: cleanPhone,
       passwordHash: password, // Mật khẩu hash theo Schema
@@ -1960,48 +1981,173 @@ app.get('/api/dashboard/stats', async (req, res) => {
 // ==========================================
 // THÀNH VIÊN 4: CHATBOT TƯ VẤN GỐM MỘC (UC-C09)
 // ==========================================
-app.post('/api/chatbot', (req, res) => {
+function getLocalCeramicReply(text) {
+  const raw = (text || '').toLowerCase().trim();
+  const norm = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+
+  // 1. Địa chỉ, Showroom, Xưởng, Bản đồ, Giờ mở cửa, Đến thăm, Đỗ xe
+  if (norm.includes('dia chi') || norm.includes('o dau') || norm.includes('showroom') || norm.includes('cua hang') || norm.includes('den xem') || norm.includes('gio mo cua') || norm.includes('vi tri') || norm.includes('ban do') || norm.includes('do xe') || norm.includes('lo bau')) {
+    return 'Dạ, Làng Gốm Thanh Xuân trân trọng đón tiếp quý khách tại 2 không gian di sản:\n\n• **Cơ sở 1 (Lò Bầu Di Sản & Xưởng):** Thôn 1 Giang Cao, Bát Tràng, Gia Lâm, HN *(có bãi đỗ ô tô miễn phí, trải nghiệm vuốt nặn gốm lò củi 1.380°C)*.\n• **Cơ sở 2 (Bảo Phủ Giám Tuyển):** Tầng 2, 24 Tràng Tiền, Hoàn Kiếm, HN *(thưởng trà & ngắm các ngự tác độc bản)*.\n\n*Giờ mở cửa: 08:30 – 21:00 hàng ngày (Hotline: 1800 1705)*. Quý khách dự định ghé thăm cơ sở nào để em chuẩn bị đón tiếp chu đáo ạ?';
+  }
+
+  // 2. Sản phẩm của shop / Có những loại gì / Danh mục mặt hàng
+  if (norm.includes('san pham') || norm.includes('co nhung gi') || norm.includes('ban gi') || norm.includes('danh muc') || norm.includes('loai nao') || norm.includes('mat hang') || norm.includes('bo do an') || norm.includes('am chen') || norm.includes('bat dia')) {
+    return 'Dạ, xưởng hiện có 4 dòng sản phẩm gốm sứ nghệ thuật tiêu biểu:\n\n• **Bộ đồ ăn cao cấp:** Bát đĩa Jasmine Thạch Vân, viền Chỉ Vàng (set 9 – 22 món, chén cơm từ 63k).\n• **Bộ ấm chén trà đạo:** Bộ trà Camellia, ấm men rạn bọc đồng, tách hoàng gia có nắp (380k).\n• **Bình phong thủy & Bình hoa:** Mai bình hút lộc (2.850k), bình hoa cổ sóng (1.850k), bình men hỏa biến.\n• **Studio 2D tự thiết kế:** Tự tay phối phôi và khắc chữ nghệ thuật theo bản vẽ riêng.\n\nQuý khách đang tìm sản phẩm để dùng cho gia đình, bài trí phong thủy hay làm quà tặng ạ?';
+  }
+
+  // 3. Quà tặng doanh nghiệp / Sự kiện / In logo
+  if (norm.includes('qua tang') || norm.includes('doanh nghiep') || norm.includes('in logo') || norm.includes('so luong lon') || norm.includes('chiet khau') || norm.includes('su kien') || norm.includes('dai hoi')) {
+    return 'Dạ, xưởng chuyên chế tác **Quà tặng doanh nghiệp & Ngoại giao** cao cấp:\n\n• In logo thương hiệu, khắc niên hiệu, mạ dát vàng kim sa 24K tinh xảo.\n• Đóng hộp xi lụa lót nhung sang trọng kèm chứng thư bảo vật độc bản.\n• Chiết khấu hấp dẫn theo số lượng và hỗ trợ chế tác mẫu duyệt trước.\n\nQuý khách dự kiến đặt cho sự kiện nào hoặc cần số lượng khoảng bao nhiêu bộ để em gửi mẫu thiết kế phù hợp ạ?';
+  }
+
+  // 4. Lời chào, biểu cảm vui vẻ (Ha ha, hihi, cười, xin chào, hello...)
+  if (/^(ha\s*)+$/i.test(raw) || /^(hi\s*)+$/i.test(raw) || raw.includes('haha') || raw.includes('hihi') || raw.includes('cười') || raw.includes('vui') || norm.includes('xin chao') || norm.includes('hello') || norm === 'hi' || norm === 'alo' || norm.includes('ban la ai')) {
+    return 'Dạ, tiếng cười hoan hỷ của quý khách làm xưởng gốm Thanh Xuân thêm phần rộn rã! Chúc quý khách một ngày an vui, vạn sự cát tường.\n\nNhân lúc vui vẻ, quý khách có muốn ngắm các mẫu bình hút tài lộc phong thủy hay thử tự tay thiết kế bình gốm 2D khắc chữ riêng của mình không ạ?';
+  }
+
+  // 5. Chữ khắc tối đa bao nhiêu ký tự & Quy chuẩn khắc chữ UC-C04 E1
+  if (norm.includes('chu khac') || norm.includes('bao nhieu ky tu') || norm.includes('gioi han ky tu') || norm.includes('khac chu') || norm.includes('20 ky tu')) {
+    return 'Dạ, theo quy chuẩn nghệ thuật của xưởng (**Chuẩn UC-C04 E1**):\n\n• Chữ khắc nghệ thuật được giới hạn **TỐI ĐA 20 KÝ TỰ** (bao gồm khoảng trắng và số).\n• **Lý do nghệ nhân:** Đường cong phôi gốm đòi hỏi chữ khắc phải thanh thoát, cân đối mỹ thuật thị giác và không che khuất họa tiết chính.\n\nQuý khách dự định khắc tên, lời chúc hay niên hiệu kỷ niệm gì trên tác phẩm ạ?';
+  }
+
+  // 6. Hướng dẫn tự thiết kế gốm 2D
+  if (norm.includes('tu thiet ke') || norm.includes('studio 2d') || norm.includes('lam sao de') || norm.includes('cach thiet ke') || norm.includes('2d')) {
+    return 'Dạ, để tự tạo tác phẩm độc bản trên phân hệ **Studio 2D (UC-C04)**, quý khách chỉ cần 5 bước:\n\n1. **Chọn phôi:** Mai bình, Bình hoa cổ sóng, Ấm trà, Đĩa sứ hoặc Tách trà.\n2. **Chọn họa tiết:** 13 mẫu vẽ tay truyền thống (Sen lam, Rồng mây, Song ngư...).\n3. **Căn chỉnh:** Kéo chuột xoay 360 độ, phóng to thu nhỏ (25% - 150%).\n4. **Khắc chữ:** Nhập lời chúc tối đa 20 ký tự.\n5. **Thêm vào giỏ:** Nghệ nhân sẽ nung củi 1.380°C và hoàn thiện trong 5 - 7 ngày.\n\nQuý khách muốn thử tạo mẫu trên dáng Mai bình hay Bình hoa tròn cổ sóng ạ?';
+  }
+
+  // 7. Bảng giá 5 dáng phôi Studio 2D
+  if (norm.includes('gia') || norm.includes('bao nhieu tien') || norm.includes('bang gia') || norm.includes('phoi') || norm.includes('mai binh') || norm.includes('binh hoa')) {
+    return 'Dạ, xưởng xin gửi quý khách **Bảng giá 5 dáng phôi thủ công Studio 2D**:\n\n• **Mai Bình Dáng Cao:** 2.850.000₫ (Hút tài lộc phong thủy)\n• **Bình Hoa Tròn Cổ Sóng:** 1.850.000₫ (Thanh nhã phòng trà)\n• **Ấm Trà Sứ Trắng:** 1.450.000₫ (Thấu quang cao cấp)\n• **Đĩa Sứ Nghệ Thuật (Kèm giá gỗ):** 1.200.000₫\n• **Tách Trà Có Nắp Hoàng Gia:** 380.000₫\n\nQuý khách ưng ý dáng phôi nào để em mở ngay giao diện thiết kế 2D hỗ trợ mình ạ?';
+  }
+
+  // 8. 5 Sắc men danh tiếng
+  if (norm.includes('men') || norm.includes('sac men') || norm.includes('men lam') || norm.includes('men ran') || norm.includes('hoa bien') || norm.includes('celadon') || norm.includes('dat vang')) {
+    return 'Dạ, xưởng sở hữu **5 sắc men danh tiếng Bát Tràng**:\n\n• **Men Lam:** Xanh cobalt cổ kính thế kỷ XIV, nét vẽ ẩn dưới men vĩnh cửu.\n• **Men Rạn:** Đường rạn tự nhiên gia truyền thời Lê - Nguyễn độc bản.\n• **Men Ngọc Celadon:** Sắc xanh ngọc bích mịn màng hoàng cung.\n• **Men Hỏa Biến:** Biến ảo kỳ diệu từ ngọn lửa lò nung củi 1.380°C.\n• **Dát Vàng Kim Sa:** Điểm xuyết vàng ròng 24K vương giả, thịnh vượng.\n\nQuý khách chuộng vẻ cổ kính của Men Rạn hay nét sang trọng của Dát Vàng 24K ạ?';
+  }
+
+  // 9. Thanh toán, vận chuyển & Đổi trả 7 ngày
+  if (norm.includes('thanh toan') || norm.includes('giao hang') || norm.includes('doi tra') || norm.includes('nut vo') || norm.includes('bao hanh') || norm.includes('ship')) {
+    return 'Dạ, chính sách mua sắm tại xưởng cam kết an tâm tuyệt đối:\n\n• **Giao hàng toàn quốc:** Bọc chống sốc 3 lớp, thượng khách được **đồng kiểm mở hộp** trước khi thanh toán (COD).\n• **Đổi trả (UC-A05, UC-C08):** Đổi mới 100% trong **7 ngày** nếu nứt vỡ do vận chuyển (chỉ cần quay video lúc khui kiện).\n• **Tổng đài nghệ nhân 24/7:** 1800 1705 (miễn cước gọi).';
+  }
+
+  // 10. Khi khách hỏi ngoài vấn đề (toán, lập trình, thời tiết, đời sống...)
+  return 'Dạ, câu hỏi của quý khách thật thú vị! Dù ngày đêm gắn bó cùng đất sét và lửa lò nung 1.380°C, em thấy điều gì trong cuộc sống cũng cần sự tinh tế, bền bỉ hệt như cách người nghệ nhân chuốt nên từng dáng gốm Bát Tràng.\n\nNhân duyên gặp gỡ, em mời quý khách cùng ngắm nhìn những tác phẩm gốm mộc tinh hoa của xưởng hoặc thử tự tay thiết kế bình gốm 2D nhé ạ! Quý khách thích dòng bình phong thủy hay bộ ấm chén thưởng trà ạ?';
+}
+
+app.post('/api/chatbot', async (req, res) => {
   try {
-    const { message } = req.body || {};
+    const { message, apiKey: reqApiKey, history } = req.body || {};
     const text = (message || '').trim();
+    const rawApiKey = reqApiKey || req.headers['x-gemini-api-key'] || process.env.GEMINI_API_KEY || '';
+    const apiKey = String(rawApiKey).trim().replace(/^['"`\s]+|['"`\s]+$/g, '');
 
     if (!text) {
       return res.status(200).json({
         success: true,
         data: {
-          reply: 'Xin chào quý khách! Mình là Trợ lý Nghệ nhân của Gốm Mộc. Quý khách có thể hỏi về dáng gốm, sắc men, thiết kế 2D, đặt hàng hoặc bảo quản gốm nhé.'
+          reply: 'Xin chào quý khách! Mình là Trợ lý Nghệ nhân AI của Làng Gốm Thanh Xuân (Gốm Mộc Bát Tràng). Quý khách cần em tư vấn về sản phẩm, địa chỉ ghé thăm xưởng hay phân hệ tự thiết kế 2D khắc chữ ạ?'
         }
       });
     }
 
-    const lower = text.toLowerCase();
-    let reply = '';
+    const SYSTEM_KNOWLEDGE = `Bạn là Trợ lý Nghệ nhân AI cao cấp của Làng Gốm Thanh Xuân (hội tụ tinh hoa Gốm Mộc Bát Tràng - Gia Lâm, Hà Nội).
 
-    if (lower.includes('2d') || lower.includes('tự thiết kế') || lower.includes('tác chế') || lower.includes('thiết kế gốm')) {
-      reply = '🎨 Để tự thiết kế gốm 2D tại Gốm Mộc (UC-C04):\n1. Vào mục "Thiết kế 2D".\n2. Chọn 1 trong 5 dáng phôi gốm thủ công (Đĩa sứ nghệ thuật kèm giá gỗ, Mai bình dáng cao, Bình hoa cổ sóng, Ấm trà sứ trắng, Tách trà hoàng gia).\n3. Chọn họa tiết truyền thống (13 mẫu đã tách nền chuẩn).\n4. Kéo thả tự do trực tiếp trên thân bình, chỉnh kích cỡ phóng to/thu nhỏ (scale 25%-150%), xoay góc 360° và bấm Căn giữa chuẩn.\n5. Nhập chữ khắc nghệ thuật (tối đa 20 ký tự theo chuẩn UC-C04), chọn màu men và tùy chỉnh độ cao (Lên/Xuống), dịch ngang hoặc cỡ chữ.\n6. Nhấn "Hoàn tất & Thêm vào giỏ" để nghệ nhân xưởng tiếp nhận chế tác.';
-    } else if (lower.includes('kí tự') || lower.includes('ký tự') || lower.includes('chữ khắc') || lower.includes('bao nhiêu ký tự') || lower.includes('tối đa')) {
-      reply = '✍️ Chữ khắc nghệ thuật trên thân phôi gốm được quy định tối đa 20 ký tự (chuẩn UC-C04 E1). Giới hạn này giúp đường nét đục khắc hoặc vẽ men chìm đạt độ cân đối, sắc nét và tôn dáng gốm mỹ thuật nhất.';
-    } else if (lower.includes('phôi') || lower.includes('dáng gốm') || lower.includes('giá bao nhiêu') || lower.includes('giá phôi') || lower.includes('bình')) {
-      reply = '🏺 Bảng giá 5 dáng phôi gốm thủ công tại Studio 2D:\n• Mai Bình Dáng Cao: 2.850.000₫\n• Bình Hoa Tròn Cổ Sóng: 1.850.000₫\n• Ấm Trà Sứ Trắng: 1.450.000₫\n• Đĩa Sứ Nghệ Thuật (kèm giá gỗ): 1.200.000₫\n• Tách Trà Có Nắp Hoàng Gia: 380.000₫';
-    } else if (lower.includes('men') || lower.includes('sắc men') || lower.includes('màu men') || lower.includes('khác nhau')) {
-      reply = '✨ Gốm Mộc hội tụ 5 dòng men danh tiếng Bát Tràng:\n• Men Lam: Sắc xanh cobalt cổ điển thời Lý - Trần - Lê, trang nhã và vĩnh cửu.\n• Men Rạn: Vân rạn tam giác, tứ giác tự nhiên độc bản do kiểm soát chênh lệch nhiệt độ lò nung.\n• Men Ngọc (Celadon): Sắc xanh lục bảo mịn màng như ngọc quý hoàng gia triều đình.\n• Men Hỏa Biến: Biến đổi ngẫu nhiên theo nhiệt độ lửa lò nung, độc bản không trùng lặp.\n• Dát Vàng Kim Sa: Họa tiết điểm xuyết vàng 24K thủ công sang trọng và vượng phong thủy.';
-    } else if (lower.includes('thanh toán') || lower.includes('cod') || lower.includes('chuyển khoản') || lower.includes('trả tiền')) {
-      reply = '💳 Gốm Mộc hỗ trợ 3 hình thức thanh toán thuận tiện (UC-C06):\n1. Thanh toán khi nhận hàng (COD) toàn quốc - đồng kiểm trước khi trả tiền.\n2. Chuyển khoản ngân hàng qua mã QR động (xác nhận tức thì).\n3. Thẻ ATM / Visa / Mastercard nội địa và quốc tế.';
-    } else if (lower.includes('bảo quản') || lower.includes('vệ sinh') || lower.includes('rửa') || lower.includes('lau chùi')) {
-      reply = '🛡️ Cách bảo quản đồ gốm sứ Bát Tràng:\n• Vệ sinh bằng nước ấm pha giấm trắng hoặc nước rửa chén dịu nhẹ, dùng khăn vải mềm hoặc bọt biển.\n• Tuyệt đối không dùng miếng cọ sắt ráp chà xát làm xước men bóng và đường dát vàng.\n• Đặt sản phẩm nơi bằng phẳng, tránh mép bàn và hạn chế thay đổi nhiệt độ đột ngột.';
-    } else if (lower.includes('đổi trả') || lower.includes('bảo hành') || lower.includes('vỡ') || lower.includes('hỏng')) {
-      reply = '📦 Chính sách đổi trả & bảo hành (UC-A05, UC-C08):\n• Đổi mới 100% trong vòng 7 ngày nếu sản phẩm nứt vỡ do vận chuyển hoặc lỗi sản xuất từ nghệ nhân.\n• Quý khách vui lòng quay video khi khui kiện hàng để được duyệt đổi trả nhanh nhất qua mục "Đổi trả hàng" trên tài khoản.';
-    } else if (lower.includes('giao hàng') || lower.includes('thời gian') || lower.includes('bao lâu') || lower.includes('ship')) {
-      reply = '🚚 Thời gian giao hàng:\n• Sản phẩm có sẵn: 2 - 3 ngày làm việc trên toàn quốc.\n• Tác phẩm chế tác riêng 2D: 5 - 7 ngày để nghệ nhân nung men, vẽ nét và khắc chữ thủ công trước khi xuất xưởng.';
-    } else if (lower.includes('hotline') || lower.includes('liên hệ') || lower.includes('địa chỉ') || lower.includes('tư vấn')) {
-      reply = '📞 Hotline tư vấn nghệ nhân 24/7: 1800 1705 (Miễn cước).\n• Địa chỉ: Xưởng Gốm Mộc, Làng cổ gốm sứ Bát Tràng, Gia Lâm, Hà Nội.';
-    } else {
-      reply = 'Cảm ơn câu hỏi của bạn! Mình là Trợ lý Nghệ nhân Gốm Mộc. Bạn có thể hỏi thêm về: cách tự thiết kế 2D, các sắc men Bát Tràng, quy định 20 ký tự chữ khắc, hình thức thanh toán hoặc bảo quản gốm sứ nhé.';
+TÀI LIỆU TRI THỨC VÀ QUY CHUẨN XƯỞNG GỐM:
+1. Không Gian Trưng Bày & Địa Chỉ:
+- Cơ sở 1 (Lò Bầu Di Sản & Xưởng Chế Tác): Thôn 1 Giang Cao, Làng Cổ Bát Tràng, Gia Lâm, Hà Nội (Có bãi đỗ ô tô miễn phí, trải nghiệm vuốt gốm và tham quan lò nung củi 1.380°C).
+- Cơ sở 2 (Bảo Phủ Giám Tuyển - Showroom Phố Cổ): Tầng 2, 24 Tràng Tiền, Quận Hoàn Kiếm, Hà Nội (Không gian thưởng trà, chiêm ngưỡng ngự tác gốm sứ độc bản).
+- Giờ mở cửa: 08:30 – 21:00 hàng ngày (kể cả Thứ 7, Chủ Nhật và ngày Lễ Tết).
+- Tổng đài nghệ nhân 24/7: 1800 1705 (Miễn phí cước gọi). Email: Thuongkhach@langgomthanhxuan.vn.
+
+2. Danh Mục Sản Phẩm Đa Dạng Của Shop:
+- Bộ bàn ăn & Bát đĩa gia đình: Bộ đồ ăn Jasmine Thạch Vân 09 món (988.200₫), 22 món (1.710.720₫), Jasmine Chỉ Vàng (911.520₫), chén cơm (63.000₫), tô thố men ngọc.
+- Bộ ấm chén trà đạo: Bộ trà Camellia Chỉ Vàng, Bộ ấm chén Men Rạn bọc đồng cổ, Tách trà hoàng gia có nắp (380.000₫).
+- Bình hút lộc & Bình hoa phong thủy: Mai Bình Dáng Cao (2.850.000₫ - hút tài lộc phong thủy), Bình Hoa Tròn Cổ Sóng (1.850.000₫ - thanh nhã phòng trà), Bình Men Hỏa Biến 1.380°C kỳ ảo độc bản.
+- Đĩa sứ nghệ thuật: Đĩa Sứ Trưng Bày kèm giá gỗ tiện cao cấp (1.200.000₫ - vẽ hoa sen, phố cổ, rồng phượng).
+- Quà tặng doanh nghiệp & Ngoại giao: Chế tác theo yêu cầu, in logo thương hiệu, mạ dát vàng 24K, hộp xi lụa lót nhung cao cấp, chiết khấu hấp dẫn theo số lượng.
+
+3. Phân Hệ Studio Tự Thiết Kế Gốm 2D (UC-C04):
+- 5 bước tự phối tác phẩm: Chọn 1 trong 5 dáng phôi thủ công -> Chọn 1 trong 13 mẫu vẽ tay truyền thống -> Căn chỉnh 360 độ (phóng to/thu nhỏ 25%-150%) -> Khắc chữ nghệ thuật -> Thêm vào giỏ.
+- QUY ĐỊNH CHỮ KHẮC NGHỆ THUẬT (Chuẩn UC-C04 E1): Giới hạn TỐI ĐA 20 KÝ TỰ (để nét chữ thanh thoát mỹ thuật trên đường cong phôi gốm, không che khuất họa tiết chính).
+
+4. 5 Sắc Men Danh Tiếng Bát Tràng:
+- Men Lam (thế kỷ XIV, xanh cobalt vĩnh cửu), Men Rạn (vân rạn tự nhiên thời Lê - Nguyễn), Men Ngọc Celadon (xanh ngọc thạch hoàng cung), Men Hỏa Biến (nung củi 1.380°C liên tục 72 giờ), Dát Vàng Kim Sa (vàng ròng 24K phú quý).
+
+5. Chính Sách Bán Hàng & Hậu Mãi:
+- Thanh toán: COD đồng kiểm tận tay (mở hộp kiểm tra trước khi trả tiền), QR VietQR, thẻ ngân hàng.
+- Giao hàng: Hàng sẵn 2-3 ngày, hàng 2D chế tác 5-7 ngày. Giao toàn quốc bọc chống sốc 3 lớp.
+- Chính sách đổi trả (UC-A05, UC-C08): Đổi mới 100% trong vòng 7 ngày nếu nứt vỡ do vận chuyển (chỉ cần quay video lúc khui kiện).
+
+QUY TẮC CỐT LÕI BẮT BUỘC VỀ PHONG THÁI TRẢ LỜI:
+1. TRẢ LỜI NGẮN GỌN & SÚC TÍCH: Chỉ trả lời đúng trọng tâm trong khoảng 2 ĐẾN 4 CÂU (hoặc 2-3 gạch đầu dòng ngắn). Tuyệt đối KHÔNG viết dài lê thê để khách hàng đọc nhanh và thoải mái trên khung chat.
+2. PHONG PHÚ & CHỦ ĐỘNG GỢI MỞ: Tùy ý khách, linh hoạt giới thiệu sản phẩm phù hợp và LUÔN KẾT THÚC BẰNG 1 CÂU HỎI GỢI MỞ TINH TẾ.
+3. KHI KHÁCH HỎI NGOÀI LỀ (toán, lập trình, thời tiết, chuyện vui...): Trả lời nhã nhặn trong 1 câu, sau đó khéo léo chuyển hướng về các tuyệt tác gốm sứ Bát Tràng.`;
+
+    if (apiKey && apiKey.length >= 15) {
+      try {
+        const contents = [];
+        if (Array.isArray(history)) {
+          history.slice(-6).forEach(h => {
+            contents.push({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: h.text }] });
+          });
+        }
+        contents.push({ role: 'user', parts: [{ text }] });
+
+        const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+        for (const m of models) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify({
+                system_instruction: { parts: [{ text: SYSTEM_KNOWLEDGE }] },
+                contents,
+                generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+              }),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (geminiRes.ok) {
+              const gData = await geminiRes.json();
+              const parts = gData?.candidates?.[0]?.content?.parts;
+              let reply = '';
+              if (Array.isArray(parts)) {
+                reply = parts.map(p => p.text || '').join('\n').trim();
+              }
+              if (reply) {
+                return res.status(200).json({ success: true, data: { reply, source: 'gemini' } });
+              }
+            } else if (geminiRes.status === 400) {
+              const gErr = await geminiRes.json().catch(() => ({}));
+              const msg = gErr?.error?.message || '';
+              if (msg.includes('API key') || msg.includes('API_KEY_INVALID') || msg.includes('not valid')) {
+                return res.status(400).json({ success: false, errorType: 'INVALID_API_KEY', message: msg });
+              }
+            }
+          } catch (modelErr) {
+            // thử model tiếp theo
+          }
+        }
+      } catch (geminiErr) {
+        console.error('Lỗi gọi Gemini từ backend:', geminiErr);
+      }
     }
 
+    // Fallback thông minh từ Kho tri thức xưởng
+    const fallbackReply = getLocalCeramicReply(text);
     return res.status(200).json({
       success: true,
-      data: { reply }
+      data: {
+        reply: fallbackReply + '\n\n*(💡 Phản hồi từ Kho tri thức Nghệ nhân Bát Tràng)*',
+        source: 'local'
+      }
     });
   } catch (error) {
     console.error('Lỗi xử lý chatbot:', error);
