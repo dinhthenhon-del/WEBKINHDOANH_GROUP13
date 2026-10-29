@@ -334,6 +334,24 @@ const ApiService = {
     xhr.send();
   },
 
+  getOrderReviews: function (orderId, accountId, callback) {
+    const xhr = new XMLHttpRequest();
+    let url = `${API_BASE}/reviews/order/${encodeURIComponent(orderId)}`;
+    if (accountId) url += `?accountId=${encodeURIComponent(accountId)}`;
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 200 ? null : (res.message || 'Lỗi tải đánh giá đơn hàng'), res);
+        } catch (e) {
+          callback('Lỗi kết nối máy chủ khi tải đánh giá đơn hàng', null);
+        }
+      }
+    };
+    xhr.send();
+  },
+
   // 9. Yêu cầu đổi trả hàng (UC-A05 - Thành viên 5)
   createReturnRequest: function (data, callback) {
     const xhr = new XMLHttpRequest();
