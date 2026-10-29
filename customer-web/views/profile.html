@@ -468,20 +468,31 @@
       document.body.style.overflow = '';
     }
 
-    // Modal Control: Review
+    // Modal Control: Review (UC-C08)
     function openReviewModal(targetName, productId, orderId) {
+      if (window.OrdersModule && typeof window.OrdersModule.openReviewModal === 'function') {
+        window.OrdersModule.openReviewModal(targetName, productId, orderId);
+        return;
+      }
       window.activeReviewProductId = productId;
       window.activeReviewOrderId = orderId;
       const modal = document.getElementById('modal-review');
-      document.getElementById('modal-review-target').innerText = targetName;
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      if (modal) {
+        document.getElementById('modal-review-target').innerText = targetName;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
     }
 
     function closeReviewModal() {
+      if (window.OrdersModule && typeof window.OrdersModule.closeReviewModal === 'function') {
+        window.OrdersModule.closeReviewModal();
+      }
       const modal = document.getElementById('modal-review');
-      modal.classList.add('hidden');
-      document.body.style.overflow = '';
+      if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
     }
 
     // Toast Control
@@ -615,30 +626,14 @@
       }
     }
 
-    // Submit Review Form
+    // Submit Review Form (UC-C08)
     function submitReviewForm(e) {
+      if (window.OrdersModule && typeof window.OrdersModule.submitReview === 'function') {
+        window.OrdersModule.submitReview(e);
+        return;
+      }
       e.preventDefault();
       closeReviewModal();
-      const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value : '';
-
-      if (typeof ApiService !== 'undefined' && ApiService.createReview && typeof currentUser !== 'undefined' && currentUser) {
-        ApiService.createReview({
-          accountId: currentUser._id,
-          productId: window.activeReviewProductId || '670000000000000000000001',
-          rating: currentRating,
-          comment: commentVal
-        }, function(err, res) {
-          console.log('Review API result:', err, res);
-        });
-      }
-
-      showToast(
-        'toast-success',
-        'Khắc ghi đánh giá thành công',
-        'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Nhận xét sẽ được lưu truyền vào tuyển tập nhà sưu tầm Minh Gốm.'
-      );
-      document.getElementById('review-content').value = '';
-      document.getElementById('review-photo-label').innerText = 'Chưa chọn ảnh';
     }
 
     // Photo input handlers

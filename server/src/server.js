@@ -1433,35 +1433,196 @@ app.put('/api/admin/customers/:id/status', async (req, res) => {
 const Review = require('./models/Review');
 const ReturnRequest = require('./models/ReturnRequest');
 
+// Cập nhật thống kê rating và số lượng đánh giá của sản phẩm (UC-C08 Postcondition)
+async function updateProductRatingStats(productId) {
+  if (!productId) return;
+  try {
+    const pIdStr = String(productId);
+    const isObjId = mongoose.Types.ObjectId.isValid(pIdStr);
+    const matchFilter = isObjId
+      ? { $or: [{ productId: new mongoose.Types.ObjectId(pIdStr) }, { productId: pIdStr }] }
+      : { productId: pIdStr };
+
+    const stats = await Review.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: '$rating' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const reviewCount = stats.length > 0 ? stats[0].count : 0;
+    const averageRating = stats.length > 0 ? Number(stats[0].avgRating.toFixed(1)) : 5.0;
+
+    if (isObjId) {
+      await Product.findByIdAndUpdate(pIdStr, {
+        averageRating,
+        reviewCount
+      });
+    }
+  } catch (err) {
+    console.error('Lỗi cập nhật rating sản phẩm:', err);
+  }
+}
+
 // --- I. ĐÁNH GIÁ SẢN PHẨM (UC-C08) ---
-// 1. Tạo đánh giá mới (Kiểm tra nếu có orderId thì đơn phải COMPLETED)
+// 1. Tạo mới hoặc cập nhật đánh giá sản phẩm (Tuân thủ Precondition, Main Flow, E1, E2, E3, E4)
 app.post('/api/reviews', async (req, res) => {
   try {
-    const { accountId, productId, orderId, rating, comment } = req.body;
+    const { accountId, productId, orderId, rating, comment, isUpdate } = req.body;
 
-    if (!accountId || !productId || !rating) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp accountId, productId và số sao rating' });
+    // Precondition 1: Khách hàng đã đăng nhập vào hệ thống
+    if (!accountId) {
+      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đánh giá sản phẩm.' });
     }
 
+    if (!productId) {
+      return res.status(400).json({ success: false, message: 'Mã sản phẩm được đánh giá là bắt buộc.' });
+    }
+
+    // E2 – Thông tin đánh giá không hợp lệ: Chưa chọn số sao hoặc chưa nhập đầy đủ thông tin bắt buộc
+    const numRating = Number(rating);
+    if (!rating || isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ success: false, message: 'Vui lòng chọn số sao đánh giá từ 1 đến 5.' });
+    }
+
+    const trimmedComment = (comment || '').trim();
+    if (!trimmedComment) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ nội dung nhận xét bắt buộc.' });
+    }
+
+    // Precondition 2 & 3: Kiểm tra đơn hàng hoàn tất & sản phẩm thuộc đơn hàng của khách hàng
     if (orderId) {
       const order = await Order.findById(orderId);
-      if (order && order.status !== 'completed' && order.status !== 'COMPLETED') {
-        return res.status(400).json({ success: false, message: 'Chỉ được đánh giá tác phẩm khi đơn hàng đã hoàn tất (Completed)' });
+      if (!order) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng tương ứng.' });
+      }
+
+      // Precondition 3: Khách hàng phải là người đặt đơn hàng
+      const orderAccount = order.accountId || order.customer;
+      if (orderAccount && String(orderAccount) !== String(accountId)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Đơn hàng này không thuộc tài khoản của bạn.'
+        });
+      }
+
+      // E1: Đơn hàng chưa hoàn tất -> Không cho phép đánh giá
+      const orderStatus = (order.orderStatus || order.status || '').toLowerCase();
+      if (orderStatus !== 'completed') {
+        return res.status(400).json({
+          success: false,
+          message: 'Bạn chỉ có thể đánh giá sản phẩm sau khi đơn hàng hoàn tất.'
+        });
+      }
+
+      // Precondition 3: Sản phẩm cần đánh giá phải nằm trong danh sách items của đơn hàng
+      const items = order.items || [];
+      const isProductInOrder = items.some(item => {
+        const itemPId = item.productId || item.product;
+        const itemPIdStr = itemPId ? (itemPId._id ? String(itemPId._id) : String(itemPId)) : '';
+        return itemPIdStr === String(productId) || String(item._id) === String(productId);
+      });
+
+      if (!isProductInOrder) {
+        return res.status(400).json({
+          success: false,
+          message: 'Sản phẩm cần đánh giá không thuộc đơn hàng này.'
+        });
+      }
+
+      // E3 – Sản phẩm đã được đánh giá trong cùng đơn hàng
+      const queryExisting = {
+        accountId: mongoose.Types.ObjectId.isValid(accountId) ? new mongoose.Types.ObjectId(accountId) : accountId,
+        productId: mongoose.Types.ObjectId.isValid(productId) ? new mongoose.Types.ObjectId(productId) : productId,
+        orderId: mongoose.Types.ObjectId.isValid(orderId) ? new mongoose.Types.ObjectId(orderId) : orderId
+      };
+
+      const existingReview = await Review.findOne(queryExisting);
+
+      if (existingReview) {
+        // E3.3: Nếu hệ thống hỗ trợ chỉnh sửa đánh giá, khách hàng có thể cập nhật đánh giá hiện có
+        if (isUpdate) {
+          existingReview.rating = numRating;
+          existingReview.comment = trimmedComment;
+          existingReview.updatedAt = new Date();
+          await existingReview.save();
+          await updateProductRatingStats(productId);
+
+          return res.status(200).json({
+            success: true,
+            isUpdated: true,
+            message: 'Cập nhật đánh giá thành công',
+            data: existingReview
+          });
+        } else {
+          // E3.2: Không tạo thêm đánh giá trùng lặp và thông báo cho khách hàng
+          return res.status(409).json({
+            success: false,
+            isDuplicate: true,
+            existingReviewId: existingReview._id,
+            existingReview: {
+              rating: existingReview.rating,
+              comment: existingReview.comment
+            },
+            message: 'Sản phẩm này trong đơn hàng đã được đánh giá. Quý khách có thể cập nhật đánh giá hiện có.'
+          });
+        }
       }
     }
 
+    // Main Flow Bước 7: Lưu đánh giá mới
     const newReview = new Review({
       accountId,
       productId,
       orderId: orderId || null,
-      rating: Number(rating),
-      comment: (comment || '').trim()
+      rating: numRating,
+      comment: trimmedComment
     });
 
     await newReview.save();
-    res.status(201).json({ success: true, message: 'Gửi đánh giá thành công', data: newReview });
+    await updateProductRatingStats(productId);
+
+    // Main Flow Bước 8: Thông báo gửi đánh giá thành công
+    res.status(201).json({
+      success: true,
+      message: 'Gửi đánh giá thành công',
+      data: newReview
+    });
   } catch (error) {
+    // Exception E4 – Lỗi lưu đánh giá: Thông báo gửi đánh giá thất bại
     console.error('Lỗi gửi đánh giá:', error);
+    res.status(500).json({ success: false, message: 'Gửi đánh giá thất bại: ' + (error.message || 'Lỗi hệ thống') });
+  }
+});
+
+// 1.1. Lấy danh sách đánh giá của khách hàng theo đơn hàng (UC-C08 E3 check)
+app.get('/api/reviews/order/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { accountId } = req.query;
+
+    const filter = {};
+    if (mongoose.Types.ObjectId.isValid(orderId)) {
+      filter.orderId = new mongoose.Types.ObjectId(orderId);
+    } else {
+      filter.orderId = orderId;
+    }
+
+    if (accountId) {
+      if (mongoose.Types.ObjectId.isValid(accountId)) {
+        filter.accountId = new mongoose.Types.ObjectId(accountId);
+      } else {
+        filter.accountId = accountId;
+      }
+    }
+
+    const reviews = await Review.find(filter).lean();
+    res.status(200).json({ success: true, data: reviews });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -1480,7 +1641,6 @@ app.get('/api/reviews/product/:productId', async (req, res) => {
 
     const rawReviews = await Review.find(query)
       .populate('accountId', 'fullName email')
-      .populate('customer', 'fullName email')
       .sort({ createdAt: -1 })
       .lean();
 

@@ -1498,6 +1498,345 @@
   }
 
   // ==========================================
+  // 5.1. MODULE ĐÁNH GIÁ SẢN PHẨM (UC-C08 - PRODUCT REVIEW)
+  // ==========================================
+  let activeReviewProductId = null;
+  let activeReviewOrderId = null;
+  let activeReviewProductName = '';
+  let activeReviewRating = 5;
+  let activeIsUpdate = false;
+
+  const reviewRatingLabels = {
+    1: '1/5 - Cần cải thiện chất lượng',
+    2: '2/5 - Đạt mức tiêu chuẩn cơ bản',
+    3: '3/5 - Hài lòng cốt gốm Bát Tràng',
+    4: '4/5 - Thượng phẩm tinh xảo',
+    5: '5/5 - Tuyệt tác Hoàng Gia'
+  };
+
+  // E1: Đơn hàng chưa hoàn tất -> Hiển thị thông báo yêu cầu đơn hàng phải hoàn tất
+  function showIncompleteOrderNotice() {
+    const msg = 'Bạn chỉ có thể đánh giá sản phẩm sau khi đơn hàng hoàn tất.';
+    if (typeof window.showToast === 'function') {
+      window.showToast('toast-warning', 'Đơn hàng chưa hoàn tất', msg);
+    } else {
+      alert(msg);
+    }
+  }
+
+  function setModalStarRating(stars) {
+    activeReviewRating = stars;
+    const starButtons = document.querySelectorAll('#review-star-container .modal-star-btn');
+    starButtons.forEach((btn, index) => {
+      const starVal = index + 1;
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (starVal <= stars) {
+        btn.classList.add('text-amber-500');
+        btn.classList.remove('text-stone-300');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+      } else {
+        btn.classList.remove('text-amber-500');
+        btn.classList.add('text-stone-300');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+      }
+    });
+
+    const descEl = document.getElementById('review-star-desc');
+    if (descEl) {
+      descEl.textContent = reviewRatingLabels[stars] || `${stars}/5 Sao`;
+    }
+  }
+
+  function ensureReviewModalDOM() {
+    let modal = document.getElementById('modal-product-review');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'modal-product-review';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity font-[\'Plus_Jakarta_Sans\',sans-serif] hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto border border-[#EBEAE5] animate-in fade-in zoom-in-95 duration-200">
+        <!-- Header -->
+        <div class="p-6 bg-[#f8f9fa] border-b border-[#EBEAE5] flex items-center justify-between">
+          <div>
+            <span class="text-[11px] uppercase tracking-widest text-[#a23e18] font-bold block" id="review-modal-badge">ĐÁNH GIÁ SẢN PHẨM (UC-C08)</span>
+            <h3 class="font-[\'Playfair_Display\',serif] text-xl font-bold text-[#000f22] mt-0.5" id="review-modal-title">Cảm Nhận Nhà Sưu Tầm</h3>
+            <p class="text-[13px] text-[#43474d] mt-1 font-medium truncate max-w-sm" id="review-modal-product-name">Tên sản phẩm</p>
+            <p class="text-[11px] text-[#74777e]" id="review-modal-order-code">Đơn hàng #...</p>
+          </div>
+          <button type="button" onclick="OrdersModule.closeReviewModal()" class="w-8 h-8 rounded-full bg-white hover:bg-stone-100 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer border border-[#EBEAE5]">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form id="product-review-form" class="p-6 flex flex-col gap-5" onsubmit="OrdersModule.submitReview(event)">
+          <!-- Banner Thông báo / Cảnh báo E2, E3, E4 -->
+          <div id="review-modal-alert" class="hidden p-3 rounded-lg text-xs leading-relaxed flex items-start gap-2">
+            <span class="material-symbols-outlined text-[18px] shrink-0" id="review-modal-alert-icon">info</span>
+            <span id="review-modal-alert-text">Thông báo</span>
+          </div>
+
+          <!-- 1. Star Rating -->
+          <div class="flex flex-col items-center justify-center p-4 bg-[#f8f9fa] rounded-xl border border-[#EBEAE5]">
+            <span class="text-xs text-[#74777e] uppercase tracking-wider font-semibold mb-2">
+              1. Đánh giá chất lượng tác phẩm (1 - 5 sao) <strong class="text-[#a23e18]">*</strong>
+            </span>
+            <div class="flex items-center gap-1.5" id="review-star-container">
+              <button type="button" class="modal-star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer p-1" onclick="OrdersModule.setModalStarRating(1)" aria-label="1 sao">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+              </button>
+              <button type="button" class="modal-star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer p-1" onclick="OrdersModule.setModalStarRating(2)" aria-label="2 sao">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+              </button>
+              <button type="button" class="modal-star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer p-1" onclick="OrdersModule.setModalStarRating(3)" aria-label="3 sao">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+              </button>
+              <button type="button" class="modal-star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer p-1" onclick="OrdersModule.setModalStarRating(4)" aria-label="4 sao">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+              </button>
+              <button type="button" class="modal-star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer p-1" onclick="OrdersModule.setModalStarRating(5)" aria-label="5 sao">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+              </button>
+            </div>
+            <span class="text-sm font-semibold text-[#000f22] mt-2 font-serif" id="review-star-desc">5/5 - Tuyệt tác Hoàng Gia</span>
+          </div>
+
+          <!-- 2. Comment -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-[#000f22] uppercase tracking-wider font-bold" for="review-comment-input">
+              2. Nội dung nhận xét & cảm nhận <strong class="text-[#a23e18]">*</strong>
+            </label>
+            <textarea id="review-comment-input" 
+                      rows="4" 
+                      required
+                      placeholder="Chia sẻ cảm nhận chân thực của quý khách về độ tinh xảo, chất men lam, cốt đất nung củi và quy cách đóng gói..." 
+                      class="w-full bg-white text-[#000f22] text-sm p-3.5 rounded-xl border border-[#EBEAE5] focus:outline-none focus:border-[#a23e18] transition-colors leading-relaxed shadow-inner"></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#EBEAE5]">
+            <button type="button" onclick="OrdersModule.closeReviewModal()" class="px-4 py-2.5 rounded-lg text-stone-600 hover:text-stone-900 text-xs uppercase tracking-wider font-semibold transition-colors cursor-pointer">
+              Đóng
+            </button>
+            <button id="btn-submit-review" type="submit" class="px-6 py-2.5 rounded-lg bg-[#000f22] hover:bg-[#10162B] text-white text-xs uppercase tracking-wider font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer">
+              <span class="material-symbols-outlined text-[18px] text-[#edbf76]">verified</span>
+              <span id="btn-submit-review-text">Gửi Đánh Giá</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  async function openReviewModal(targetName, productId, orderId, isEdit, initialRating, initialComment) {
+    const user = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!user || !user._id) {
+      alert('Vui lòng đăng nhập để đánh giá sản phẩm.');
+      if (typeof window.dieuHuong === 'function') window.dieuHuong('login');
+      return;
+    }
+
+    activeReviewProductId = productId;
+    activeReviewOrderId = orderId;
+    activeReviewProductName = targetName;
+    activeReviewRating = initialRating || 5;
+    activeIsUpdate = Boolean(isEdit);
+
+    const modal = ensureReviewModalDOM();
+    document.getElementById('review-modal-product-name').textContent = targetName || 'Tác phẩm gốm sứ';
+    document.getElementById('review-modal-order-code').textContent = orderId ? `Đơn hàng #${orderId}` : '';
+
+    const alertBox = document.getElementById('review-modal-alert');
+    if (alertBox) alertBox.classList.add('hidden');
+
+    const commentInput = document.getElementById('review-comment-input');
+    const submitText = document.getElementById('btn-submit-review-text');
+    const modalTitle = document.getElementById('review-modal-title');
+
+    // Kiểm tra xem khách hàng đã đánh giá sản phẩm trong đơn hàng này chưa (E3)
+    if (!isEdit && orderId && typeof ApiService !== 'undefined' && ApiService.getOrderReviews) {
+      ApiService.getOrderReviews(orderId, user._id, (err, res) => {
+        if (!err && res && res.success && Array.isArray(res.data)) {
+          const found = res.data.find(r => {
+            const pId = (r.productId && (r.productId._id || r.productId)) || '';
+            return String(pId) === String(productId);
+          });
+          if (found) {
+            activeIsUpdate = true;
+            activeReviewRating = found.rating || 5;
+            if (commentInput) commentInput.value = found.comment || '';
+            if (modalTitle) modalTitle.textContent = 'Chỉnh Sửa Đánh Giá Tác Phẩm';
+            if (submitText) submitText.textContent = 'Cập Nhật Đánh Giá';
+            setModalStarRating(activeReviewRating);
+            return;
+          }
+        }
+      });
+    }
+
+    if (isEdit) {
+      if (commentInput) commentInput.value = initialComment || '';
+      if (modalTitle) modalTitle.textContent = 'Chỉnh Sửa Đánh Giá Tác Phẩm';
+      if (submitText) submitText.textContent = 'Cập Nhật Đánh Giá';
+    } else {
+      if (commentInput) commentInput.value = '';
+      if (modalTitle) modalTitle.textContent = 'Cảm Nhận Nhà Sưu Tầm';
+      if (submitText) submitText.textContent = 'Gửi Đánh Giá';
+    }
+
+    setModalStarRating(activeReviewRating);
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReviewModal() {
+    const modal = document.getElementById('modal-product-review');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  async function submitReview(e) {
+    if (e && e.preventDefault) e.preventDefault();
+
+    const user = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!user || !user._id) {
+      alert('Vui lòng đăng nhập để gửi đánh giá.');
+      return;
+    }
+
+    const commentInput = document.getElementById('review-comment-input');
+    const commentVal = commentInput ? commentInput.value.trim() : '';
+    const alertBox = document.getElementById('review-modal-alert');
+    const alertText = document.getElementById('review-modal-alert-text');
+    const alertIcon = document.getElementById('review-modal-alert-icon');
+    const submitBtn = document.getElementById('btn-submit-review');
+    const submitText = document.getElementById('btn-submit-review-text');
+
+    function showAlert(msg, type = 'error') {
+      if (!alertBox || !alertText) return;
+      alertBox.classList.remove('hidden', 'bg-red-50', 'text-red-800', 'border-red-200', 'bg-amber-50', 'text-amber-800', 'border-amber-200');
+      if (type === 'error') {
+        alertBox.classList.add('bg-red-50', 'text-red-800', 'border', 'border-red-200');
+        if (alertIcon) alertIcon.textContent = 'error';
+      } else {
+        alertBox.classList.add('bg-amber-50', 'text-amber-800', 'border', 'border-amber-200');
+        if (alertIcon) alertIcon.textContent = 'warning';
+      }
+      alertText.textContent = msg;
+    }
+
+    // E2: Kiểm tra thông tin đánh giá không hợp lệ
+    if (!activeReviewRating || activeReviewRating < 1 || activeReviewRating > 5) {
+      showAlert('Vui lòng chọn số sao đánh giá từ 1 đến 5.', 'error');
+      return;
+    }
+
+    if (!commentVal) {
+      showAlert('Vui lòng nhập đầy đủ nội dung nhận xét bắt buộc.', 'error');
+      if (commentInput) commentInput.focus();
+      return;
+    }
+
+    if (alertBox) alertBox.classList.add('hidden');
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      if (submitText) submitText.textContent = 'Đang lưu đánh giá...';
+    }
+
+    const payload = {
+      accountId: user._id,
+      productId: activeReviewProductId,
+      orderId: activeReviewOrderId,
+      rating: activeReviewRating,
+      comment: commentVal,
+      isUpdate: activeIsUpdate
+    };
+
+    ApiService.createReview(payload, function (err, res) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (submitText) submitText.textContent = activeIsUpdate ? 'Cập Nhật Đánh Giá' : 'Gửi Đánh Giá';
+      }
+
+      if (err || !res || !res.success) {
+        // E3: Sản phẩm đã được đánh giá trùng lặp
+        if (res && res.isDuplicate) {
+          showAlert(res.message || 'Sản phẩm này trong đơn hàng đã được đánh giá. Quý khách có thể cập nhật đánh giá hiện có.', 'warning');
+          activeIsUpdate = true;
+          if (submitText) submitText.textContent = 'Cập Nhật Đánh Giá';
+          const title = document.getElementById('review-modal-title');
+          if (title) title.textContent = 'Chỉnh Sửa Đánh Giá Tác Phẩm';
+          return;
+        }
+
+        // E4: Lỗi lưu đánh giá -> Báo lỗi và giữ nguyên modal để khách hàng thử lại
+        const errorMsg = (res && res.message) || err || 'Lỗi kết nối máy chủ.';
+        showAlert('Gửi đánh giá thất bại: ' + errorMsg + '. Vui lòng thử lại sau.', 'error');
+        if (typeof window.showToast === 'function') {
+          window.showToast('toast-error', 'Gửi đánh giá thất bại', 'Lỗi: ' + errorMsg + '. Vui lòng thử lại.');
+        }
+        return;
+      }
+
+      // Main flow bước 8: Thành công
+      closeReviewModal();
+      const successMsg = activeIsUpdate 
+        ? 'Cập nhật đánh giá thành công! Nhận xét đã được ghi nhận và hiển thị tại trang sản phẩm.'
+        : 'Cảm tạ quý khách đã lưu lại cảm nhận (' + activeReviewRating + ' sao). Đánh giá đã được lưu và hiển thị tại trang sản phẩm.';
+
+      if (typeof window.showToast === 'function') {
+        window.showToast('toast-success', activeIsUpdate ? 'Cập nhật đánh giá thành công' : 'Gửi đánh giá thành công', successMsg);
+      } else {
+        alert(successMsg);
+      }
+
+      // Cập nhật trạng thái nút trên giao diện
+      updateReviewButtonLabels(activeReviewOrderId, activeReviewProductId);
+
+      // Nếu đang mở trang product-detail của chính sản phẩm này, tự động nạp lại phần đánh giá
+      if (window.ProductComponent && typeof window.ProductComponent.loadProductReviews === 'function') {
+        window.ProductComponent.loadProductReviews(activeReviewProductId);
+      }
+    });
+  }
+
+  function updateReviewButtonLabels(orderId, productId) {
+    const selector = `[data-review-order="${orderId}"][data-review-product="${productId}"]`;
+    const buttons = document.querySelectorAll(selector);
+    buttons.forEach(btn => {
+      const textEl = btn.querySelector('.review-btn-text') || btn.querySelector('span:not(.material-symbols-outlined)');
+      if (textEl) textEl.textContent = 'Sửa đánh giá';
+      const starIcon = btn.querySelector('.review-btn-star');
+      if (starIcon) {
+        starIcon.style.fontVariationSettings = "'FILL' 1";
+        starIcon.classList.add('text-amber-500');
+      }
+      btn.title = 'Xem / Chỉnh sửa đánh giá của bạn';
+    });
+  }
+
+  function refreshReviewedOrderItems(orderId) {
+    const user = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!user || !user._id || !orderId || typeof ApiService === 'undefined' || !ApiService.getOrderReviews) return;
+
+    ApiService.getOrderReviews(orderId, user._id, (err, res) => {
+      if (!err && res && res.success && Array.isArray(res.data)) {
+        res.data.forEach(rev => {
+          const pId = (rev.productId && (rev.productId._id || rev.productId)) || rev.product || '';
+          if (pId) {
+            updateReviewButtonLabels(orderId, pId);
+          }
+        });
+      }
+    });
+  }
+
+  // ==========================================
   // 6. PROFILE ORDERS ACCORDION & MANAGEMENT
   // ==========================================
   function getPaymentStatusMeta(status) {
@@ -1647,6 +1986,14 @@
 
     if (emptyState) emptyState.classList.add('hidden');
     container.innerHTML = orders.map(order => renderProfileOrderCard(order)).join('');
+
+    // Tự động kiểm tra và cập nhật nhãn các sản phẩm đã được đánh giá cho các đơn hoàn tất (UC-C08 E3)
+    orders.forEach(order => {
+      const s = (order.orderStatus || '').toLowerCase();
+      if (s === 'completed') {
+        refreshReviewedOrderItems(order._id);
+      }
+    });
   }
 
   function toggleOrderAccordion(orderId) {
@@ -1816,15 +2163,27 @@
                       <div class="flex items-center gap-3">
                         <span class="font-title-md text-sm text-primary font-serif font-bold">${formatMoney(item.unitPrice * item.quantity)}</span>
                         
-                        <!-- Nút Đánh giá từng sản phẩm khi đã Hoàn thành -->
+                        <!-- Nút Đánh giá từng sản phẩm theo UC-C08 -->
                         ${isCompleted ? `
                           <button type="button" 
-                                  onclick="openReviewModal('${escapeHtml(displayName)}', '${prodId}', '${order._id}')" 
-                                  class="px-2.5 py-1 rounded bg-porcelain-white text-primary hover:bg-primary-container hover:text-on-primary border border-biscuit-sand font-label-sm text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer">
-                            <span class="material-symbols-outlined text-[14px] text-amber-500">star</span>
-                            <span>Đánh giá</span>
+                                  data-review-order="${order._id}"
+                                  data-review-product="${prodId}"
+                                  onclick="OrdersModule.openReviewModal('${escapeHtml(displayName)}', '${prodId}', '${order._id}')" 
+                                  class="btn-order-review px-2.5 py-1 rounded bg-porcelain-white text-primary hover:bg-primary-container hover:text-on-primary border border-biscuit-sand font-label-sm text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                                  title="Viết cảm nhận & đánh giá tác phẩm">
+                            <span class="material-symbols-outlined text-[14px] text-amber-500 review-btn-star">star</span>
+                            <span class="review-btn-text">Viết đánh giá</span>
                           </button>
-                        ` : ''}
+                        ` : `
+                          <!-- E1: Vô hiệu hóa nút Viết đánh giá khi đơn chưa hoàn tất -->
+                          <button type="button" 
+                                  onclick="OrdersModule.showIncompleteOrderNotice()" 
+                                  class="px-2.5 py-1 rounded bg-stone-100 text-stone-400 border border-stone-200 font-label-sm text-[11px] font-medium opacity-60 cursor-not-allowed flex items-center gap-1"
+                                  title="Bạn chỉ có thể đánh giá sản phẩm sau khi đơn hàng hoàn tất.">
+                            <span class="material-symbols-outlined text-[14px] text-stone-400">star</span>
+                            <span>Viết đánh giá</span>
+                          </button>
+                        `}
                       </div>
                     </div>
                   </div>
@@ -2201,11 +2560,15 @@
       if (items.length === 0) {
         itemsContainer.innerHTML = '<p class="text-center text-[#74777e] py-6">Đơn hàng không có danh mục tác phẩm.</p>';
       } else {
+        const isCompleted = oStatus === 'completed';
+        const cleanOrderId = orderData._id || orderData.orderId || '';
+
         itemsContainer.innerHTML = items.map((item, idx) => {
           const product = item.productId || {};
           const customization = item.customization || item.designSnapshot;
           const isCustom = Boolean(customization && (customization.designName || customization.glazeColor || customization.men || customization.engravingText || customization.chuKhac || customization.previewImage));
           const name = (customization && customization.designName) || item.productName || product.name || 'Tác phẩm gốm Bát Tràng';
+          const prodId = (product && (product._id || product.id)) || item.productId || item.product || item._id || '';
           const price = Number(item.unitPrice || item.price || product.price || 0);
           const qty = Number(item.quantity || 1);
           const itemTotal = Number(item.totalPrice) > 0 ? Number(item.totalPrice) : (price * qty);
@@ -2237,6 +2600,29 @@
                       <div class="text-right shrink-0">
                         <span class="text-lg font-bold text-[#a23e18] font-['Playfair_Display',serif]">${formatMoney(itemTotal)}</span>
                         <p class="text-[12px] text-[#74777e]">Đơn giá: ${formatMoney(price)} × ${qty}</p>
+                        <!-- Nút Đánh giá sản phẩm theo UC-C08 -->
+                        <div class="mt-2 flex justify-end">
+                          ${isCompleted ? `
+                            <button type="button" 
+                                    data-review-order="${cleanOrderId}"
+                                    data-review-product="${prodId}"
+                                    onclick="OrdersModule.openReviewModal('${escapeHtml(name)}', '${prodId}', '${cleanOrderId}')" 
+                                    class="btn-order-review px-3 py-1 rounded bg-[#000f22] text-[#edbf76] hover:bg-[#10162B] text-[11px] font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                    title="Viết cảm nhận & đánh giá tác phẩm">
+                              <span class="material-symbols-outlined text-[14px] text-amber-400 review-btn-star">star</span>
+                              <span class="review-btn-text">Viết đánh giá</span>
+                            </button>
+                          ` : `
+                            <!-- E1: Vô hiệu hóa nút Viết đánh giá khi đơn chưa hoàn tất -->
+                            <button type="button" 
+                                    onclick="OrdersModule.showIncompleteOrderNotice()" 
+                                    class="px-3 py-1 rounded bg-stone-100 text-stone-400 border border-stone-200 text-[11px] font-medium opacity-60 cursor-not-allowed flex items-center gap-1.5"
+                                    title="Bạn chỉ có thể đánh giá sản phẩm sau khi đơn hàng hoàn tất.">
+                              <span class="material-symbols-outlined text-[14px] text-stone-400">star</span>
+                              <span>Viết đánh giá</span>
+                            </button>
+                          `}
+                        </div>
                       </div>
                     </div>
                     <p class="text-[13px] text-[#43474d] mt-1 leading-relaxed">
@@ -2278,6 +2664,10 @@
             </article>
           `;
         }).join('');
+
+        if (isCompleted && cleanOrderId) {
+          refreshReviewedOrderItems(cleanOrderId);
+        }
       }
     }
 
@@ -2401,6 +2791,12 @@
     submitPayNotify,
     selectPaymentMethod,
     setupPaymentMethodSelection,
+    openReviewModal,
+    closeReviewModal,
+    submitReview,
+    setModalStarRating,
+    showIncompleteOrderNotice,
+    refreshReviewedOrderItems,
   };
 
   window.OrdersModule = OrdersModule;
@@ -2410,5 +2806,8 @@
   window.initOrderDetailPage = initOrderDetailPage;
   window.cancelCurrentOrderDetail = cancelCurrentOrderDetail;
   window.initProfileOrders = initProfileOrders;
+  window.openReviewModal = openReviewModal;
+  window.closeReviewModal = closeReviewModal;
+  window.submitReview = submitReview;
 })();
 
