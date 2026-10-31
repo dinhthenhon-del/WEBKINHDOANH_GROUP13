@@ -936,31 +936,74 @@ const DetailView = {
     }
 
     // Tải và hiển thị đánh giá feedback từ khách hàng
-    this.loadProductReviews(p._id);
+    const reviewTargetId = p._id || p.id || p.sku;
+    this.loadProductReviews(reviewTargetId, p);
   },
 
-  loadProductReviews: function (productId) {
+  loadProductReviews: function (productId, productObj) {
     const grid = document.getElementById('productReviewsGrid');
     if (!grid) return;
 
-    if (typeof ApiService !== 'undefined' && typeof ApiService.getReviewsByProduct === 'function') {
-      ApiService.getReviewsByProduct(productId, (err, res) => {
-        if (err || !res || !res.success) {
-          grid.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-stone-500">Chưa có đánh giá nào cho tác phẩm này. Hãy là người đầu tiên gửi cảm nhận!</div>';
-          return;
-        }
+    const p = productObj || this.currentProduct || {};
+    const pId = productId || p._id || p.id || p.sku;
 
-        const reviews = res.data || [];
-        const stats = res.stats || {};
-        this.renderReviewsSummary(stats, reviews);
-        this.renderReviewsGrid(reviews);
+    const processAndRender = (serverReviews = [], serverStats = {}) => {
+      let localReviews = [];
+      try {
+        const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
+        localReviews = cached.filter(r => {
+          if (!r) return false;
+          const matchId = (r.productId && (String(r.productId) === String(pId) || (p._id && String(r.productId) === String(p._id)) || (p.sku && r.productId === p.sku)));
+          const matchName = (r.productName && p.name && (r.productName === p.name || r.productName.includes(p.name)));
+          return matchId || matchName;
+        });
+      } catch (e) {}
+
+      const combined = [...localReviews];
+      serverReviews.forEach(sr => {
+        const already = combined.some(cr => (cr._id && sr._id && String(cr._id) === String(sr._id)) || (cr.comment === sr.comment && cr.rating === sr.rating));
+        if (!already) combined.push(sr);
       });
+
+      const total = combined.length;
+      let avg = 0;
+      const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      if (total > 0) {
+        const sum = combined.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+        avg = Number((sum / total).toFixed(1));
+        combined.forEach(r => {
+          const star = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
+          breakdown[star] = (breakdown[star] || 0) + 1;
+        });
+      }
+
+      const calculatedStats = {
+        totalReviews: total,
+        averageRating: avg,
+        breakdown: breakdown
+      };
+
+      DetailView.renderReviewsSummary(calculatedStats, combined);
+      DetailView.renderReviewsGrid(combined);
+    };
+
+    if (typeof ApiService !== 'undefined' && typeof ApiService.getReviewsByProduct === 'function' && pId) {
+      ApiService.getReviewsByProduct(pId, (err, res) => {
+        if (!err && res && res.success) {
+          processAndRender(res.data || [], res.stats || {});
+        } else {
+          processAndRender([], {});
+        }
+      });
+    } else {
+      processAndRender([], {});
     }
   },
 
   renderReviewsSummary: function (stats, reviews) {
-    const avg = stats.averageRating !== undefined ? Number(stats.averageRating).toFixed(1) : '5.0';
     const total = stats.totalReviews !== undefined ? stats.totalReviews : reviews.length;
+    const avgNum = Number(stats.averageRating || 0);
+    const avg = total > 0 ? avgNum.toFixed(1) : '0.0';
     const breakdown = stats.breakdown || {};
 
     const avgEl = document.getElementById('reviewSummaryAverage');
@@ -968,7 +1011,7 @@ const DetailView = {
 
     const starsEl = document.getElementById('reviewSummaryStars');
     if (starsEl) {
-      const fullStars = Math.round(Number(avg));
+      const fullStars = total > 0 ? Math.round(avgNum) : 0;
       let starsHtml = '';
       for (let i = 1; i <= 5; i++) {
         const isFilled = i <= fullStars;
@@ -977,16 +1020,28 @@ const DetailView = {
       starsEl.innerHTML = starsHtml;
     }
 
+    const satEl = document.getElementById('reviewSummarySatisfaction');
+    if (satEl) {
+      if (total > 0) {
+        const b5 = breakdown[5] || 0;
+        const b4 = breakdown[4] || 0;
+        const satPct = Math.round(((b5 + b4) / total) * 100);
+        satEl.innerText = `${satPct}% Khách Hàng Tuyệt Đối Hài Lòng`;
+      } else {
+        satEl.innerText = 'Chưa Có Đánh Giá Nào';
+      }
+    }
+
     const descEl = document.getElementById('reviewSummaryTotalDesc');
     if (descEl) {
-      descEl.innerText = `(DỰA TRÊN ${total} ĐÁNH GIÁ ĐÃ XÁC THỰC)`;
+      descEl.innerText = total > 0 ? `(DỰA TRÊN ${total} ĐÁNH GIÁ ĐÃ XÁC THỰC)` : '(CHƯA CÓ ĐÁNH GIÁ XÁC THỰC)';
     }
 
     // Breakdown bars
     const b5 = breakdown[5] || 0;
     const b4 = breakdown[4] || 0;
     const b3 = breakdown[3] || 0;
-    const pct5 = total > 0 ? Math.round((b5 / total) * 100) : 100;
+    const pct5 = total > 0 ? Math.round((b5 / total) * 100) : 0;
     const pct4 = total > 0 ? Math.round((b4 / total) * 100) : 0;
     const pct3 = total > 0 ? Math.round((b3 / total) * 100) : 0;
 
@@ -1007,8 +1062,27 @@ const DetailView = {
     // Cập nhật rating trên đầu chi tiết sản phẩm nếu có
     const detailScore = document.getElementById('detailRatingScore');
     const detailCount = document.getElementById('detailReviewCount');
-    if (detailScore) detailScore.innerText = avg;
-    if (detailCount) detailCount.innerText = total > 0 ? `(${total} đánh giá)` : '(Chưa có đánh giá)';
+    const detailStars = document.getElementById('detailStarGroup');
+
+    if (detailScore) {
+      detailScore.innerText = avg;
+      detailScore.hidden = total === 0;
+    }
+    if (detailCount) {
+      detailCount.innerText = total > 0 ? `(${total} đánh giá)` : '(Chưa có đánh giá)';
+    }
+    if (detailStars) {
+      detailStars.hidden = total === 0;
+      if (total > 0) {
+        const fullStars = Math.round(avgNum);
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          const isFilled = i <= fullStars;
+          starsHtml += `<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' ${isFilled ? 1 : 0};">star</span>`;
+        }
+        detailStars.innerHTML = starsHtml;
+      }
+    }
   },
 
   renderReviewsGrid: function (reviews) {
@@ -1579,7 +1653,7 @@ window.khoiTaoTrangShop = function (param) {
 };
 
 window.khoiTaoTrangProductDetail = function (param) {
-  const prodId = param || window.selectedProductId;
+  const prodId = (param && typeof param === 'object' ? (param.id || param._id || param.productId || param.sku) : param) || window.selectedProductId;
   DetailView.init(prodId);
 };
 

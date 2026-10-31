@@ -15,10 +15,12 @@ const VALID_TRANSITIONS = {
 
 /**
  * Hàm tính Doanh Thu Thuần (Net Revenue) duy nhất dùng chung cho toàn hệ thống:
- * Công thức: Doanh thu thuần = Tiền thu được - Giá trị hàng hoàn trả - Giá trị hàng hủy
- * 1. Tiền thu được: Tổng giá trị các đơn hàng đã thanh toán (paymentStatus: 'paid' / 'partially_refunded').
- * 2. Giá trị hàng hoàn trả: Khấu trừ số tiền hoàn từ các đơn hàng đổi trả / phê duyệt hoàn tiền.
- * 3. Giá trị hàng hủy: Khấu trừ toàn bộ giá trị các đơn hàng bị hủy.
+ * Tiêu chí:
+ * 1. Tiền thu được (Doanh thu gộp): CHỈ tính khi đơn hàng đã được xác nhận thanh toán (paymentStatus: 'paid' / 'partially_refunded').
+ * 2. Giảm trừ do Hàng hủy: CHỈ ghi nhận khi đơn hàng ĐÃ THANH TOÁN mà bị hủy (tiền đã thu nay phải hoàn lại cho khách).
+ * 3. Đơn chưa thanh toán mà hủy: TUYỆT ĐỐI KHÔNG tính vào giảm trừ doanh thu (vì chưa từng được tính vào doanh thu ban đầu).
+ * 4. Giảm trừ do Hàng hoàn trả / Đổi trả: Ghi nhận khi khách nhận hàng muốn đổi/trả và yêu cầu được phê duyệt.
+ * Doanh thu thuần = Tiền thu được - Giảm trừ hàng hủy (đã thanh toán) - Giảm trừ hàng hoàn trả
  */
 async function calculateNetRevenue() {
   const allOrders = await Order.find()
@@ -35,18 +37,22 @@ async function calculateNetRevenue() {
     const total = Number(o.totalAmount || 0);
     let refunded = Number(o.refundedAmount || 0);
 
-    if (o.returnStatus === 'approved' && (!refunded || refunded <= 0)) {
-      refunded = total;
-    }
+    const isPaid = ['paid', 'partially_refunded'].includes(payment);
 
-    // Đơn bị hủy -> cộng vào tổng giá trị hàng hủy để khấu trừ
-    if (rawStatus === 'cancelled') {
-      totalCancelled += total;
-    } else if (['paid', 'partially_refunded'].includes(payment)) {
-      // Đơn đã thanh toán thành công
+    // Tiêu chí 1: Phải khi admin / hệ thống xác nhận ĐÃ THANH TOÁN mới tính vào doanh thu
+    if (isPaid) {
       totalCollected += total;
-      totalRefunded += refunded;
+
+      if (rawStatus === 'cancelled') {
+        // Tiêu chí 2: Đã thanh toán nhưng hủy hàng -> mới ghi nhận vào các đơn giảm trừ doanh thu diện hủy hàng
+        totalCancelled += total;
+      } else if (o.returnStatus === 'approved' || refunded > 0) {
+        // Tiêu chí 4: Khách nhận hàng muốn đổi trả -> ghi nhận vào hàng hoàn trả giảm trừ doanh thu
+        if (!refunded || refunded <= 0) refunded = total;
+        totalRefunded += refunded;
+      }
     }
+    // Tiêu chí 3: Nếu khách hàng đặt nhưng chưa thanh toán đã hủy -> KHÔNG ghi nhận vào các khoản giảm trừ doanh thu
   });
 
   const netRevenue = Math.max(0, totalCollected - totalRefunded - totalCancelled);

@@ -227,16 +227,24 @@
               </td>
 
               <td class="px-space-lg py-space-sm text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button (click)="openDetail(customer)" class="h-8 px-3 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" title="Xem chi tiết & lịch sử">
-                    <span>Xem hồ sơ</span>
+                <div class="flex items-center justify-end gap-1.5">
+                  <button (click)="openDetail(customer)" class="h-8 px-2.5 rounded-lg bg-surface-container-high hover:bg-[#0A2540] hover:text-white text-[#0A2540] font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" title="Xem chi tiết & lịch sử">
+                    <span>Xem</span>
                     <span class="material-symbols-outlined text-sm">visibility</span>
                   </button>
 
-                  <button (click)="openStatusModal(customer, $event)" [class.bg-emerald-50]="customer.status === 'blocked'" [class.text-emerald-700]="customer.status === 'blocked'" [class.hover:bg-emerald-100]="customer.status === 'blocked'" [class.bg-red-50]="customer.status === 'active'" [class.text-[#C85A32]]="customer.status === 'active'" [class.hover:bg-red-100]="customer.status === 'active'" class="h-8 px-2.5 rounded-lg font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" [title]="customer.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">
+                  <button (click)="openEditModal(customer, $event)" class="h-8 px-2.5 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" title="Chỉnh sửa thông tin khách hàng">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                  </button>
+
+                  <button (click)="openStatusModal(customer, $event)" [class.bg-emerald-50]="customer.status === 'blocked'" [class.text-emerald-700]="customer.status === 'blocked'" [class.hover:bg-emerald-100]="customer.status === 'blocked'" [class.bg-amber-50]="customer.status === 'active'" [class.text-amber-800]="customer.status === 'active'" [class.hover:bg-amber-100]="customer.status === 'active'" class="h-8 px-2.5 rounded-lg font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" [title]="customer.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">
                     <span class="material-symbols-outlined text-base">
                       {{ customer.status === 'active' ? 'lock' : 'lock_open' }}
                     </span>
+                  </button>
+
+                  <button (click)="openDeleteModal(customer, $event)" class="h-8 px-2.5 rounded-lg bg-red-50 hover:bg-red-600 hover:text-white text-red-700 font-label-sm text-label-sm inline-flex items-center gap-1 transition-all cursor-pointer" type="button" title="Xóa khách hàng">
+                    <span class="material-symbols-outlined text-base">delete</span>
                   </button>
                 </div>
               </td>
@@ -267,8 +275,16 @@
         </span>
       </div>
       <div class="flex items-center gap-space-sm">
-        <span class="font-label-md text-body-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-container-high">
-          Cập nhật: Hôm nay, 14:32
+        <button (click)="openEditModal(selectedCustomer)" class="h-9 px-3.5 rounded-lg bg-[#0A2540] hover:bg-[#07192c] text-white font-label-md text-label-md inline-flex items-center gap-1.5 transition-all shadow-sm cursor-pointer" type="button" title="Chỉnh sửa thông tin khách hàng">
+          <span class="material-symbols-outlined text-base">edit</span>
+          <span>Chỉnh sửa hồ sơ</span>
+        </button>
+        <button (click)="openDeleteModal(selectedCustomer)" class="h-9 px-3.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-label-md text-label-md inline-flex items-center gap-1.5 transition-all border border-red-200 cursor-pointer" type="button" title="Xóa khách hàng">
+          <span class="material-symbols-outlined text-base">delete</span>
+          <span>Xóa</span>
+        </button>
+        <span class="font-label-md text-body-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-container-high hidden sm:inline-block">
+          Cập nhật: Hôm nay
         </span>
       </div>
     </div>
@@ -365,12 +381,22 @@
             </div>
           </div>
 
-          <!-- Nút hành động khóa / mở khóa tài khoản -->
-          <div class="flex flex-col sm:flex-row gap-space-sm pt-space-xs">
-            <button (click)="openStatusModal(selectedCustomer)" [class.bg-[#c85a32]]="selectedCustomer.status === 'active'" [class.hover:bg-[#b04b25]]="selectedCustomer.status === 'active'" [class.bg-emerald-600]="selectedCustomer.status === 'blocked'" [class.hover:bg-emerald-700]="selectedCustomer.status === 'blocked'" class="flex-1 h-10 px-4 rounded-xl text-white font-label-md text-label-md flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer" type="button">
-              <span class="material-symbols-outlined text-lg">{{ selectedCustomer.status === 'active' ? 'lock' : 'lock_open' }}</span>
-              <span>{{ selectedCustomer.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}</span>
+          <!-- Nút hành động chỉnh sửa / khóa / xóa tài khoản -->
+          <div class="flex flex-col gap-space-xs pt-space-xs">
+            <button (click)="openEditModal(selectedCustomer)" class="w-full h-10 px-4 rounded-xl bg-[#0A2540] hover:bg-[#07192c] text-white font-label-md text-label-md flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer" type="button">
+              <span class="material-symbols-outlined text-lg">edit</span>
+              <span>Chỉnh sửa thông tin</span>
             </button>
+            <div class="grid grid-cols-2 gap-space-xs">
+              <button (click)="openStatusModal(selectedCustomer)" [class.bg-[#c85a32]]="selectedCustomer.status === 'active'" [class.hover:bg-[#b04b25]]="selectedCustomer.status === 'active'" [class.bg-emerald-600]="selectedCustomer.status === 'blocked'" [class.hover:bg-emerald-700]="selectedCustomer.status === 'blocked'" class="h-10 px-3 rounded-xl text-white font-label-sm text-label-sm flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-base">{{ selectedCustomer.status === 'active' ? 'lock' : 'lock_open' }}</span>
+                <span>{{ selectedCustomer.status === 'active' ? 'Khóa' : 'Mở khóa' }}</span>
+              </button>
+              <button (click)="openDeleteModal(selectedCustomer)" class="h-10 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-label-sm text-label-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-base">delete</span>
+                <span>Xóa hồ sơ</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -567,6 +593,210 @@
         <span *ngIf="isUpdatingStatus" class="material-symbols-outlined text-lg animate-spin">progress_activity</span>
         <span *ngIf="!isUpdatingStatus" class="material-symbols-outlined text-lg">check_circle</span>
         <span>Xác nhận cập nhật</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL CHỈNH SỬA THÔNG TIN KHÁCH HÀNG (EDIT CUSTOMER MODAL)    -->
+<!-- ============================================================== -->
+<div *ngIf="isEditModalOpen && customerToEdit" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A2540]/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-surface-container flex flex-col relative max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between bg-surface-container-lowest shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#0A2540]/10 text-[#0A2540] flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl font-bold">person_edit</span>
+        </div>
+        <div class="flex flex-col">
+          <h3 class="font-headline-sm text-lg text-[#0A2540] font-bold">
+            Chỉnh sửa thông tin khách hàng
+          </h3>
+          <span class="text-xs text-outline">
+            Mã ID: {{ customerToEdit._id }}
+          </span>
+        </div>
+      </div>
+      <button (click)="closeEditModal()" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer" type="button" title="Đóng">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body (Scrollable) -->
+    <div class="p-6 overflow-y-auto flex flex-col gap-5">
+      <!-- Section 1: Thông tin tài khoản -->
+      <div class="flex flex-col gap-3">
+        <span class="font-label-sm text-xs uppercase tracking-wider text-[#0A2540] font-bold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base text-secondary">badge</span> Thông tin tài khoản
+        </span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Họ và tên -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Họ và tên <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="editForm.fullName" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="Nhập họ và tên..." type="text">
+            <span *ngIf="editErrors.fullName" class="text-xs text-red-600 mt-0.5">{{ editErrors.fullName }}</span>
+          </div>
+
+          <!-- Trạng thái -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Trạng thái tài khoản <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <select [(ngModel)]="editForm.status" class="w-full h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 appearance-none cursor-pointer">
+                <option value="active">Hoạt động bình thường</option>
+                <option value="blocked">Đã khóa</option>
+                <option value="inactive">Tạm ngưng hoạt động</option>
+              </select>
+              <span class="material-symbols-outlined absolute right-3 top-2.5 text-outline pointer-events-none text-base">expand_more</span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Email đăng nhập <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="editForm.email" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="user@domain.vn" type="email">
+            <span *ngIf="editErrors.email" class="text-xs text-red-600 mt-0.5">{{ editErrors.email }}</span>
+          </div>
+
+          <!-- Số điện thoại -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Số điện thoại <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="editForm.phone" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="0912345678" type="tel">
+            <span *ngIf="editErrors.phone" class="text-xs text-red-600 mt-0.5">{{ editErrors.phone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Địa chỉ giao hàng mặc định -->
+      <div class="flex flex-col gap-3 pt-2 border-t border-surface-container">
+        <span class="font-label-sm text-xs uppercase tracking-wider text-[#0A2540] font-bold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base text-secondary">home_pin</span> Sổ địa chỉ giao hàng chính
+        </span>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tên gợi nhớ / Người nhận -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Tên gợi nhớ / Người nhận
+            </label>
+            <input [(ngModel)]="editForm.recipientName" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="VD: Nhà riêng, Văn phòng..." type="text">
+          </div>
+
+          <!-- Tỉnh / Thành phố -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Tỉnh / Thành phố
+            </label>
+            <input [(ngModel)]="editForm.province" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="VD: Hà Nội, TP. Hồ Chí Minh..." type="text">
+          </div>
+
+          <!-- Phường / Xã / Quận / Huyện -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Quận / Huyện / Phường / Xã
+            </label>
+            <input [(ngModel)]="editForm.ward" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="VD: Gia Lâm, Bát Tràng..." type="text">
+          </div>
+
+          <!-- Địa chỉ chi tiết -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-on-surface">
+              Địa chỉ chi tiết (Số nhà, tên đường...)
+            </label>
+            <input [(ngModel)]="editForm.detail" class="h-10 px-3 bg-surface-container-low rounded-lg text-sm border border-surface-container focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20" placeholder="VD: Số 28 Ngõ 120 Đường Kim Giang" type="text">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-3.5 bg-surface-container-low border-t border-surface-container flex items-center justify-end gap-3 shrink-0">
+      <button (click)="closeEditModal()" class="h-10 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-medium transition-colors cursor-pointer" type="button">
+        Hủy bỏ
+      </button>
+      <button (click)="saveCustomer()" [disabled]="isSavingCustomer" class="h-10 px-5 rounded-lg bg-[#0A2540] hover:bg-[#07192c] text-white text-sm font-semibold inline-flex items-center gap-1.5 transition-all shadow-sm cursor-pointer" type="button">
+        <span *ngIf="isSavingCustomer" class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+        <span *ngIf="!isSavingCustomer" class="material-symbols-outlined text-base">save</span>
+        <span>Lưu thay đổi</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL XÁC NHẬN XÓA KHÁCH HÀNG (DELETE CUSTOMER MODAL)           -->
+<!-- ============================================================== -->
+<div *ngIf="isDeleteModalOpen && customerToDelete" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A2540]/60 backdrop-blur-sm animate-in fade-in duration-200">
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-surface-container p-6 flex flex-col relative animate-in zoom-in-95 duration-150">
+    <!-- Icon & Header -->
+    <div class="flex items-start gap-4 mb-4">
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-2xl font-bold">delete_forever</span>
+      </div>
+      <div class="flex flex-col min-w-0">
+        <h3 class="font-headline-sm text-lg text-[#0A2540] font-bold">
+          Xác nhận xóa tài khoản khách hàng
+        </h3>
+        <p class="text-xs text-outline mt-0.5">
+          Hành động này sẽ xóa dữ liệu người dùng khỏi cơ sở dữ liệu.
+        </p>
+      </div>
+    </div>
+
+    <!-- Customer Card Preview -->
+    <div class="bg-surface-container-low rounded-xl p-3.5 flex items-center gap-3 mb-4 border border-surface-container">
+      <div class="w-11 h-11 rounded-full bg-[#0A2540] text-white flex items-center justify-center font-bold text-sm shrink-0">
+        {{ getInitials(customerToDelete.fullName) }}
+      </div>
+      <div class="flex flex-col min-w-0 flex-1">
+        <span class="text-sm font-bold text-[#0A2540] truncate">{{ customerToDelete.fullName }}</span>
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant truncate">
+          <span>{{ customerToDelete.phone }}</span>
+          <span>•</span>
+          <span class="truncate">{{ customerToDelete.email }}</span>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <span class="text-xs text-outline block">Đơn hàng</span>
+        <span class="text-xs font-bold text-[#0A2540]">{{ customerToDelete.orderCount || 0 }} đơn</span>
+      </div>
+    </div>
+
+    <!-- Alert / Warning Message if customer has orders -->
+    <div *ngIf="(customerToDelete.orderCount || 0) > 0" class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col gap-2 mb-4">
+      <div class="flex items-start gap-2">
+        <span class="material-symbols-outlined text-amber-600 text-lg shrink-0">warning</span>
+        <span class="leading-relaxed">
+          Khách hàng này đã phát sinh <strong>{{ customerToDelete.orderCount }} đơn hàng</strong> (Tổng chi tiêu: <strong>{{ formatPrice(customerToDelete.totalSpent) }}</strong>). Việc xóa tài khoản vẫn giữ lại lịch sử đơn hàng nhưng sẽ gỡ liên kết tài khoản.
+        </span>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer mt-1 pt-2 border-t border-amber-200/60 font-semibold text-amber-950">
+        <input [(ngModel)]="confirmForceDelete" type="checkbox" class="w-4 h-4 rounded text-red-600 focus:ring-red-500">
+        <span>Tôi hiểu rủi ro và xác nhận xóa vĩnh viễn</span>
+      </label>
+    </div>
+
+    <div *ngIf="!customerToDelete.orderCount || customerToDelete.orderCount === 0" class="text-sm text-on-surface-variant mb-5 leading-relaxed">
+      Bạn có chắc chắn muốn xóa khách hàng <strong>{{ customerToDelete.fullName }}</strong>? Thao tác này không thể hoàn tác.
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 pt-2">
+      <button (click)="closeDeleteModal()" class="h-10 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-medium transition-colors cursor-pointer" type="button">
+        Hủy bỏ
+      </button>
+      <button (click)="confirmDeleteCustomer()" [disabled]="isDeletingCustomer || ((customerToDelete.orderCount || 0) > 0 && !confirmForceDelete)" [class.opacity-50]="(customerToDelete.orderCount || 0) > 0 && !confirmForceDelete" class="h-10 px-5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer" type="button">
+        <span *ngIf="isDeletingCustomer" class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+        <span *ngIf="!isDeletingCustomer" class="material-symbols-outlined text-base">delete</span>
+        <span>Xóa khách hàng</span>
       </button>
     </div>
   </div>

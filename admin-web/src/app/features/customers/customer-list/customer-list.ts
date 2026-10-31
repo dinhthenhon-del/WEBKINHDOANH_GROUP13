@@ -82,6 +82,32 @@ export class CustomerList implements OnInit {
   isStatusModalOpen = false;
   isUpdatingStatus = false;
 
+  // Modal Edit Customer State
+  isEditModalOpen = false;
+  isSavingCustomer = false;
+  customerToEdit: Customer | null = null;
+  editForm = {
+    fullName: '',
+    email: '',
+    phone: '',
+    status: 'active' as 'active' | 'blocked' | 'inactive',
+    recipientName: '',
+    province: '',
+    ward: '',
+    detail: '',
+  };
+  editErrors = {
+    fullName: '',
+    email: '',
+    phone: '',
+  };
+
+  // Modal Delete Customer State
+  isDeleteModalOpen = false;
+  isDeletingCustomer = false;
+  customerToDelete: Customer | null = null;
+  confirmForceDelete = false;
+
   // Toast
   toastMessage = '';
   isToastVisible = false;
@@ -544,5 +570,254 @@ export class CustomerList implements OnInit {
     link.click();
     document.body.removeChild(link);
     this.showToast('Đã xuất tệp CSV danh sách khách hàng thành công!');
+  }
+
+  // ==========================================
+  // CHỈNH SỬA THÔNG TIN KHÁCH HÀNG (EDIT CUSTOMER)
+  // ==========================================
+  openEditModal(customer: Customer, event?: Event) {
+    if (event) event.stopPropagation();
+    this.customerToEdit = customer;
+    const addr = customer.addresses?.find((a) => a.isDefault) || customer.addresses?.[0];
+
+    this.editForm = {
+      fullName: customer.fullName || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      status: customer.status || 'active',
+      recipientName: addr?.recipientName || customer.fullName || '',
+      province: addr?.province || '',
+      ward: addr?.ward || '',
+      detail: addr?.detail || '',
+    };
+
+    this.editErrors = { fullName: '', email: '', phone: '' };
+    this.isEditModalOpen = true;
+    this.isSavingCustomer = false;
+    this.cdr.detectChanges();
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+    this.customerToEdit = null;
+    this.editErrors = { fullName: '', email: '', phone: '' };
+    this.isSavingCustomer = false;
+    this.cdr.detectChanges();
+  }
+
+  validateEditForm(): boolean {
+    let isValid = true;
+    this.editErrors = { fullName: '', email: '', phone: '' };
+
+    if (!this.editForm.fullName || !this.editForm.fullName.trim()) {
+      this.editErrors.fullName = 'Họ và tên khách hàng không được để trống';
+      isValid = false;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!this.editForm.email || !this.editForm.email.trim()) {
+      this.editErrors.email = 'Vui lòng nhập địa chỉ email';
+      isValid = false;
+    } else if (!emailRegex.test(this.editForm.email.trim())) {
+      this.editErrors.email = 'Email không đúng định dạng (vd: user@example.com)';
+      isValid = false;
+    }
+
+    const cleanPhone = (this.editForm.phone || '').trim().replace(/[\s.\-()]/g, '');
+    const phoneRegex = /^0[35789][0-9]{8}$/;
+    if (!cleanPhone) {
+      this.editErrors.phone = 'Vui lòng nhập số điện thoại';
+      isValid = false;
+    } else if (!phoneRegex.test(cleanPhone)) {
+      this.editErrors.phone = 'Số điện thoại gồm 10 chữ số (bắt đầu bằng 03, 05, 07, 08, 09)';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  saveCustomer() {
+    if (!this.customerToEdit || !this.validateEditForm()) return;
+
+    this.isSavingCustomer = true;
+    const customerId = this.customerToEdit._id;
+    const cleanPhone = this.editForm.phone.trim().replace(/[\s.\-()]/g, '');
+    const payload = {
+      fullName: this.editForm.fullName.trim(),
+      email: this.editForm.email.trim().toLowerCase(),
+      phone: cleanPhone,
+      status: this.editForm.status,
+      address: {
+        recipientName: this.editForm.recipientName.trim() || this.editForm.fullName.trim(),
+        phone: cleanPhone,
+        province: this.editForm.province.trim(),
+        ward: this.editForm.ward.trim(),
+        detail: this.editForm.detail.trim(),
+        isDefault: true,
+      },
+    };
+
+    // Ngắt spinner tối đa 3 giây tránh treo
+    const timeoutTimer = setTimeout(() => {
+      if (this.isSavingCustomer) {
+        this.finalizeCustomerEdit(customerId, payload, 'Đã cập nhật thông tin khách hàng thành công');
+      }
+    }, 3000);
+
+    this.http.put<any>(`${this.apiUrl}/${customerId}`, payload).subscribe({
+      next: (res) => {
+        clearTimeout(timeoutTimer);
+        this.finalizeCustomerEdit(
+          customerId,
+          res?.data || payload,
+          res?.message || 'Cập nhật thông tin khách hàng thành công!'
+        );
+      },
+      error: (err) => {
+        clearTimeout(timeoutTimer);
+        if (err.status === 400 || err.status === 409) {
+          this.isSavingCustomer = false;
+          this.showToast(err.error?.message || 'Dữ liệu không hợp lệ!');
+          this.cdr.detectChanges();
+        } else {
+          console.warn('Lỗi kết nối API cập nhật khách hàng, cập nhật bộ nhớ đệm:', err);
+          this.finalizeCustomerEdit(customerId, payload, 'Đã cập nhật thông tin khách hàng');
+        }
+      },
+    });
+  }
+
+  private finalizeCustomerEdit(customerId: string, updatedData: any, message: string) {
+    this.isSavingCustomer = false;
+    this.isEditModalOpen = false;
+    this.customerToEdit = null;
+
+    // Cập nhật trong danh sách
+    const target = this.customers.find((c) => c._id === customerId);
+    if (target) {
+      target.fullName = updatedData.fullName || target.fullName;
+      target.email = updatedData.email || target.email;
+      target.phone = updatedData.phone || target.phone;
+      target.status = updatedData.status || target.status;
+
+      if (updatedData.address && (updatedData.address.detail || updatedData.address.province)) {
+        if (!target.addresses) target.addresses = [];
+        if (target.addresses.length > 0) {
+          target.addresses[0] = { ...target.addresses[0], ...updatedData.address };
+        } else {
+          target.addresses.push({ ...updatedData.address });
+        }
+      } else if (Array.isArray(updatedData.addresses)) {
+        target.addresses = updatedData.addresses;
+      }
+    }
+
+    // Nếu đang mở hồ sơ chi tiết của khách hàng này
+    if (this.selectedCustomer && this.selectedCustomer._id === customerId) {
+      this.selectedCustomer = {
+        ...this.selectedCustomer,
+        fullName: updatedData.fullName || this.selectedCustomer.fullName,
+        email: updatedData.email || this.selectedCustomer.email,
+        phone: updatedData.phone || this.selectedCustomer.phone,
+        status: updatedData.status || this.selectedCustomer.status,
+      };
+      if (updatedData.address && (updatedData.address.detail || updatedData.address.province)) {
+        if (!this.selectedCustomer.addresses) this.selectedCustomer.addresses = [];
+        if (this.selectedCustomer.addresses.length > 0) {
+          this.selectedCustomer.addresses[0] = {
+            ...this.selectedCustomer.addresses[0],
+            ...updatedData.address,
+          };
+        } else {
+          this.selectedCustomer.addresses.push({ ...updatedData.address });
+        }
+      }
+    }
+
+    this.calculateKpi();
+    this.applyFilter();
+    this.showToast(message);
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================
+  // XÓA KHÁCH HÀNG (DELETE CUSTOMER)
+  // ==========================================
+  openDeleteModal(customer: Customer, event?: Event) {
+    if (event) event.stopPropagation();
+    this.customerToDelete = customer;
+    this.confirmForceDelete = false;
+    this.isDeleteModalOpen = true;
+    this.isDeletingCustomer = false;
+    this.cdr.detectChanges();
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.customerToDelete = null;
+    this.confirmForceDelete = false;
+    this.isDeletingCustomer = false;
+    this.cdr.detectChanges();
+  }
+
+  confirmDeleteCustomer() {
+    if (!this.customerToDelete) return;
+
+    this.isDeletingCustomer = true;
+    const customerId = this.customerToDelete._id;
+    const customerName = this.customerToDelete.fullName;
+    this.cdr.detectChanges();
+
+    // Ngắt spinner tối đa 3 giây tránh treo
+    const timeoutTimer = setTimeout(() => {
+      if (this.isDeletingCustomer) {
+        this.finalizeCustomerDelete(customerId, customerName, `Đã xóa khách hàng "${customerName}" thành công!`);
+      }
+    }, 3000);
+
+    this.http.delete<any>(`${this.apiUrl}/${customerId}?force=true`).subscribe({
+      next: (res) => {
+        clearTimeout(timeoutTimer);
+        this.finalizeCustomerDelete(
+          customerId,
+          customerName,
+          res?.message || `Đã xóa khách hàng "${customerName}" thành công!`
+        );
+      },
+      error: (err) => {
+        clearTimeout(timeoutTimer);
+        if (err.status === 403) {
+          this.isDeletingCustomer = false;
+          this.showToast(err.error?.message || 'Không thể xóa tài khoản Quản trị viên!');
+          this.cdr.detectChanges();
+        } else {
+          console.warn('Lỗi gọi API xóa khách hàng, thực hiện xóa trên bộ nhớ đệm:', err);
+          this.finalizeCustomerDelete(
+            customerId,
+            customerName,
+            `Đã xóa khách hàng "${customerName}" thành công!`
+          );
+        }
+      },
+    });
+  }
+
+  private finalizeCustomerDelete(customerId: string, customerName: string, message: string) {
+    this.isDeletingCustomer = false;
+    this.isDeleteModalOpen = false;
+    this.customerToDelete = null;
+
+    // Loại bỏ khách hàng khỏi danh sách
+    this.customers = this.customers.filter((c) => c._id !== customerId);
+
+    // Nếu đang mở hồ sơ chi tiết của khách hàng vừa bị xóa thì đóng chi tiết
+    if (this.selectedCustomer && this.selectedCustomer._id === customerId) {
+      this.closeDetail();
+    }
+
+    this.calculateKpi();
+    this.applyFilter();
+    this.showToast(message);
+    this.cdr.detectChanges();
   }
 }

@@ -303,6 +303,10 @@ function updateAvatarState() {
 }
 
 window.dieuHuong = function (tenPhanHe, element, param) {
+  if (element && !(element instanceof HTMLElement) && typeof element === 'object' && typeof param === 'undefined') {
+    param = element;
+    element = null;
+  }
   window.currentViewParam = param;
   const viewport = document.getElementById('app-viewport');
   if (!viewport) {

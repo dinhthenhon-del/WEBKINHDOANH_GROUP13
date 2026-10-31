@@ -76,7 +76,7 @@ export class Dashboard implements OnInit, OnDestroy {
   isWeeklyReportModalOpen = false;
   weeklyReport: any = null;
 
-  peakDaySummary = 'Đang tải dữ liệu...';
+  peakDaySummary = 'Tổng quan doanh thu tuần';
   weekAccumulatedRevenue = 0;
 
   loadDashboardData(showLoadingIndicator = true): void {
@@ -121,17 +121,27 @@ export class Dashboard implements OnInit, OnDestroy {
           if (data.weeklyReport) {
             this.weeklyReport = data.weeklyReport;
             this.dateRangeLabel = data.weeklyReport.dateRangeLabel || this.dateRangeLabel;
-            this.weekAccumulatedRevenue = data.weeklyReport.totalNetRevenue || 0;
+            this.weekAccumulatedRevenue = typeof data.weeklyReport.totalNetRevenue === 'number'
+              ? data.weeklyReport.totalNetRevenue
+              : (this.revenueDays.reduce((acc, d) => acc + (d.totalAmount || 0), 0));
 
             if (data.weeklyReport.peakDayLabel && data.weeklyReport.peakDayRevenue > 0) {
               this.peakDaySummary = `Đạt đỉnh ${this.formatCurrency(data.weeklyReport.peakDayRevenue)} vào ${data.weeklyReport.peakDayLabel}`;
             } else {
-              this.peakDaySummary = 'Chưa ghi nhận ngày đạt đỉnh';
+              this.peakDaySummary = 'Doanh thu thuần 7 ngày ổn định';
             }
 
             if (data.weeklyReport.highestOrder) {
               const ho = data.weeklyReport.highestOrder;
               this.highestOrderHighlight = `${ho.productName} (#${ho.orderCode} - ${ho.customerName}) — Trị giá: ${this.formatCurrency(ho.amount)}`;
+            }
+          } else if (Array.isArray(this.revenueDays) && this.revenueDays.length > 0) {
+            this.weekAccumulatedRevenue = this.revenueDays.reduce((acc, d) => acc + (d.totalAmount || 0), 0);
+            const peak = this.revenueDays.find(d => d.isPeak);
+            if (peak && peak.totalAmount > 0) {
+              this.peakDaySummary = `Đạt đỉnh ${this.formatCurrency(peak.totalAmount)} vào ${peak.dayLabel}`;
+            } else {
+              this.peakDaySummary = 'Doanh thu thuần 7 ngày ổn định';
             }
           }
           Dashboard.cachedStats = this.stats;

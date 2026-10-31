@@ -84,8 +84,8 @@
           {{ formatCurrency(stats.totalRevenue) }}
         </div>
         <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary-fixed whitespace-nowrap font-medium">
-          <span class="material-symbols-outlined text-sm">check_circle</span>
-          <span>Đã khấu trừ các đơn hoàn hàng / đổi trả</span>
+          <span class="material-symbols-outlined text-sm">verified</span>
+          <span>Chỉ tính đơn ĐÃ THANH TOÁN • Trừ đơn hủy đã thu &amp; hàng đổi trả</span>
         </div>
       </div>
       <div class="absolute bottom-0 left-0 right-0 h-1 bg-secondary"></div>
@@ -104,20 +104,25 @@
             <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
               {{ peakDaySummary }} • Tổng tích luỹ tuần: <strong class="text-secondary font-bold">{{ formatCurrency(weekAccumulatedRevenue) }}</strong>
             </p>
+            <div class="mt-1 flex items-center gap-1.5 text-[11px] text-on-surface-variant/80">
+              <span class="material-symbols-outlined text-xs text-emerald-600">verified</span>
+              <span>Chỉ tính đơn ĐÃ THANH TOÁN • Giảm trừ áp dụng cho đơn hủy đã thu tiền &amp; hàng hoàn trả (Đơn chưa thanh toán hủy không trừ).</span>
+            </div>
           </div>
           <div class="flex items-center gap-4 text-label-sm font-label-sm">
-            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
-              <span class="w-3 h-3 rounded-full bg-primary inline-block"></span> Dòng Men Lam
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant" title="Doanh thu thực tế sau khi trừ các khoản giảm trừ">
+              <span class="w-3 h-3 rounded-full bg-primary inline-block"></span> Doanh Thu Thuần
             </span>
-            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
-              <span class="w-3 h-3 rounded-full bg-secondary inline-block"></span> Gốm Sa Thạch
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant" title="Tổng tiền các đơn hủy đã thu &amp; hàng hoàn trả">
+              <span class="w-3 h-3 rounded-full bg-secondary inline-block"></span> Các Khoản Giảm Trừ
             </span>
           </div>
         </div>
 
         <div class="pt-6 pb-2">
           <div class="h-56 flex items-end justify-between gap-3 sm:gap-4 px-2 sm:px-4 border-b border-surface-variant/60">
-            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group cursor-pointer" [title]="(item.fullDateLabel || item.dayLabel) + '\nDoanh thu thuần: ' + formatCurrency(item.totalAmount) + ((item.refundedAmount || 0) > 0 ? '\nĐã trừ hoàn trả: ' + formatCurrency(item.refundedAmount) : '') + ((item.cancelledAmount || 0) > 0 ? '\nĐơn đã hủy: ' + formatCurrency(item.cancelledAmount) : '')">
+            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group cursor-pointer" 
+                 [title]="(item.fullDateLabel || item.dayLabel) + '\n• Doanh thu thuần: ' + formatCurrency(item.totalAmount) + '\n• Giảm trừ doanh thu: ' + formatCurrency(item.deductionAmount || (item.refundedAmount || 0) + (item.cancelledAmount || 0))">
               <!-- Peak label badge -->
               <div *ngIf="item.isPeak && item.totalAmount > 0" class="px-2 py-0.5 rounded bg-secondary text-on-secondary text-[10px] font-bold shadow-sm whitespace-nowrap mb-1">
                 Đỉnh: {{ (item.totalAmount / 1000000).toFixed(1) }}M
@@ -126,8 +131,14 @@
                 {{ (item.totalAmount / 1000000).toFixed(1) }}M
               </span>
               <div class="w-full flex gap-1 items-end justify-center h-full">
-                <div class="w-3.5 sm:w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.menLamHeightPercent" [title]="'Men Lam: ' + formatCurrency(item.menLamAmount)"></div>
-                <div class="w-3.5 sm:w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.saThachHeightPercent" [title]="'Sa Thạch: ' + formatCurrency(item.saThachAmount)"></div>
+                <!-- Cột 1: Doanh Thu Thuần (Màu Navy/Primary) -->
+                <div class="w-3.5 sm:w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" 
+                     [style.height.%]="item.netHeightPercent || item.menLamHeightPercent" 
+                     [title]="'Doanh thu thuần: ' + formatCurrency(item.totalAmount)"></div>
+                <!-- Cột 2: Các Khoản Giảm Trừ (Màu Sa Thạch/Secondary) -->
+                <div class="w-3.5 sm:w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" 
+                     [style.height.%]="item.deductionHeightPercent || item.saThachHeightPercent" 
+                     [title]="'Giảm trừ doanh thu: ' + formatCurrency(item.deductionAmount || (item.refundedAmount || 0) + (item.cancelledAmount || 0))"></div>
               </div>
               <span [ngClass]="item.isPeak ? 'text-secondary font-bold' : 'text-on-surface-variant font-medium'" class="text-xs mt-1">
                 {{ item.dayLabel }}
@@ -354,7 +365,7 @@
                 <span>Bảng Kê Chi Tiết Từng Ngày Trong Tuần</span>
               </h4>
               <p class="text-[11px] text-on-surface-variant mt-0.5">
-                Công thức: <strong>Doanh Thu Thuần = Tiền Thu Được - Giá Trị Hàng Hoàn Trả - Giá Trị Hàng Hủy</strong>
+                Công thức: <strong>Doanh Thu Thuần = Tiền Thu Được (Đơn đã thanh toán) - Hàng Hoàn Trả - Đơn Hủy (Đã thanh toán)</strong>. <em>(Đơn chưa thanh toán đã hủy không tính vào các khoản giảm trừ)</em>
               </p>
             </div>
             <span class="text-xs text-on-surface-variant font-medium">Đối soát đồng bộ từ dữ liệu đơn hàng thực tế</span>

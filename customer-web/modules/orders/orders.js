@@ -1816,14 +1816,22 @@
                       <div class="flex items-center gap-3">
                         <span class="font-title-md text-sm text-primary font-serif font-bold">${formatMoney(item.unitPrice * item.quantity)}</span>
                         
-                        <!-- Nút Đánh giá từng sản phẩm khi đã Hoàn thành -->
+                        <!-- Nút Đánh giá từng sản phẩm khi đã Hoàn thành (Mỗi đơn hàng được đánh giá 1 lần) -->
                         ${isCompleted ? `
-                          <button type="button" 
-                                  onclick="openReviewModal('${escapeHtml(displayName)}', '${prodId}', '${order._id}')" 
-                                  class="px-2.5 py-1 rounded bg-porcelain-white text-primary hover:bg-primary-container hover:text-on-primary border border-biscuit-sand font-label-sm text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer">
-                            <span class="material-symbols-outlined text-[14px] text-amber-500">star</span>
-                            <span>Đánh giá</span>
-                          </button>
+                          ${Boolean(localStorage.getItem('reviewed_' + order._id + '_' + prodId)) ? `
+                            <span class="px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-[11px] font-semibold flex items-center gap-1">
+                              <span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span>
+                              <span>Đã đánh giá</span>
+                            </span>
+                          ` : `
+                            <button type="button" 
+                                    id="btn-review-${order._id}-${prodId}"
+                                    onclick="openReviewModal('${escapeHtml(displayName)}', '${prodId}', '${order._id}')" 
+                                    class="px-2.5 py-1 rounded bg-porcelain-white text-primary hover:bg-primary-container hover:text-on-primary border border-biscuit-sand font-label-sm text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer">
+                              <span class="material-symbols-outlined text-[14px] text-amber-500">star</span>
+                              <span>Đánh giá</span>
+                            </button>
+                          `}
                         ` : ''}
                       </div>
                     </div>
@@ -2366,6 +2374,8 @@
     if (!currentOrderDetail) return;
     if (typeof window.openReturnModal === 'function') {
       window.openReturnModal(currentOrderDetail.orderCode, currentOrderDetail._id, currentOrderDetail.items);
+    } else if (typeof window.dieuHuong === 'function') {
+      window.dieuHuong('return-request');
     } else {
       alert(`Đã gửi yêu cầu đổi trả cho đơn hàng #${currentOrderDetail.orderCode}. Ban giám định xưởng gốm sẽ liên hệ.`);
     }

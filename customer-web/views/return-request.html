@@ -164,23 +164,23 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-space-md">
               <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
-                <input checked class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Nứt rạn men ngoài ý muốn trong quá trình vận chuyển">
+                <input checked class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Nứt rạn men ngoài ý muốn trong quá trình vận chuyển" onchange="handlePageReasonChange(this)">
                 <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Nứt rạn men ngoài ý muốn trong quá trình vận chuyển</span>
               </label>
 
               <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
-                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Họa tiết không đúng với bản thiết kế 2D đã duyệt">
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Họa tiết không đúng với bản thiết kế 2D đã duyệt" onchange="handlePageReasonChange(this)">
                 <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Họa tiết không đúng với bản thiết kế 2D đã duyệt</span>
               </label>
 
               <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
-                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)">
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)" onchange="handlePageReasonChange(this)">
                 <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
               </label>
 
               <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
-                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Nguyên nhân thẩm mỹ khác của nhà sưu tầm">
-                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Lý do khác" onchange="handlePageReasonChange(this)">
+                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-semibold text-secondary">Lý do khác (Bắt buộc nhập chi tiết bên dưới)</span>
               </label>
             </div>
           </div>
@@ -190,29 +190,29 @@
             <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
               <div class="flex items-center gap-2">
                 <span class="font-label-sm text-secondary font-bold text-sm">04.</span>
-                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Mô tả chi tiết khiếm khuyết</h2>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Mô tả chi tiết khiếu nại / lý do</h2>
               </div>
-              <span class="font-label-sm text-outline text-xs">Tùy chọn</span>
+              <span id="page-reason-desc-required" class="font-label-sm text-secondary font-bold text-xs hidden">* Bắt buộc khi chọn "Lý do khác"</span>
             </div>
             <div class="mt-space-md">
-              <textarea class="w-full bg-surface-container-low text-primary font-body-md text-sm p-4 rounded-lg border border-biscuit-sand focus:outline-none focus:border-secondary transition-colors" id="page-return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="4"></textarea>
+              <textarea class="w-full bg-surface-container-low text-primary font-body-md text-sm p-4 rounded-lg border border-biscuit-sand focus:outline-none focus:border-secondary transition-colors" id="page-return-description" placeholder="Vui lòng nhập chi tiết khiếm khuyết hoặc lý do đổi trả tác phẩm..." rows="4"></textarea>
             </div>
           </div>
 
-          <!-- 5. Upload evidence -->
+          <!-- 5. Upload evidence (Bắt buộc) -->
           <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
             <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
               <div class="flex items-center gap-2">
                 <span class="font-label-sm text-secondary font-bold text-sm">05.</span>
                 <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Bằng chứng thị giác</h2>
               </div>
-              <span class="font-label-sm text-secondary font-bold text-xs">Bắt buộc *</span>
+              <span class="bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200 font-label-sm text-xs font-bold uppercase">Bắt buộc đính kèm *</span>
             </div>
 
-            <div class="mt-space-md border-2 border-dashed border-biscuit-sand hover:border-secondary/60 rounded-xl p-6 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('page-file-upload').click()">
+            <div class="mt-space-md border-2 border-dashed border-red-300 hover:border-secondary rounded-xl p-6 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('page-file-upload').click()">
               <input accept="image/*,video/*" class="hidden" id="page-file-upload" multiple onchange="handlePageFileUpload(this)" type="file">
               <div class="flex flex-col items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-4xl text-on-surface-variant">photo_library</span>
+                <span class="material-symbols-outlined text-4xl text-secondary">photo_library</span>
                 <p class="font-title-md text-sm text-primary font-bold mt-2">Bấm để tải ảnh chụp chi tiết vết nứt hoặc video khui hòm</p>
                 <p class="font-label-sm text-xs text-outline">Hỗ trợ định dạng JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
               </div>
@@ -291,38 +291,94 @@
 </div>
 
 <script>
+window.pageSelectedFiles = [];
+
+window.handlePageReasonChange = function(radio) {
+  const reqBadge = document.getElementById('page-reason-desc-required');
+  const descEl = document.getElementById('page-return-description');
+  if (radio.value === 'Lý do khác') {
+    if (reqBadge) reqBadge.classList.remove('hidden');
+    if (descEl) {
+      descEl.placeholder = 'Bắt buộc: Vui lòng nhập chi tiết lý do khác quý khách muốn đổi trả tác phẩm...';
+      descEl.focus();
+    }
+  } else {
+    if (reqBadge) reqBadge.classList.add('hidden');
+    if (descEl) {
+      descEl.placeholder = 'Vui lòng nhập chi tiết khiếm khuyết hoặc lý do đổi trả tác phẩm...';
+    }
+  }
+};
+
 window.handlePageFileUpload = function(input) {
   const preview = document.getElementById('page-file-preview-list');
-  if (input.files && input.files.length > 0) {
-    preview.innerHTML = '';
-    preview.classList.remove('hidden');
-    Array.from(input.files).forEach((file) => {
-      const badge = document.createElement('span');
-      badge.className = 'px-2.5 py-1 rounded bg-surface-container-high text-primary font-label-sm text-xs font-medium';
-      badge.innerText = '📎 ' + file.name;
-      preview.appendChild(badge);
-    });
+  window.pageSelectedFiles = input.files ? Array.from(input.files) : [];
+  if (preview) {
+    if (window.pageSelectedFiles.length > 0) {
+      preview.innerHTML = '';
+      preview.classList.remove('hidden');
+      window.pageSelectedFiles.forEach((file) => {
+        const badge = document.createElement('span');
+        badge.className = 'px-2.5 py-1 rounded bg-secondary/10 text-secondary border border-secondary/30 font-label-sm text-xs font-medium flex items-center gap-1';
+        badge.innerHTML = `<span class="material-symbols-outlined text-[14px]">attachment</span> ${file.name} <span class="text-[10px] text-outline">(${Math.round(file.size / 1024)} KB)</span>`;
+        preview.appendChild(badge);
+      });
+    } else {
+      preview.innerHTML = '';
+      preview.classList.add('hidden');
+    }
   }
 };
 
 window.handleReturnPageSubmit = function(e) {
   e.preventDefault();
   const orderId = document.getElementById('order-select-page')?.value || 'MG-2025-8899';
-  const reason = document.querySelector('input[name="reason_radio"]:checked')?.value || 'Nứt rạn men ngoài ý muốn trong quá trình vận chuyển';
-  const desc = document.getElementById('page-return-description')?.value || '';
+  const selectedRadio = document.querySelector('input[name="reason_radio"]:checked');
+  const reason = selectedRadio ? selectedRadio.value : '';
+  const desc = (document.getElementById('page-return-description')?.value || '').trim();
+
+  if (!reason) {
+    alert('Vui lòng chọn nguyên nhân đề nghị đổi trả tác phẩm!');
+    return;
+  }
+
+  // Bắt buộc nhập lý do chi tiết nếu chọn "Lý do khác"
+  if (reason === 'Lý do khác' && !desc) {
+    alert('Quý khách đã chọn "Lý do khác". Vui lòng nhập chi tiết lý do khiếu nại/đổi trả ở mục 04 trước khi gửi yêu cầu!');
+    const descEl = document.getElementById('page-return-description');
+    if (descEl) {
+      descEl.focus();
+      descEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+
+  // Bắt buộc đính kèm ảnh/video minh chứng
+  if (!window.pageSelectedFiles || window.pageSelectedFiles.length === 0) {
+    alert('Bắt buộc đính kèm ít nhất 01 ảnh hoặc video bằng chứng thị giác (mục 05) để ban thẩm định tiếp nhận hồ sơ đổi trả!');
+    const fileInput = document.getElementById('page-file-upload');
+    if (fileInput) {
+      fileInput.click();
+    }
+    return;
+  }
+
+  const finalReason = reason === 'Lý do khác' ? ('Lý do khác: ' + desc) : (reason + (desc ? ' - ' + desc : ''));
+  const evidenceImages = (window.pageSelectedFiles || []).map(f => f.name || 'minh-chung.jpg');
 
   if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
     ApiService.createReturnRequest({
-      orderId: '670000000000000000000001',
+      orderId: orderId,
       accountId: currentUser._id,
       type: 'return',
-      reason: reason + (desc ? ': ' + desc : '')
+      reason: finalReason,
+      evidenceImages: evidenceImages
     }, function(err, res) {
       console.log('Return request API result:', err, res);
     });
   }
 
-  alert('✅ ĐÃ TIẾP NHẬN YÊU CẦU ĐỔI TRẢ THÀNH CÔNG!\n\n• Mã đơn: #' + orderId + '\n• Lý do: ' + reason + '\n\nBan Giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự chuyên trách đến tận tư gia hỗ trợ.');
+  alert('✅ ĐÃ TIẾP NHẬN YÊU CẦU ĐỔI TRẢ THÀNH CÔNG!\n\n• Mã đơn: #' + orderId + '\n• Lý do: ' + finalReason + '\n• Số lượng file minh chứng: ' + evidenceImages.length + ' tệp\n\nBan Giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự chuyên trách đến tận tư gia hỗ trợ.');
   if (typeof dieuHuong === 'function') {
     dieuHuong('profile');
   }

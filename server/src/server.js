@@ -1126,6 +1126,48 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// 2.1 API Lấy lại mật khẩu thật sau khi chơi mini game giải trí
+app.post('/api/auth/forgot-password-reveal', async (req, res) => {
+  try {
+    const { emailOrPhone } = req.body;
+    if (!emailOrPhone) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp Email, Số điện thoại hoặc Tên đăng nhập' });
+    }
+
+    const cleanInput = String(emailOrPhone).trim();
+    const normalizedPhone = cleanInput.replace(/[\s.\-()]/g, '').replace(/^\+84/, '0');
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    const orConditions = [
+      { email: cleanInput.toLowerCase() },
+      { phone: cleanInput },
+      { phone: normalizedPhone },
+      { fullName: new RegExp('^' + escapeRegex(cleanInput) + '$', 'i') },
+      { email: new RegExp('^' + escapeRegex(cleanInput) + '@', 'i') }
+    ];
+
+    const account = await Account.findOne({ $or: orConditions });
+
+    if (!account) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản với thông tin đã nhập' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Lấy mật khẩu thành công',
+      data: {
+        fullName: account.fullName,
+        email: account.email,
+        phone: account.phone,
+        password: account.passwordHash || '123456'
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi lấy lại mật khẩu:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // 3. API Lấy thông tin tài khoản & danh sách yêu thích (UC-C07)
 app.get('/api/accounts/profile/:id', async (req, res) => {
   try {
@@ -1427,6 +1469,156 @@ app.put('/api/admin/customers/:id/status', async (req, res) => {
   }
 });
 
+// 4. API Chỉnh sửa thông tin khách hàng (Họ tên, email, SĐT, trạng thái, địa chỉ)
+app.put('/api/admin/customers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'ID khách hàng không hợp lệ' });
+    }
+
+    const customer = await Account.findById(id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+
+    const { fullName, email, phone, status, address, addresses } = req.body;
+
+    // Validate Họ tên
+    if (fullName !== undefined) {
+      if (!fullName || !fullName.trim()) {
+        return res.status(400).json({ success: false, message: 'Họ và tên khách hàng không được để trống' });
+      }
+      customer.fullName = fullName.trim();
+    }
+
+    // Validate Email
+    if (email !== undefined) {
+      const cleanEmail = email.trim().toLowerCase();
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({ success: false, message: 'Địa chỉ Email không hợp lệ' });
+      }
+      const duplicateEmail = await Account.findOne({ email: cleanEmail, _id: { $ne: id } });
+      if (duplicateEmail) {
+        return res.status(400).json({ success: false, message: 'Email này đã được sử dụng bởi một tài khoản khác' });
+      }
+      customer.email = cleanEmail;
+    }
+
+    // Validate Số điện thoại
+    if (phone !== undefined) {
+      const cleanPhone = phone.trim().replace(/[\s.\-()]/g, '');
+      const phoneRegex = /^0[35789][0-9]{8}$/;
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ (cần 10 chữ số bắt đầu bằng 03, 05, 07, 08, 09)' });
+      }
+      const duplicatePhone = await Account.findOne({ phone: cleanPhone, _id: { $ne: id } });
+      if (duplicatePhone) {
+        return res.status(400).json({ success: false, message: 'Số điện thoại này đã được sử dụng bởi một tài khoản khác' });
+      }
+      customer.phone = cleanPhone;
+    }
+
+    // Validate Trạng thái
+    if (status !== undefined) {
+      if (!['active', 'blocked', 'inactive'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ (phải là active, blocked, hoặc inactive)' });
+      }
+      customer.status = status;
+    }
+
+    // Cập nhật địa chỉ nhận hàng
+    if (Array.isArray(addresses)) {
+      customer.addresses = addresses;
+    } else if (address && (address.detail || address.province || address.ward)) {
+      if (!Array.isArray(customer.addresses)) {
+        customer.addresses = [];
+      }
+      const newAddr = {
+        recipientName: (address.recipientName || customer.fullName || '').trim(),
+        phone: (address.phone || customer.phone || '').trim().replace(/[\s.\-()]/g, ''),
+        province: (address.province || '').trim(),
+        ward: (address.ward || '').trim(),
+        detail: (address.detail || '').trim(),
+        isDefault: address.isDefault !== false,
+      };
+
+      if (customer.addresses.length > 0) {
+        customer.addresses[0] = { ...(customer.addresses[0].toObject ? customer.addresses[0].toObject() : customer.addresses[0]), ...newAddr };
+      } else {
+        customer.addresses.push(newAddr);
+      }
+    }
+
+    await customer.save();
+
+    // Thống kê đơn hàng và tổng tiền
+    const orders = await Order.find({ accountId: customer._id }).lean();
+    const totalSpent = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+    const customerData = customer.toObject();
+    delete customerData.passwordHash;
+    customerData.orderCount = orders.length;
+    customerData.totalSpent = totalSpent;
+    customerData.wishlistCount = (customerData.wishlist || []).length;
+
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật thông tin khách hàng thành công!',
+      data: customerData
+    });
+  } catch (error) {
+    console.error('Lỗi cập nhật thông tin khách hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 5. API Xóa khách hàng (Admin Delete Customer)
+app.delete('/api/admin/customers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'ID khách hàng không hợp lệ' });
+    }
+
+    const customer = await Account.findById(id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
+    }
+
+    if (customer.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Không thể xóa tài khoản Quản trị viên' });
+    }
+
+    const orderCount = await Order.countDocuments({ accountId: id });
+    const force = req.query.force === 'true' || req.body?.force === true;
+
+    if (orderCount > 0 && !force) {
+      return res.status(400).json({
+        success: false,
+        hasOrders: true,
+        orderCount,
+        message: `Khách hàng này đã có ${orderCount} đơn hàng trong hệ thống. Để bảo tồn lịch sử giao dịch và kế toán, bạn có thể chuyển trạng thái sang "Tạm ngưng" hoặc chọn xác nhận xóa bắt buộc.`
+      });
+    }
+
+    // Xóa giỏ hàng liên kết
+    await Cart.deleteMany({ accountId: id });
+
+    // Xóa tài khoản
+    await Account.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: `Đã xóa khách hàng "${customer.fullName}" khỏi hệ thống thành công!`
+    });
+  } catch (error) {
+    console.error('Lỗi khi xóa khách hàng:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ==========================================
 // THÀNH VIÊN 5: MODULE ĐỔI TRẢ, ĐÁNH GIÁ & DASHBOARD (UC-C08, UC-A05, UC-A06)
 // ==========================================
@@ -1434,31 +1626,154 @@ const Review = require('./models/Review');
 const ReturnRequest = require('./models/ReturnRequest');
 
 // --- I. ĐÁNH GIÁ SẢN PHẨM (UC-C08) ---
-// 1. Tạo đánh giá mới (Kiểm tra nếu có orderId thì đơn phải COMPLETED)
+// 1. Tạo đánh giá mới (Chỉ cho đánh giá 1 lần, kiểm tra đơn hoàn tất nếu có orderId)
 app.post('/api/reviews', async (req, res) => {
   try {
-    const { accountId, productId, orderId, rating, comment } = req.body;
+    let { accountId, productId, orderId, rating, comment } = req.body;
 
-    if (!accountId || !productId || !rating) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp accountId, productId và số sao rating' });
+    if (!productId || !rating) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp productId và số sao rating' });
     }
 
-    if (orderId) {
-      const order = await Order.findById(orderId);
-      if (order && order.status !== 'completed' && order.status !== 'COMPLETED') {
-        return res.status(400).json({ success: false, message: 'Chỉ được đánh giá tác phẩm khi đơn hàng đã hoàn tất (Completed)' });
+    if (!accountId) {
+      accountId = 'guest_customer';
+    }
+
+    // Tìm và chuẩn hóa account
+    let resolvedAccountId = accountId;
+    let customerName = req.body.customerName || '';
+    if (mongoose.Types.ObjectId.isValid(accountId)) {
+      const acc = await Account.findById(accountId).lean();
+      if (acc) {
+        resolvedAccountId = acc._id;
+        customerName = customerName || acc.fullName || acc.email;
+      }
+    } else {
+      const acc = await Account.findOne({ $or: [{ email: accountId }, { phone: accountId }] }).lean();
+      if (acc) {
+        resolvedAccountId = acc._id;
+        customerName = customerName || acc.fullName || acc.email;
       }
     }
 
+    // Tìm và chuẩn hóa product
+    let resolvedProductId = productId;
+    let foundProduct = null;
+    if (mongoose.Types.ObjectId.isValid(productId)) {
+      foundProduct = await Product.findById(productId);
+    }
+    if (!foundProduct) {
+      foundProduct = await Product.findOne({
+        $or: [
+          { sku: productId },
+          { name: productId },
+          { name: new RegExp('^' + String(productId).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }
+        ]
+      });
+    }
+    if (foundProduct) {
+      resolvedProductId = foundProduct._id;
+    }
+
+    // Chỉ cho phép đánh giá nếu sản phẩm đã được mua trong đơn hàng hoàn tất
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ có hàng nào quý khách đã mua và hoàn tất nhận hàng thì mới được gửi đánh giá.'
+      });
+    }
+
+    let resolvedOrderId = orderId;
+    let order = null;
+    if (mongoose.Types.ObjectId.isValid(orderId)) {
+      order = await Order.findById(orderId).lean();
+    } else {
+      order = await Order.findOne({ orderCode: orderId }).lean();
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy thông tin đơn hàng đã mua tương ứng để đánh giá.'
+      });
+    }
+
+    resolvedOrderId = order._id;
+    const status = (order.orderStatus || order.status || '').toLowerCase();
+    if (status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ có tác phẩm trong đơn hàng đã hoàn tất giao hàng (Completed) mới được đánh giá.'
+      });
+    }
+
+    // Kiểm tra tác phẩm có thuộc đơn hàng này không
+    const items = order.items || [];
+    const hasProduct = items.some(it => {
+      const itProd = it.productId;
+      const itId = (itProd && (itProd._id || itProd.id)) ? (itProd._id || itProd.id).toString() : String(itProd || '');
+      const itName = it.productName || '';
+      return itId === String(resolvedProductId) || itId === String(productId) || (foundProduct && foundProduct.sku && itId === foundProduct.sku) || (foundProduct && itName === foundProduct.name);
+    });
+
+    if (!hasProduct) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tác phẩm này không thuộc đơn hàng của quý khách.'
+      });
+    }
+
+    // KIỂM TRA CHỈ CHO ĐÁNH GIÁ 1 LẦN CHO MỖI LẦN MUA (Theo orderId)
+    // Khi người dùng mua sản phẩm đó lần thứ 2 (ở đơn hàng mới), orderId mới sẽ cho phép gửi thêm 1 đánh giá nữa
+    const existingReview = await Review.findOne({
+      orderId: resolvedOrderId,
+      $or: [
+        { productId: resolvedProductId },
+        { productId: resolvedProductId.toString() },
+        { productId: productId },
+        { 'productId._id': resolvedProductId }
+      ]
+    });
+
+    if (existingReview) {
+      return res.status(400).json({
+        success: false,
+        alreadyReviewed: true,
+        message: 'Đơn hàng này của quý khách đã được gửi đánh giá cho tác phẩm này rồi. Khi nào quý khách mua tác phẩm đó lần thứ 2 thì mới được đánh giá thêm 1 lần nữa.'
+      });
+    }
+
     const newReview = new Review({
-      accountId,
-      productId,
-      orderId: orderId || null,
+      accountId: resolvedAccountId,
+      productId: resolvedProductId,
+      orderId: resolvedOrderId || null,
+      customerName: customerName || 'Nhà Sưu Tầm',
       rating: Number(rating),
       comment: (comment || '').trim()
     });
 
     await newReview.save();
+
+    // Cập nhật lại sao trung bình & số lượng đánh giá trên sản phẩm
+    if (foundProduct) {
+      const allReviewsForProd = await Review.find({
+        $or: [
+          { productId: foundProduct._id },
+          { productId: foundProduct._id.toString() },
+          { 'productId._id': foundProduct._id },
+          { 'productId._id': foundProduct._id.toString() },
+          { productId: foundProduct.sku }
+        ]
+      }).lean();
+      const count = allReviewsForProd.length;
+      const avg = count > 0 ? (allReviewsForProd.reduce((sum, r) => sum + (Number(r.rating) || 5), 0) / count) : Number(rating);
+      const roundedAvg = Math.round(avg * 10) / 10;
+      await Product.findByIdAndUpdate(foundProduct._id, {
+        averageRating: roundedAvg,
+        reviewCount: count
+      });
+    }
+
     res.status(201).json({ success: true, message: 'Gửi đánh giá thành công', data: newReview });
   } catch (error) {
     console.error('Lỗi gửi đánh giá:', error);
@@ -1466,26 +1781,53 @@ app.post('/api/reviews', async (req, res) => {
   }
 });
 
-// 2. Lấy danh sách đánh giá theo sản phẩm + tính sao trung bình (cho TV2 hiển thị product-detail)
+// 2. Lấy danh sách đánh giá theo sản phẩm + tính sao trung bình (hiển thị đầy đủ ở product-detail)
 app.get('/api/reviews/product/:productId', async (req, res) => {
   try {
     const pId = req.params.productId;
-    const isObjectId = mongoose.Types.ObjectId.isValid(pId);
-    const query = {
-      $or: [
-        { productId: isObjectId ? new mongoose.Types.ObjectId(pId) : pId },
-        { product: isObjectId ? new mongoose.Types.ObjectId(pId) : pId }
-      ]
-    };
+    let queryConditions = [
+      { productId: pId },
+      { 'productId._id': pId },
+      { product: pId },
+      { 'product._id': pId }
+    ];
+    if (mongoose.Types.ObjectId.isValid(pId)) {
+      const objId = new mongoose.Types.ObjectId(pId);
+      queryConditions.push({ productId: objId });
+      queryConditions.push({ 'productId._id': objId });
+      queryConditions.push({ product: objId });
+      queryConditions.push({ 'product._id': objId });
+    }
+    const prod = mongoose.Types.ObjectId.isValid(pId)
+      ? await Product.findById(pId).lean()
+      : await Product.findOne({ $or: [{ sku: pId }, { name: pId }] }).lean();
 
-    const rawReviews = await Review.find(query)
-      .populate('accountId', 'fullName email')
-      .populate('customer', 'fullName email')
+    if (prod) {
+      const pObjId = prod._id;
+      const pStrId = prod._id.toString();
+      queryConditions.push({ productId: pObjId });
+      queryConditions.push({ productId: pStrId });
+      queryConditions.push({ 'productId._id': pObjId });
+      queryConditions.push({ 'productId._id': pStrId });
+      queryConditions.push({ product: pObjId });
+      queryConditions.push({ product: pStrId });
+      if (prod.sku) {
+        queryConditions.push({ productId: prod.sku });
+        queryConditions.push({ 'productId.sku': prod.sku });
+        queryConditions.push({ product: prod.sku });
+      }
+      if (prod.name) {
+        queryConditions.push({ 'productId.name': prod.name });
+      }
+    }
+
+    const rawReviews = await Review.find({ $or: queryConditions })
+      .populate({ path: 'accountId', select: 'fullName email phone', strictPopulate: false })
       .sort({ createdAt: -1 })
       .lean();
 
     const reviews = rawReviews.map(r => {
-      const customerName = r.customerName || (r.accountId && r.accountId.fullName) || (r.customer && r.customer.fullName) || 'Nhà Sưu Tầm';
+      const customerName = r.customerName || (r.accountId && (r.accountId.fullName || r.accountId.name || r.accountId.email)) || 'Nhà Sưu Tầm';
       const rating = Number(r.rating || 5);
       return {
         _id: r._id,
@@ -1501,14 +1843,22 @@ app.get('/api/reviews/product/:productId', async (req, res) => {
 
     const totalReviews = reviews.length;
     const averageRating = totalReviews > 0
-      ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / totalReviews).toFixed(1)
-      : 5.0;
+      ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / totalReviews).toFixed(1)
+      : '0.0';
 
     const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     reviews.forEach(r => {
-      const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
+      const star = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
       breakdown[star] = (breakdown[star] || 0) + 1;
     });
+
+    // Cập nhật lại số sao trung bình vào Product nếu có
+    if (prod) {
+      await Product.findByIdAndUpdate(prod._id, {
+        averageRating: Number(averageRating),
+        reviewCount: totalReviews
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -1540,35 +1890,55 @@ app.get('/api/reviews', async (req, res) => {
 });
 
 // --- II. YÊU CẦU ĐỔI / TRẢ HÀNG (UC-A05) ---
-// 1. Khách gửi yêu cầu đổi trả
+// 1. Khách gửi yêu cầu đổi trả (Bắt buộc có lý do chi tiết & đính kèm ảnh/video minh chứng)
 app.post('/api/returns', async (req, res) => {
   try {
     const { orderId, accountId, type, reason, evidenceImages, items } = req.body;
 
-    if (!orderId || !accountId || !reason) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mã đơn hàng, tài khoản và lý do đổi trả' });
+    if (!orderId || !accountId) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mã đơn hàng và tài khoản' });
+    }
+
+    // Bắt buộc nhập lý do cụ thể (không được để trống hoặc chỉ ghi 'Lý do khác')
+    const trimmedReason = (reason || '').trim();
+    if (!trimmedReason || trimmedReason === 'Lý do khác' || trimmedReason === 'Khác' || trimmedReason.startsWith('Lý do khác:') && trimmedReason.replace('Lý do khác:', '').trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập chi tiết lý do đề nghị đổi trả tác phẩm' });
+    }
+
+    // Bắt buộc đính kèm ảnh/video minh chứng
+    const hasEvidence = Array.isArray(evidenceImages) && evidenceImages.length > 0 && evidenceImages.some(img => img && String(img).trim().length > 0);
+    if (!hasEvidence) {
+      return res.status(400).json({ success: false, message: 'Bắt buộc đính kèm ít nhất 1 hình ảnh hoặc video minh chứng để gửi yêu cầu đổi trả' });
+    }
+
+    let resolvedOrderId = orderId;
+    let order = null;
+    if (mongoose.Types.ObjectId.isValid(orderId)) {
+      order = await Order.findById(orderId).lean();
+    } else {
+      order = await Order.findOne({ orderCode: orderId }).lean();
+      if (order) resolvedOrderId = order._id;
     }
 
     let returnItems = items;
     if (!returnItems || !returnItems.length) {
-      const order = await Order.findById(orderId).lean();
       if (order && order.items && order.items.length) {
         returnItems = order.items.map(it => ({
-          productId: it.productId,
+          productId: it.productId || it.product,
           quantity: it.quantity || 1,
-          reason: reason
+          reason: trimmedReason
         }));
       } else {
         const sampleProd = await Product.findOne().lean();
-        returnItems = [{ productId: sampleProd ? sampleProd._id : '670000000000000000000001', quantity: 1, reason }];
+        returnItems = [{ productId: sampleProd ? sampleProd._id : '670000000000000000000001', quantity: 1, reason: trimmedReason }];
       }
     }
 
     const newReturn = new ReturnRequest({
-      orderId,
+      orderId: resolvedOrderId,
       accountId,
       type: type || 'return',
-      reason: reason.trim(),
+      reason: trimmedReason,
       evidenceImages: evidenceImages || [],
       items: returnItems,
       status: 'pending'
@@ -1576,10 +1946,10 @@ app.post('/api/returns', async (req, res) => {
 
     await newReturn.save();
 
-    // Liên kết với Đơn hàng (Lỗi 4): Cập nhật returnStatus sang 'requested'
-    if (orderId && mongoose.Types.ObjectId.isValid(orderId)) {
+    // Liên kết với Đơn hàng: Cập nhật returnStatus sang 'requested'
+    if (resolvedOrderId && mongoose.Types.ObjectId.isValid(resolvedOrderId)) {
       await Order.updateOne(
-        { _id: orderId },
+        { _id: resolvedOrderId },
         { $set: { returnStatus: 'requested', returnRequestId: newReturn._id } }
       );
     }
@@ -1864,27 +2234,28 @@ app.get('/api/dashboard/stats', async (req, res) => {
       const isCancelled = rawStatus === 'cancelled';
       const isPaid = ['paid', 'partially_refunded'].includes(payment);
 
-      if (isCancelled) {
-        dayBucket.cancelledOrders++;
-        dayBucket.cancelledAmount += total;
-        weekTotalCancelled += total;
-      } else if (isPaid) {
-        if (o.returnStatus === 'approved') {
-          dayBucket.returnedOrders++;
-          if (!refunded || refunded <= 0) refunded = total;
-        }
-        dayBucket.paidOrders++;
-        dayBucket.refundedAmount += refunded;
-        
-        // Số tiền thu được thực tế
+      // TIÊU CHÍ KẾ TOÁN DOANH THU THUẦN:
+      // 1. Chỉ khi đơn ĐÃ THANH TOÁN (isPaid) mới tính vào doanh thu bán hàng
+      if (isPaid) {
         dayBucket.grossRevenue = (dayBucket.grossRevenue || 0) + total;
         weekTotalGross += total;
 
-        const net = Math.max(0, total - refunded);
-        dayBucket.totalAmount += net;
-        weekTotalNet += net;
-        weekTotalRefund += refunded;
-        weekPaidOrdersCount++;
+        if (isCancelled) {
+          // 2. Đã thanh toán nhưng hủy đơn -> ghi nhận vào các đơn giảm trừ doanh thu diện hủy hàng
+          dayBucket.cancelledOrders++;
+          dayBucket.cancelledAmount += total;
+          weekTotalCancelled += total;
+        } else if (o.returnStatus === 'approved' || refunded > 0) {
+          // 4. Khách nhận hàng muốn đổi/trả -> ghi nhận vào hàng hoàn trả giảm trừ doanh thu
+          dayBucket.returnedOrders++;
+          if (!refunded || refunded <= 0) refunded = total;
+          dayBucket.refundedAmount += refunded;
+          weekTotalRefund += refunded;
+        } else {
+          // Đơn hợp lệ đã thanh toán thành công
+          dayBucket.paidOrders++;
+          weekPaidOrdersCount++;
+        }
 
         if (!highestSingleOrder || total > highestSingleOrder.amount) {
           const firstItem = Array.isArray(o.items) && o.items[0];
@@ -1895,40 +2266,61 @@ app.get('/api/dashboard/stats', async (req, res) => {
             customerName: o.shippingAddress?.recipientName || o.accountId?.fullName || 'Khách hàng',
           };
         }
+      } else {
+        // 3. Đơn CHƯA THANH TOÁN: Nếu khách hàng đặt nhưng chưa thanh toán đã hủy -> ĐỪNG ghi nhận nó vào các khoản giảm trừ doanh thu
+        if (isCancelled) {
+          dayBucket.unpaidCancelledOrders = (dayBucket.unpaidCancelledOrders || 0) + 1;
+          // Tuyệt đối KHÔNG cộng vào dayBucket.cancelledAmount và KHÔNG cộng vào weekTotalCancelled!
+        }
       }
     });
 
-    // Tính toán lại Doanh Thu Thuần cho từng ngày và phân bổ theo dòng sản phẩm:
-    // DOANH THU THUẦN = TIỀN THU ĐƯỢC - GIÁ TRỊ HÀNG HOÀN TRẢ - GIÁ TRỊ HÀNG HỦY
+    // Tính toán lại Doanh Thu Thuần và Các Khoản Giảm Trừ cho từng ngày (2 Cột trực quan):
+    // Cột 1: Doanh Thu Thuần = Tiền thu được (đã thanh toán) - Hàng hoàn trả - Đơn hủy (đã thanh toán)
+    // Cột 2: Các Khoản Giảm Trừ Doanh Thu = Hàng hoàn trả + Đơn hủy (đã thanh toán)
     revenueDays.forEach(d => {
       const gross = d.grossRevenue || 0;
       const ref = d.refundedAmount || 0;
       const can = d.cancelledAmount || 0;
       const dailyNet = Math.max(0, gross - ref - can);
+      const deductions = ref + can;
+
       d.totalAmount = dailyNet;
-      d.menLamAmount = Math.round(dailyNet * 0.7);
-      d.saThachAmount = Math.round(dailyNet * 0.3);
+      d.netRevenue = dailyNet;
+      d.deductionAmount = deductions;
+      // Đồng bộ menLamAmount (Doanh thu thuần) & saThachAmount (Giảm trừ)
+      d.menLamAmount = dailyNet;
+      d.saThachAmount = deductions;
     });
 
     weekTotalNet = Math.max(0, weekTotalGross - weekTotalRefund - weekTotalCancelled);
 
-    // Tìm ngày đỉnh cao nhất và tính % chiều cao cột biểu đồ
+    // Tìm ngày đỉnh cao nhất theo Doanh thu thuần hoặc Giảm trừ để scale chiều cao 2 cột
+    let maxChartValue = 0;
     revenueDays.forEach((d, idx) => {
       if (d.totalAmount > maxDayRevenue) {
         maxDayRevenue = d.totalAmount;
         peakIndex = idx;
       }
+      if (d.totalAmount > maxChartValue) maxChartValue = d.totalAmount;
+      if (d.deductionAmount > maxChartValue) maxChartValue = d.deductionAmount;
     });
 
     if (peakIndex >= 0 && maxDayRevenue > 0) {
       revenueDays[peakIndex].isPeak = true;
     }
 
-    const chartCeiling = Math.max(maxDayRevenue, 1000000);
+    const chartCeiling = Math.max(maxChartValue, 1000000);
     revenueDays.forEach(d => {
       if (chartCeiling > 0) {
-        d.menLamHeightPercent = Math.max(8, Math.min(95, Math.round((d.menLamAmount / chartCeiling) * 90)));
-        d.saThachHeightPercent = Math.max(8, Math.min(95, Math.round((d.saThachAmount / chartCeiling) * 90)));
+        // Cột 1: Doanh Thu Thuần
+        d.netHeightPercent = d.totalAmount > 0 ? Math.max(12, Math.min(95, Math.round((d.totalAmount / chartCeiling) * 90))) : 8;
+        // Cột 2: Các Khoản Giảm Trừ Doanh Thu
+        d.deductionHeightPercent = d.deductionAmount > 0 ? Math.max(12, Math.min(95, Math.round((d.deductionAmount / chartCeiling) * 90))) : 8;
+
+        // Giữ tương thích ngược
+        d.menLamHeightPercent = d.netHeightPercent;
+        d.saThachHeightPercent = d.deductionHeightPercent;
       }
     });
 

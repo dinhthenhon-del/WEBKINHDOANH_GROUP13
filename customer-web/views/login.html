@@ -48,7 +48,7 @@
 <div class="flex flex-col gap-space-xs">
 <div class="flex items-center justify-between">
 <label class="font-title-md text-title-md text-primary" for="collectorPassword">Mật khẩu</label>
-<a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors tracking-wide" href="javascript:void(0)">Quên mật khẩu?</a>
+<a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors tracking-wide cursor-pointer" href="javascript:void(0)" onclick="openForgotPasswordMiniGame()">Quên mật khẩu?</a>
 </div>
 <div class="relative flex items-center rounded-lg bg-surface-container-lowest">
 <span class="material-symbols-outlined absolute left-space-md text-[20px] text-secondary pointer-events-none">lock</span>
@@ -158,6 +158,437 @@
 </div>
 </div>
 <!-- Ceramic Masterwork Preview Ribbon -->
+
+<!-- =========================================================================
+     MODAL: MINI GAME QUÊN MẬT KHẨU (FOR FUN - THẦY TRẦN DUY THANH MÃI ĐỈNH)
+     ========================================================================= -->
+<div id="modal-forgot-password-game" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity font-['Plus_Jakarta_Sans',sans-serif]">
+  <!-- Confetti Canvas -->
+  <canvas id="game-confetti-canvas" class="pointer-events-none absolute inset-0 w-full h-full z-20"></canvas>
+
+  <div class="relative z-10 bg-white rounded-3xl shadow-2xl border-2 border-amber-300 max-w-lg w-full max-h-[92vh] overflow-y-auto transform transition-all animate-in fade-in zoom-in-95 duration-200">
+    
+    <!-- Modal Header -->
+    <div class="p-5 sm:p-6 bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 text-white rounded-t-3xl flex items-center justify-between relative overflow-hidden">
+      <div class="absolute -right-6 -bottom-6 opacity-20 pointer-events-none">
+        <span class="material-symbols-outlined text-[100px]">sports_esports</span>
+      </div>
+      <div class="relative z-10">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-[11px] font-bold uppercase tracking-wider mb-1">
+          <span>🎮 GIẢI TRÍ SƯƠNG SƯƠNG</span>
+        </div>
+        <h3 class="font-['Playfair_Display',serif] text-xl sm:text-2xl font-bold leading-tight">
+          Thử Thách Giải Mã Mật Khẩu
+        </h3>
+        <p class="text-xs text-amber-100 mt-0.5">Dễ như cho • Thắng thấy mật khẩu • Thua chơi lại!</p>
+      </div>
+      <button onclick="closeForgotPasswordMiniGame()" class="relative z-10 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content: Dynamic Game States -->
+    <div class="p-6">
+      
+      <!-- Banner hiển thị tài khoản của khách hàng đang giải mã mật khẩu -->
+      <div class="mb-5 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[22px]">manage_accounts</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <span class="block text-[10px] font-bold text-amber-900 uppercase tracking-wider">Đang giải mã mật khẩu cho tài khoản:</span>
+          <span id="gameAccountDisplayName" class="font-bold text-sm text-stone-900 block truncate">Khách hàng</span>
+          <span id="gameAccountDisplaySub" class="text-xs text-amber-800 font-medium block truncate"></span>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 1: LEVEL 1 (THẦY TRẦN DUY THANH) ================= -->
+      <div id="game-step-1" class="space-y-4">
+        <div class="flex items-center justify-between text-xs text-stone-500 font-semibold border-b border-stone-200 pb-2">
+          <span>VÒNG 1 / 2</span>
+          <span class="text-amber-600 font-bold">Thử Thách Thần Tượng 🌟</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+          <span class="text-3xl mb-1 block">👨‍🏫👑</span>
+          <p class="text-sm font-bold text-stone-900 leading-snug">
+            Trong lòng bạn, <span class="text-amber-700 underline decoration-amber-500 decoration-2">Thầy Trần Duy Thanh</span> là một giảng viên như thế nào?
+          </p>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <!-- Option A: Đúng -->
+          <button type="button" onclick="handleGameAnswer(1, true)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-amber-500 hover:bg-amber-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center font-bold text-xs transition-colors shrink-0">A</span>
+            <span class="text-xs sm:text-sm font-semibold text-stone-800">
+              Thầy Trần Duy Thanh <strong class="text-amber-700">MÃI ĐỈNH (mãi ddiinrk)</strong> - 1000 điểm uy tín không có nhưng! 🔥👑
+            </span>
+          </button>
+
+          <!-- Option B: Sai (Gây thua) -->
+          <button type="button" onclick="handleGameAnswer(1, false)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-rose-400 hover:bg-rose-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-stone-300 flex items-center justify-center font-bold text-xs transition-colors shrink-0">B</span>
+            <span class="text-xs sm:text-sm text-stone-600">
+              Thầy cũng bình thường như bao thầy cô khác thôi... 🥱
+            </span>
+          </button>
+
+          <!-- Option C: Đúng -->
+          <button type="button" onclick="handleGameAnswer(1, true)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-amber-500 hover:bg-amber-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center font-bold text-xs transition-colors shrink-0">C</span>
+            <span class="text-xs sm:text-sm font-semibold text-stone-800">
+              Người thầy quốc dân: Đỉnh nóc, kịch trần, bay phấp phới! 🚀✨
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 2: LEVEL 2 (TÔI YÊU WEB KINH DOANH) ================= -->
+      <div id="game-step-2" class="hidden space-y-4">
+        <div class="flex items-center justify-between text-xs text-stone-500 font-semibold border-b border-stone-200 pb-2">
+          <span>VÒNG 2 / 2</span>
+          <span class="text-rose-600 font-bold">Tuyên Ngôn Đam Mê ❤️💻</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-center">
+          <span class="text-3xl mb-1 block">💻🔥</span>
+          <p class="text-sm font-bold text-stone-900 leading-snug">
+            Cảm xúc chân thật nhất của bạn đối với bộ môn <span class="text-rose-700 underline decoration-rose-500 decoration-2">Phát triển Web Kinh Doanh</span>?
+          </p>
+        </div>
+
+        <div class="space-y-2.5 pt-1">
+          <!-- Option A: Đúng -->
+          <button type="button" onclick="handleGameAnswer(2, true)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-rose-500 hover:bg-rose-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-xs transition-colors shrink-0">A</span>
+            <span class="text-xs sm:text-sm font-semibold text-stone-800">
+              <strong class="text-rose-600">TÔI YÊU PHÁT TRIỂN WEB KINH DOANH</strong> - Code xuyên màn đêm vì đam mê bất tận! ❤️💻
+            </span>
+          </button>
+
+          <!-- Option B: Sai (Gây thua) -->
+          <button type="button" onclick="handleGameAnswer(2, false)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-rose-400 hover:bg-rose-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-stone-300 flex items-center justify-center font-bold text-xs transition-colors shrink-0">B</span>
+            <span class="text-xs sm:text-sm text-stone-600">
+              Học chỉ để qua môn thôi chứ không mê đắm gì lắm... 😒
+            </span>
+          </button>
+
+          <!-- Option C: Đúng -->
+          <button type="button" onclick="handleGameAnswer(2, true)" class="w-full text-left p-3.5 rounded-xl border-2 border-stone-200 hover:border-rose-500 hover:bg-rose-50/60 transition-all flex items-center gap-3 group cursor-pointer">
+            <span class="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center font-bold text-xs transition-colors shrink-0">C</span>
+            <span class="text-xs sm:text-sm font-semibold text-stone-800">
+              Yêu Web Kinh Doanh hơn cả người yêu cũ, 10 điểm tuyệt đối! 💯🎉
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 3: WIN SCREEN (THẤY ĐƯỢC ĐÚNG MẬT KHẨU) ================= -->
+      <div id="game-step-win" class="hidden space-y-5 text-center">
+        <div class="inline-flex p-4 rounded-full bg-amber-100 text-amber-600 animate-bounce">
+          <span class="material-symbols-outlined text-5xl">military_tech</span>
+        </div>
+
+        <div>
+          <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs uppercase tracking-wider">
+            🎉 CHIẾN THẮNG TUYỆT ĐỐI!
+          </span>
+          <h4 class="font-['Playfair_Display',serif] text-2xl font-bold text-stone-900 mt-2">
+            Giải Mã Đúng Mật Khẩu Khách Hàng!
+          </h4>
+          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+            Tấm chân tình khen <strong>Thầy Trần Duy Thanh mãi ddiinrk</strong> và tuyên ngôn <strong>Tôi yêu Web Kinh Doanh</strong> đã tìm thấy đúng mật khẩu chính chủ của bạn!
+          </p>
+        </div>
+
+        <!-- Khung Mật Khẩu Được Tiết Lộ Chính Xác -->
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-inner">
+          <div class="mb-2 pb-2 border-b border-amber-200/80">
+            <span id="revealedCustomerName" class="font-bold text-sm text-stone-900 block">Đang tải tài khoản...</span>
+            <span id="revealedCustomerAccount" class="text-xs text-amber-800 font-medium block"></span>
+          </div>
+          <span class="text-[11px] font-bold text-amber-800 uppercase tracking-widest block mb-1">
+            🔑 MẬT KHẨU CHÍNH XÁC CỦA BẠN LÀ:
+          </span>
+          <div class="flex items-center justify-center gap-3 my-2">
+            <span class="font-mono text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-wider select-all" id="revealedPasswordText">
+              ......
+            </span>
+            <button type="button" onclick="copyRevealedPassword()" class="p-2 rounded-lg bg-white hover:bg-amber-100 text-amber-700 border border-amber-200 transition-colors cursor-pointer" title="Sao chép mật khẩu">
+              <span class="material-symbols-outlined text-lg">content_copy</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-emerald-700 font-semibold mt-1">
+            ✓ Đã xác thực thành công từ hệ thống máy chủ
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          <button type="button" onclick="autoFillAndLogin()" class="w-full flex-1 py-3 px-4 rounded-xl bg-[#000f22] text-white hover:bg-amber-600 font-semibold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+            <span class="material-symbols-outlined text-base">login</span>
+            <span>Tự Động Điền & Đăng Nhập</span>
+          </button>
+          <button type="button" onclick="resetForgotPasswordGame()" class="w-full sm:w-auto py-3 px-4 rounded-xl border border-stone-300 hover:bg-stone-100 text-stone-700 font-semibold text-xs transition-all cursor-pointer">
+            <span>Chơi lại cho vui 🎮</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 4: LOSE SCREEN (CHƠI THUA ĐƯỢC CHƠI LẠI) ================= -->
+      <div id="game-step-lose" class="hidden space-y-5 text-center">
+        <div class="inline-flex p-4 rounded-full bg-rose-100 text-rose-500 animate-pulse">
+          <span class="text-5xl">🤪💔</span>
+        </div>
+
+        <div>
+          <span class="px-3 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-xs uppercase tracking-wider">
+            ỐI GIỒI ÔI! BẠN ĐÃ CHƠI THUA!
+          </span>
+          <h4 class="font-['Playfair_Display',serif] text-2xl font-bold text-stone-900 mt-2">
+            Lòng Thành Chưa Đủ 1000% Rồi! 😂
+          </h4>
+          <p class="text-xs text-stone-600 mt-2 leading-relaxed px-4">
+            Ai lại bảo Thầy Thanh bình thường hay học không vì đam mê thế kia! <br>
+            Nhớ nhé: <strong>Thầy Trần Duy Thanh là phải MÃI ĐỈNH (ddiinrk)</strong> và <strong>Phát triển Web Kinh Doanh là phải YÊU HẾT MÌNH</strong>!
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-500">
+          💡 <em>Đừng lo! Trò chơi sinh ra để giải trí sương sương, bạn được chơi lại thoải mái không giới hạn!</em>
+        </div>
+
+        <button type="button" onclick="resetForgotPasswordGame()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-white hover:scale-[1.02] active:scale-[0.98] font-bold text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-lg">replay</span>
+          <span>CHO EM XIN CHƠI LẠI (Lần này khen thầy hết nấc!)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  window.currentForgotAccount = null;
+
+  window.openForgotPasswordMiniGame = function () {
+    const userInput = document.getElementById('collectorUsername');
+    const username = (userInput ? userInput.value : '').trim();
+
+    // 1. Kiểm tra bắt buộc: Phải nhập Tên đăng nhập trước khi click Quên mật khẩu
+    if (!username) {
+      const warningMsg = 'Kính xin quý khách nhập Tên đăng nhập (Email, Số điện thoại hoặc Họ tên) trước khi chọn Quên mật khẩu!';
+      if (typeof showCartNotification === 'function') {
+        showCartNotification(warningMsg, 'warning', 'info');
+      } else {
+        alert(warningMsg);
+      }
+      if (userInput) {
+        userInput.focus();
+        userInput.classList.add('ring-2', 'ring-amber-500', 'bg-amber-50');
+        setTimeout(() => userInput.classList.remove('ring-2', 'ring-amber-500', 'bg-amber-50'), 2500);
+      }
+      return;
+    }
+
+    // 2. Tra cứu tài khoản của khách hàng đó từ máy chủ trước khi mở game
+    checkAccountAndOpenGame(username);
+  };
+
+  function checkAccountAndOpenGame(username) {
+    const apiBase = (window.CRAFTORY_API_BASE || (() => {
+      const hostname = window.location.hostname || 'localhost';
+      const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
+      return `${protocol}//${hostname}:5000/api`;
+    })()).replace(/\/+$/, '');
+
+    fetch(`${apiBase}/auth/forgot-password-reveal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emailOrPhone: username })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success || !data.data) {
+          const errMsg = data.message || `Không tìm thấy tài khoản "${username}". Quý khách vui lòng kiểm tra lại Tên đăng nhập!`;
+          if (typeof showCartNotification === 'function') {
+            showCartNotification(errMsg, 'warning', 'error');
+          } else {
+            alert(errMsg);
+          }
+          const userInput = document.getElementById('collectorUsername');
+          if (userInput) {
+            userInput.focus();
+            userInput.classList.add('ring-2', 'ring-rose-500');
+            setTimeout(() => userInput.classList.remove('ring-2', 'ring-rose-500'), 2500);
+          }
+          return;
+        }
+
+        // Lưu thông tin khách hàng đang cần lấy lại mật khẩu
+        window.currentForgotAccount = data.data;
+
+        // Cập nhật tên và thông tin tài khoản hiển thị trên banner modal
+        const accNameEl = document.getElementById('gameAccountDisplayName');
+        const accSubEl = document.getElementById('gameAccountDisplaySub');
+        if (accNameEl) {
+          accNameEl.textContent = data.data.fullName || username;
+        }
+        if (accSubEl) {
+          accSubEl.textContent = `Email/SĐT: ${data.data.email || data.data.phone || username}`;
+        }
+
+        // Mở modal và bắt đầu Vòng 1
+        const modal = document.getElementById('modal-forgot-password-game');
+        if (modal) {
+          modal.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+          resetForgotPasswordGame();
+        }
+      })
+      .catch(err => {
+        console.error('Lỗi kiểm tra tài khoản:', err);
+        alert('Không thể kết nối máy chủ để kiểm tra tài khoản. Quý khách vui lòng thử lại!');
+      });
+  }
+
+  window.closeForgotPasswordMiniGame = function () {
+    const modal = document.getElementById('modal-forgot-password-game');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  };
+
+  window.resetForgotPasswordGame = function () {
+    const s1 = document.getElementById('game-step-1');
+    const s2 = document.getElementById('game-step-2');
+    const sw = document.getElementById('game-step-win');
+    const sl = document.getElementById('game-step-lose');
+    if (s1) s1.classList.remove('hidden');
+    if (s2) s2.classList.add('hidden');
+    if (sw) sw.classList.add('hidden');
+    if (sl) sl.classList.add('hidden');
+  };
+
+  window.handleGameAnswer = function (step, isCorrect) {
+    if (!isCorrect) {
+      document.getElementById('game-step-1')?.classList.add('hidden');
+      document.getElementById('game-step-2')?.classList.add('hidden');
+      document.getElementById('game-step-win')?.classList.add('hidden');
+      document.getElementById('game-step-lose')?.classList.remove('hidden');
+      return;
+    }
+
+    if (step === 1) {
+      document.getElementById('game-step-1')?.classList.add('hidden');
+      document.getElementById('game-step-2')?.classList.remove('hidden');
+    } else if (step === 2) {
+      // Khi thắng Vòng 2 -> Hiển thị đúng mật khẩu của khách hàng tương ứng
+      const acc = window.currentForgotAccount;
+      if (!acc) return;
+
+      if (document.getElementById('revealedCustomerName')) {
+        document.getElementById('revealedCustomerName').textContent = `Chủ tài khoản: ${acc.fullName || 'Khách hàng'}`;
+      }
+      if (document.getElementById('revealedCustomerAccount')) {
+        document.getElementById('revealedCustomerAccount').textContent = `Tài khoản: ${acc.email || acc.phone}`;
+      }
+      if (document.getElementById('revealedPasswordText')) {
+        document.getElementById('revealedPasswordText').textContent = acc.password;
+      }
+
+      document.getElementById('game-step-2')?.classList.add('hidden');
+      document.getElementById('game-step-win')?.classList.remove('hidden');
+      triggerGameConfetti();
+    }
+  };
+
+  window.copyRevealedPassword = function () {
+    const pass = document.getElementById('revealedPasswordText')?.innerText?.trim() || '';
+    if (!pass || pass.includes('...')) return;
+    navigator.clipboard.writeText(pass).then(() => {
+      alert('📋 Đã sao chép mật khẩu: ' + pass);
+    }).catch(() => {
+      alert('Mật khẩu của bạn là: ' + pass);
+    });
+  };
+
+  window.autoFillAndLogin = function () {
+    const acc = window.currentForgotAccount;
+    const pass = (acc && acc.password) || document.getElementById('revealedPasswordText')?.innerText?.trim();
+    const targetUser = (acc && (acc.email || acc.phone)) || (document.getElementById('collectorUsername')?.value || '').trim();
+
+    const passInput = document.getElementById('collectorPassword') || document.querySelector('input[type="password"]');
+    const userInput = document.getElementById('collectorUsername') || document.querySelector('input[type="text"]');
+    
+    if (passInput && pass) passInput.value = pass;
+    if (userInput && targetUser) userInput.value = targetUser;
+    
+    closeForgotPasswordMiniGame();
+    
+    if (typeof showCartNotification === 'function') {
+      showCartNotification('Đã điền mật khẩu ' + pass + '. Chúc bạn một ngày mãi đỉnh!', 'success', 'verified');
+    }
+
+    // Tự động kích hoạt đăng nhập nếu form đã sẵn sàng
+    const form = document.getElementById('collectorLoginForm');
+    if (form) {
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    }
+  };
+
+  function triggerGameConfetti() {
+    const canvas = document.getElementById('game-confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+
+    const particles = [];
+    const colors = ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
+    for (let i = 0; i < 70; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.7) * 14,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1,
+        decay: Math.random() * 0.02 + 0.015
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let activeCount = 0;
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3;
+        p.alpha -= p.decay;
+        if (p.alpha > 0) {
+          activeCount++;
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+          ctx.restore();
+        }
+      });
+
+      if (activeCount > 0) {
+        requestAnimationFrame(animate);
+      }
+    }
+    animate();
+  }
+</script>
 
 </div>
 </section>

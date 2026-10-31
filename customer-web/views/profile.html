@@ -66,14 +66,7 @@
 </div>
 <!-- Member Meta -->
 <div class="flex-1 min-w-0">
-  <div class="flex items-start justify-between">
-    <h2 id="profile-user-name" class="font-headline-sm text-title-lg text-primary font-semibold truncate tracking-tight">Nguyễn Hoàng Nam</h2>
-    <!-- Nút Đăng xuất trên thẻ cá nhân (theo ảnh Stitch của bạn) -->
-    <button onclick="handleLogout()" class="flex flex-col items-center text-on-surface-variant hover:text-[#ba1a1a] transition-colors p-1 rounded hover:bg-surface-container-low cursor-pointer shrink-0 ml-2" title="Đăng xuất khỏi tài khoản">
-      <span class="material-symbols-outlined text-[18px]">logout</span>
-      <span class="font-label-sm text-[10px] font-medium leading-none mt-0.5">Đăng xuất</span>
-    </button>
-  </div>
+  <h2 id="profile-user-name" class="font-headline-sm text-title-lg text-primary font-semibold truncate tracking-tight">Nguyễn Hoàng Nam</h2>
 </div>
 </div>
 <div class="my-5 border-t border-biscuit-sand/70"></div>
@@ -294,30 +287,33 @@
 <span class="font-body-sm text-[13px] text-on-surface leading-snug">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
 </label>
 <label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
-<input class="mt-1 accent-primary" name="return_reason" type="radio" value="Khác">
-<span class="font-body-sm text-[13px] text-on-surface leading-snug">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
+<input class="mt-1 accent-primary" name="return_reason" type="radio" value="Lý do khác" onchange="handleProfileReturnReasonChange(this)">
+<span class="font-body-sm text-[13px] text-on-surface leading-snug font-semibold text-secondary">Lý do khác (Bắt buộc nhập chi tiết bên dưới)</span>
 </label>
 </div>
 </div>
 <!-- 3. Detail description -->
 <div class="flex flex-col gap-1.5">
 <label class="font-title-md text-sm text-primary font-semibold flex items-center justify-between">
-<span>Mô tả chi tiết khiếm khuyết hoặc nguyện vọng đổi tác phẩm</span>
-<span class="text-outline text-xs font-normal">Tùy chọn</span>
+<span>Mô tả chi tiết khiếm khuyết hoặc lý do đổi trả</span>
+<span id="return-desc-required-badge" class="text-secondary text-xs font-semibold">* Bắt buộc khi chọn "Lý do khác"</span>
 </label>
-<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="3"></textarea>
+<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="return-description" placeholder="Vui lòng nhập chi tiết lý do đề nghị thẩm định & đổi trả tác phẩm..." rows="3"></textarea>
 </div>
-<!-- 4. Upload photo / unboxing video evidence -->
+<!-- 4. Upload photo / unboxing video evidence (Bắt buộc) -->
 <div class="flex flex-col gap-1.5">
-<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
-<span>Bằng chứng thị giác (Ảnh chụp vết nứt hoặc video khui hòm gỗ)</span>
-<span class="text-secondary">*</span>
-</label>
-<div class="border-2 border-dashed border-biscuit-sand hover:border-primary/50 rounded-lg p-5 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('file-upload').click()">
+<div class="flex items-center justify-between">
+  <label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+    <span>Bằng chứng thị giác (Ảnh chụp vết nứt hoặc video khui hòm gỗ)</span>
+    <span class="text-secondary">*</span>
+  </label>
+  <span class="text-secondary text-xs font-bold uppercase tracking-wider bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200">Bắt buộc đính kèm</span>
+</div>
+<div class="border-2 border-dashed border-red-300 hover:border-secondary rounded-lg p-5 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('file-upload').click()">
 <input accept="image/*,video/*" class="hidden" id="file-upload" multiple="" onchange="handleFileSelect(this)" type="file">
 <div class="flex flex-col items-center justify-center gap-1">
-<span class="material-symbols-outlined text-3xl text-on-surface-variant">photo_library</span>
-<p class="font-title-md text-sm text-primary font-medium mt-1">Bấm để tải ảnh chụp chi tiết hoặc video</p>
+<span class="material-symbols-outlined text-3xl text-secondary">photo_library</span>
+<p class="font-title-md text-sm text-primary font-bold mt-1">Bấm để tải ảnh chụp chi tiết hoặc video minh chứng</p>
 <p class="font-label-sm text-xs text-outline">Hỗ trợ JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
 </div>
 <div class="mt-3 flex flex-wrap gap-2 justify-center hidden" id="file-preview-list"></div>
@@ -468,10 +464,15 @@
       document.body.style.overflow = '';
     }
 
-    // Modal Control: Review
+    // Modal Control: Review (Chỉ cho đánh giá 1 lần theo từng đơn hàng đã mua)
     function openReviewModal(targetName, productId, orderId) {
+      if (localStorage.getItem('reviewed_' + orderId + '_' + productId)) {
+        showToast('toast-warning', '⚠️ Đã đánh giá', 'Đơn hàng này của quý khách đã được gửi đánh giá cho tác phẩm này rồi. Khi nào quý khách mua sản phẩm đó lần thứ 2 thì mới được đánh giá thêm 1 lần nữa.');
+        return;
+      }
       window.activeReviewProductId = productId;
       window.activeReviewOrderId = orderId;
+      window.activeReviewTargetName = targetName;
       const modal = document.getElementById('modal-review');
       document.getElementById('modal-review-target').innerText = targetName;
       modal.classList.remove('hidden');
@@ -561,17 +562,60 @@
       );
     }
 
-    // Submit Return Form
+    // Lựa chọn nguyên nhân đổi trả
+    function handleProfileReturnReasonChange(radio) {
+      const descBadge = document.getElementById('return-desc-required-badge');
+      const descInput = document.getElementById('return-description');
+      if (radio && radio.value === 'Lý do khác') {
+        if (descBadge) descBadge.classList.remove('hidden');
+        if (descInput) {
+          descInput.focus();
+          descInput.placeholder = 'Vui lòng nhập cụ thể lý do đổi trả tác phẩm (Bắt buộc)...';
+        }
+      } else {
+        if (descBadge) descBadge.classList.add('hidden');
+        if (descInput) {
+          descInput.placeholder = 'Vui lòng nhập chi tiết lý do đề nghị thẩm định & đổi trả tác phẩm...';
+        }
+      }
+    }
+    window.handleProfileReturnReasonChange = handleProfileReturnReasonChange;
+
+    // Submit Return Form (Bắt buộc lý do khi chọn "Lý do khác" & Bắt buộc đính kèm ảnh/video)
+    window.selectedReturnFiles = [];
     function submitReturnForm(e) {
       e.preventDefault();
-      closeReturnModal();
 
       const reasonRadio = document.querySelector('input[name="return_reason"]:checked');
-      const reasonVal = reasonRadio ? reasonRadio.value : 'Yêu cầu thẩm định & đổi trả';
-      const descVal = document.getElementById('return-description') ? document.getElementById('return-description').value : '';
+      const reasonVal = reasonRadio ? reasonRadio.value : '';
+      const descInput = document.getElementById('return-description');
+      const descVal = descInput ? descInput.value.trim() : '';
+
+      // 1. Kiểm tra nguyên nhân
+      if (!reasonVal) {
+        showToast('toast-warning', '⚠️ Thiếu thông tin', 'Vui lòng chọn nguyên nhân đề nghị thẩm định & đổi trả.');
+        return;
+      }
+
+      // 2. Bắt buộc nhập lý do khi chọn "Lý do khác"
+      if (reasonVal === 'Lý do khác' || reasonVal === 'Khác') {
+        if (!descVal) {
+          showToast('toast-warning', '⚠️ Bắt buộc nhập lý do', 'Quý khách đã chọn "Lý do khác", vui lòng nhập mô tả chi tiết lý do đổi trả tác phẩm trước khi gửi yêu cầu.');
+          if (descInput) descInput.focus();
+          return;
+        }
+      }
+
+      // 3. Bắt buộc đính kèm ảnh/video minh chứng
+      if (!window.selectedReturnFiles || window.selectedReturnFiles.length === 0) {
+        showToast('toast-warning', '⚠️ Bắt buộc đính kèm minh chứng', 'Quý khách bắt buộc phải đính kèm ít nhất 1 hình ảnh hoặc video minh chứng mới có thể gửi yêu cầu đổi trả.');
+        document.getElementById('file-upload').click();
+        return;
+      }
+
+      closeReturnModal();
 
       const activeId = window.activeReturnOrderId;
-      // Vô hiệu hóa và làm mờ nút đổi trả ngay lập tức trên giao diện
       const targetCard = document.querySelector(`[data-order-id="${activeId}"]`) || document.querySelector(`[data-order-code="${activeId}"]`);
       if (targetCard) {
         const retBtn = targetCard.querySelector('button[onclick*="openReturnModal"]');
@@ -588,12 +632,17 @@
         detailRetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
       }
 
-      if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
+      const evidenceNames = window.selectedReturnFiles.map(f => f.name || 'minh-chung.jpg');
+      const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
+      const finalReason = reasonVal === 'Lý do khác' ? ('Lý do khác: ' + descVal) : (reasonVal + (descVal ? ': ' + descVal : ''));
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && u && (u._id || u.id)) {
         ApiService.createReturnRequest({
           orderId: activeId || '670000000000000000000001',
-          accountId: currentUser._id,
+          accountId: u._id || u.id,
           type: 'return',
-          reason: reasonVal + (descVal ? ': ' + descVal : '')
+          reason: finalReason,
+          evidenceImages: evidenceNames
         }, function(err, res) {
           console.log('Return request API result:', err, res);
           if (!err && window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
@@ -605,9 +654,10 @@
       showToast(
         'toast-success',
         '✅ Tiếp nhận yêu cầu đổi trả thành công!',
-        'Đã tiếp nhận yêu cầu đổi trả thành công! Ban giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự đến tận tư gia hỗ trợ.'
+        'Đã tiếp nhận yêu cầu đổi trả và bằng chứng minh chứng! Ban giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự đến tận tư gia hỗ trợ.'
       );
       document.getElementById('return-form').reset();
+      window.selectedReturnFiles = [];
       const preview = document.getElementById('file-preview-list');
       if (preview) {
         preview.innerHTML = '';
@@ -615,27 +665,73 @@
       }
     }
 
-    // Submit Review Form
+    // Submit Review Form (Lưu đánh giá, hiển thị và chỉ cho đánh giá 1 lần)
     function submitReviewForm(e) {
       e.preventDefault();
-      closeReviewModal();
-      const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value : '';
+      const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value.trim() : '';
+      if (!commentVal) {
+        showToast('toast-warning', '⚠️ Thiếu thông tin', 'Vui lòng nhập nội dung nhận xét cảm nhận về tác phẩm.');
+        return;
+      }
 
-      if (typeof ApiService !== 'undefined' && ApiService.createReview && typeof currentUser !== 'undefined' && currentUser) {
+      closeReviewModal();
+      const pId = window.activeReviewProductId;
+      const oId = window.activeReviewOrderId;
+      const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
+      const accId = u._id || u.id || u.accountId;
+
+      // Đánh dấu đơn hàng này đã đánh giá tác phẩm trên localStorage
+      if (oId && pId) {
+        localStorage.setItem('reviewed_' + oId + '_' + pId, 'true');
+      }
+
+      // Lưu review vào bộ nhớ đệm craftory_cached_reviews để hiển thị tức thời trên trang chi tiết sản phẩm
+      try {
+        const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
+        const newLocalReview = {
+          _id: 'rev_' + Date.now(),
+          productId: pId,
+          productName: window.activeReviewTargetName || '',
+          orderId: oId,
+          customerName: u.fullName || u.email || 'Nhà Sưu Tầm',
+          rating: Number(currentRating),
+          comment: commentVal,
+          createdAt: new Date().toISOString()
+        };
+        const deduped = cached.filter(r => !(r.productId === pId && (r.orderId === oId || r.customerName === newLocalReview.customerName)));
+        deduped.unshift(newLocalReview);
+        localStorage.setItem('craftory_cached_reviews', JSON.stringify(deduped));
+      } catch (e) {}
+
+      // Cập nhật nút trên giao diện sang "Đã đánh giá"
+      const reviewBtn = document.getElementById(`btn-review-${oId}-${pId}`) || document.querySelector(`button[onclick*="'${pId}', '${oId}'"]`);
+      if (reviewBtn) {
+        const span = document.createElement('span');
+        span.className = 'px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-[11px] font-semibold flex items-center gap-1';
+        span.innerHTML = '<span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span><span>Đã đánh giá</span>';
+        reviewBtn.replaceWith(span);
+      }
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReview) {
         ApiService.createReview({
-          accountId: currentUser._id,
-          productId: window.activeReviewProductId || '670000000000000000000001',
+          accountId: accId,
+          productId: pId,
+          orderId: oId,
+          customerName: u.fullName || u.email || 'Nhà Sưu Tầm',
           rating: currentRating,
           comment: commentVal
         }, function(err, res) {
           console.log('Review API result:', err, res);
+          if (err && res && res.alreadyReviewed) {
+            showToast('toast-warning', '⚠️ Đã đánh giá', res.message || 'Quý khách đã đánh giá tác phẩm này rồi.');
+          }
         });
       }
 
       showToast(
         'toast-success',
         'Khắc ghi đánh giá thành công',
-        'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Nhận xét sẽ được lưu truyền vào tuyển tập nhà sưu tầm Minh Gốm.'
+        'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Đánh giá đã được lưu và cập nhật điểm số sao trên sản phẩm.'
       );
       document.getElementById('review-content').value = '';
       document.getElementById('review-photo-label').innerText = 'Chưa chọn ảnh';
@@ -645,14 +741,22 @@
     function handleFileSelect(input) {
       const preview = document.getElementById('file-preview-list');
       if (input.files && input.files.length > 0) {
+        window.selectedReturnFiles = Array.from(input.files);
         preview.innerHTML = '';
         preview.classList.remove('hidden');
         Array.from(input.files).forEach((file) => {
           const badge = document.createElement('span');
-          badge.className = 'px-2 py-1 rounded bg-surface-container-high text-primary font-label-sm text-[11px] truncate max-w-[150px]';
-          badge.innerText = '📎 ' + file.name;
+          badge.className = 'px-2.5 py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-semibold flex items-center gap-1';
+          const isVideo = file.type.startsWith('video');
+          badge.innerHTML = `<span class="material-symbols-outlined text-[14px]">${isVideo ? 'videocam' : 'image'}</span> 📎 ${file.name} (${Math.round(file.size / 1024)} KB)`;
           preview.appendChild(badge);
         });
+      } else {
+        window.selectedReturnFiles = [];
+        if (preview) {
+          preview.innerHTML = '';
+          preview.classList.add('hidden');
+        }
       }
     }
 

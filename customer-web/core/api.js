@@ -60,6 +60,28 @@ const ApiService = {
     xhr.send(JSON.stringify(credentials));
   },
 
+  // 2.1 Lấy lại mật khẩu thật thông qua mini game giải trí
+  forgotPasswordReveal: function (emailOrPhone, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/auth/forgot-password-reveal`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 10000;
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(xhr.status === 200 ? null : (res.message || 'Không tìm thấy tài khoản'), res);
+        } catch (e) {
+          callback('Lỗi kết nối máy chủ', null);
+        }
+      }
+    };
+    xhr.onerror = function () {
+      callback('Không thể kết nối máy chủ', null);
+    };
+    xhr.send(JSON.stringify({ emailOrPhone }));
+  },
+
   // 3. Lấy thông tin tài khoản (UC-C07)
   getProfile: function (userId, callback) {
     const xhr = new XMLHttpRequest();

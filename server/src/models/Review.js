@@ -7,19 +7,24 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema(
   {
     accountId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'Account',
       required: [true, 'Mã tài khoản gửi đánh giá là bắt buộc'],
     },
     productId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'Product',
       required: [true, 'Mã sản phẩm được đánh giá là bắt buộc'],
     },
     orderId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: 'Order',
       default: null,
+    },
+    customerName: {
+      type: String,
+      default: '',
+      trim: true,
     },
     rating: {
       type: Number,

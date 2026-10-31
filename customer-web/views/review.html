@@ -308,23 +308,73 @@ window.selectReviewRating = function(stars) {
 // Form submission binding
 document.getElementById('collectorReviewForm')?.addEventListener('submit', function(e) {
   e.preventDefault();
-  const comment = document.getElementById('reviewComment')?.value || '';
+  const comment = (document.getElementById('reviewComment')?.value || '').trim();
   const prodId = window.currentReviewProductId || 'MG-1705';
+  const orderId = 'MG-8924';
+
+  if (!comment) {
+    alert('Vui lòng nhập nhận xét chi tiết của quý khách trước khi gửi!');
+    return;
+  }
+
+  // Kiểm tra chỉ cho đánh giá 1 lần trên đơn hàng này
+  const storageKey = 'reviewed_' + orderId + '_' + prodId;
+  if (localStorage.getItem(storageKey) === 'true') {
+    alert('Đơn hàng này của quý khách đã được gửi đánh giá cho tác phẩm này rồi!\nKhi nào mua sản phẩm đó lần thứ 2 ở đơn hàng mới, quý khách sẽ được đánh giá thêm 1 lần nữa.');
+    return;
+  }
+
+  const accountId = (typeof currentUser !== 'undefined' && currentUser ? (currentUser._id || currentUser.id || currentUser.accountId) : 'TK-8839');
+  const customerName = (typeof currentUser !== 'undefined' && currentUser ? (currentUser.fullName || currentUser.username) : 'Thượng khách Bát Tràng');
+
   if (typeof ApiService !== 'undefined' && ApiService.createReview) {
     ApiService.createReview({
-      accountId: (typeof currentUser !== 'undefined' && currentUser ? (currentUser.id || currentUser.accountId) : 'TK-8839'),
+      accountId: accountId,
+      customerName: customerName,
       productId: prodId,
-      orderId: 'MG-8924',
+      orderId: orderId,
       rating: window.selectedReviewRating || 5,
       comment: comment
     }, function(err, res) {
-      console.log('Review API result:', err, res);
-      alert('✨ CẢM TẠ QUÝ KHÁCH ĐÃ LƯU LẠI CẢM NHẬN!\n\nĐánh giá cho sản phẩm ' + prodId + ' đã được ghi nhận thành công.');
+      if (err || (res && res.alreadyReviewed)) {
+        alert(res?.message || 'Đơn hàng này của quý khách đã được đánh giá trước đó. Khi nào mua lại sản phẩm, quý khách sẽ được đánh giá thêm lần nữa!');
+        localStorage.setItem(storageKey, 'true');
+        return;
+      }
+      try {
+        const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
+        cached.unshift({
+          _id: 'rev_' + Date.now(),
+          productId: prodId,
+          orderId: orderId,
+          customerName: customerName,
+          rating: Number(window.selectedReviewRating || 5),
+          comment: comment,
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('craftory_cached_reviews', JSON.stringify(cached));
+      } catch (e) {}
+      localStorage.setItem(storageKey, 'true');
+      alert('✨ CẢM TẠ QUÝ KHÁCH ĐÃ LƯU LẠI CẢM NHẬN!\n\nĐánh giá cho sản phẩm ' + prodId + ' đã được ghi nhận và lưu trữ thành công.');
       if (typeof dieuHuong === 'function') {
         dieuHuong('profile');
       }
     });
   } else {
+    try {
+      const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
+      cached.unshift({
+        _id: 'rev_' + Date.now(),
+        productId: prodId,
+        orderId: orderId,
+        customerName: customerName,
+        rating: Number(window.selectedReviewRating || 5),
+        comment: comment,
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('craftory_cached_reviews', JSON.stringify(cached));
+    } catch (e) {}
+    localStorage.setItem(storageKey, 'true');
     alert('✨ CẢM TẠ QUÝ KHÁCH ĐÃ LƯU LẠI CẢM NHẬN!\n\nĐánh giá cho sản phẩm ' + prodId + ' đã được ghi nhận thành công.');
     if (typeof dieuHuong === 'function') {
       dieuHuong('profile');
