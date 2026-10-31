@@ -1,0 +1,496 @@
+<div class="w-full px-space-lg py-space-md flex flex-col gap-space-lg">
+  <!-- Toast Notification -->
+  <div *ngIf="isToastVisible" class="fixed top-20 right-8 z-[100] flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#0A2540] text-white shadow-xl border border-surface-variant/40 animate-bounce">
+    <span class="material-symbols-outlined text-secondary text-xl">check_circle</span>
+    <span class="text-sm font-medium">{{ toastMessage }}</span>
+  </div>
+
+  <!-- Header Banner & Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pb-1">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+        <span>Trang chủ</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-secondary font-semibold">Tổng quan Dashboard</span>
+      </div>
+      <div class="flex items-center gap-space-md flex-wrap">
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">{{ currentWeekLabel }}</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-label-sm font-label-sm flex items-center gap-1.5 shadow-sm font-semibold">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          Cập nhật trực tiếp
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center gap-space-sm">
+      <div class="flex items-center gap-2 bg-surface-container-lowest px-space-md py-2 rounded-lg shadow-sm border border-surface-variant/50 text-body-sm font-body-sm text-on-surface-variant">
+        <span class="material-symbols-outlined text-lg text-primary">calendar_today</span>
+        <span class="font-medium">{{ dateRangeLabel }}</span>
+      </div>
+      <button (click)="exportWeeklyReport()" class="flex items-center gap-1.5 px-space-md py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 transition-all font-semibold cursor-pointer">
+        <span class="material-symbols-outlined text-lg">file_download</span>
+        <span>Xuất báo cáo tuần</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dãy KPI 3 cột dàn đều 100% lấp đầy bề ngang -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md w-full">
+    <!-- Thẻ 1: Tổng sản phẩm -->
+    <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm border border-surface-variant/40 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">Tổng sản phẩm</span>
+        <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-xl">category</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalProductsCount }}</div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
+          <span class="material-symbols-outlined text-sm">arrow_upward</span>
+          <span>+4 sản phẩm mới tuần này</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/30"></div>
+    </div>
+
+    <!-- Thẻ 2: Khách hàng thành viên -->
+    <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm border border-surface-variant/40 flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">Khách hàng thành viên</span>
+        <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-xl">group</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalCustomersCount | number }}</div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
+          <span class="material-symbols-outlined text-sm">trending_up</span>
+          <span>+18% so với tháng trước</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/30"></div>
+    </div>
+
+    <!-- Thẻ 3: Doanh thu thuần -->
+    <div class="relative overflow-hidden rounded-xl bg-primary p-space-lg shadow-md text-on-primary flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5">
+      <div class="flex items-start justify-between">
+        <span class="font-label-md text-label-md text-primary-fixed font-medium">Doanh thu thuần</span>
+        <div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+          <span class="material-symbols-outlined text-xl">payments</span>
+        </div>
+      </div>
+      <div class="mt-space-md">
+        <div class="font-headline-lg text-headline-xl text-on-primary leading-none tracking-tight font-bold whitespace-nowrap">
+          {{ formatCurrency(stats.totalRevenue) }}
+        </div>
+        <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary-fixed whitespace-nowrap font-medium">
+          <span class="material-symbols-outlined text-sm">check_circle</span>
+          <span>Đã khấu trừ các đơn hoàn hàng / đổi trả</span>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-1 bg-secondary"></div>
+    </div>
+  </div>
+
+  <!-- Bố cục 2 Cột lấp đầy toàn bộ khung hình -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start w-full">
+    <!-- Cột Trái: Biểu đồ & Bảng Đơn Hàng (8 Cột) -->
+    <div class="lg:col-span-8 flex flex-col gap-space-lg w-full">
+      <!-- Card Biểu Đồ Doanh Thu Thuần -->
+      <div class="rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 p-space-lg flex flex-col w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-surface-variant/50">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-bold">Biểu Đồ Doanh Thu Thuần 7 Ngày Gần Nhất</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+              {{ peakDaySummary }} • Tổng tích luỹ tuần: <strong class="text-secondary font-bold">{{ formatCurrency(weekAccumulatedRevenue) }}</strong>
+            </p>
+          </div>
+          <div class="flex items-center gap-4 text-label-sm font-label-sm">
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
+              <span class="w-3 h-3 rounded-full bg-primary inline-block"></span> Dòng Men Lam
+            </span>
+            <span class="flex items-center gap-1.5 font-medium text-on-surface-variant">
+              <span class="w-3 h-3 rounded-full bg-secondary inline-block"></span> Gốm Sa Thạch
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-6 pb-2">
+          <div class="h-56 flex items-end justify-between gap-3 sm:gap-4 px-2 sm:px-4 border-b border-surface-variant/60">
+            <div *ngFor="let item of revenueDays" class="flex-1 flex flex-col items-center gap-1 h-full justify-end relative group cursor-pointer" [title]="(item.fullDateLabel || item.dayLabel) + '\nDoanh thu thuần: ' + formatCurrency(item.totalAmount) + ((item.refundedAmount || 0) > 0 ? '\nĐã trừ hoàn trả: ' + formatCurrency(item.refundedAmount) : '') + ((item.cancelledAmount || 0) > 0 ? '\nĐơn đã hủy: ' + formatCurrency(item.cancelledAmount) : '')">
+              <!-- Peak label badge -->
+              <div *ngIf="item.isPeak && item.totalAmount > 0" class="px-2 py-0.5 rounded bg-secondary text-on-secondary text-[10px] font-bold shadow-sm whitespace-nowrap mb-1">
+                Đỉnh: {{ (item.totalAmount / 1000000).toFixed(1) }}M
+              </div>
+              <span *ngIf="!item.isPeak && item.totalAmount > 0" class="text-[10px] text-outline opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                {{ (item.totalAmount / 1000000).toFixed(1) }}M
+              </span>
+              <div class="w-full flex gap-1 items-end justify-center h-full">
+                <div class="w-3.5 sm:w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.menLamHeightPercent" [title]="'Men Lam: ' + formatCurrency(item.menLamAmount)"></div>
+                <div class="w-3.5 sm:w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80" [style.height.%]="item.saThachHeightPercent" [title]="'Sa Thạch: ' + formatCurrency(item.saThachAmount)"></div>
+              </div>
+              <span [ngClass]="item.isPeak ? 'text-secondary font-bold' : 'text-on-surface-variant font-medium'" class="text-xs mt-1">
+                {{ item.dayLabel }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-space-sm p-3 rounded-lg bg-surface-container-low border border-surface-variant/40 flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-secondary text-lg shrink-0">stars</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            <strong class="text-primary font-semibold">Đơn hàng giá trị cao nhất:</strong> {{ highestOrderHighlight }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Card Đơn Hàng Chờ Xác Nhận Gần Đây -->
+      <div class="w-full rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 overflow-hidden flex flex-col">
+        <div class="p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border-b border-surface-variant/50">
+          <div class="flex items-center gap-space-sm">
+            <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-lg">receipt_long</span>
+            </div>
+            <div>
+              <h2 class="font-headline-md text-headline-md text-primary font-bold">Đơn Hàng Chờ Xác Nhận Gần Đây</h2>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">{{ stats.pendingOrdersCount || (stats.recentOrders || []).length }} đơn đặt tác phẩm thủ công cần rà soát đóng kiện</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button (click)="loadDashboardData()" [disabled]="isLoading" title="Tải lại đơn hàng mới nhất" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-surface-variant/60 hover:bg-surface-container text-primary text-xs font-semibold cursor-pointer transition-colors">
+              <span class="material-symbols-outlined text-base" [ngClass]="{ 'animate-spin': isLoading }">sync</span>
+              <span>Làm mới</span>
+            </button>
+            <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-[#000f22] transition-all cursor-pointer shadow-xs">
+              <span>Đến Quản lý đơn hàng</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="w-full overflow-x-auto">
+          <table class="w-full text-left whitespace-nowrap">
+            <thead class="w-full">
+              <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border-b border-surface-variant/50">
+                <th class="py-3 px-space-md font-semibold w-24">Mã đơn</th>
+                <th class="py-3 px-space-md font-semibold">Khách hàng &amp; Địa chỉ</th>
+                <th class="py-3 px-space-md text-center font-semibold w-40">Thời gian</th>
+                <th class="py-3 px-space-md text-right font-semibold w-36">Tổng tiền</th>
+                <th class="py-3 px-space-md text-center font-semibold w-36">Trạng thái</th>
+                <th class="py-3 px-space-md text-center font-semibold w-28">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-variant/60 font-body-md text-body-md text-on-surface">
+              <tr *ngIf="!stats.recentOrders || stats.recentOrders.length === 0">
+                <td colspan="6" class="py-8 text-center text-on-surface-variant text-sm">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-3xl text-outline">inbox</span>
+                    <span>Hiện chưa có đơn hàng nào chờ xác nhận</span>
+                    <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="text-xs text-secondary font-semibold hover:underline mt-1">Đến danh sách quản lý đơn hàng</a>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngFor="let ord of stats.recentOrders" class="hover:bg-surface-container-low/50 transition-colors group">
+                <td class="py-3 px-space-md font-bold text-primary font-label-md">
+                  <a [routerLink]="ord._id ? ['/orders', ord._id] : ['/orders/list']" [queryParams]="ord._id ? null : { status: 'pending' }" class="hover:text-secondary hover:underline flex items-center gap-1">
+                    <span>{{ ord.orderCode }}</span>
+                  </a>
+                </td>
+                <td class="py-3 px-space-md">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                      {{ (ord.customerName || 'K').charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <span class="font-semibold text-on-surface text-sm">{{ ord.customerName }}</span>
+                      <span class="text-xs text-on-surface-variant ml-1 font-light">({{ ord.customerPhone }} • {{ ord.customerAddress }})</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-space-md text-center font-mono text-xs text-on-surface-variant">{{ ord.timeDisplay }}</td>
+                <td class="py-3 px-space-md text-right font-semibold text-primary font-mono text-sm">{{ formatCurrency(ord.totalAmount) }}</td>
+                <td class="py-3 px-space-md text-center">
+                  <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-label-sm font-semibold inline-flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    {{ ord.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-space-md text-center">
+                  <a [routerLink]="ord._id ? ['/orders', ord._id] : ['/orders/list']" [queryParams]="ord._id ? null : { status: 'pending' }" class="px-2.5 py-1 rounded bg-surface-container hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+                    <span>Chi tiết</span>
+                    <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer dẫn đến Quản lý đơn hàng -->
+        <div class="p-space-sm bg-surface-container-low/40 border-t border-surface-variant/40 flex items-center justify-between text-xs text-on-surface-variant px-space-md">
+          <span>Có <strong class="text-primary font-bold">{{ stats.pendingOrdersCount || (stats.recentOrders || []).length }}</strong> đơn hàng cần xử lý xác nhận</span>
+          <a routerLink="/orders/list" [queryParams]="{ status: 'pending' }" class="text-secondary font-semibold hover:underline flex items-center gap-1">
+            <span>Mở trong Quản lý đơn hàng</span>
+            <span class="material-symbols-outlined text-sm">east</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột Phải: Sản Phẩm Sắp Hết Hàng (4 Cột) -->
+    <div class="lg:col-span-4 flex flex-col gap-space-lg w-full">
+      <div class="rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 p-space-md flex flex-col w-full">
+        <div class="flex items-center justify-between pb-space-sm border-b border-surface-variant/50">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-lg">warning_amber</span>
+            </div>
+            <div>
+              <h2 class="font-headline-md text-base text-primary font-bold leading-tight">Sản Phẩm Sắp Hết Hàng</h2>
+              <span class="font-body-sm text-xs text-on-surface-variant">Cảnh báo tồn kho an toàn ≤ 5 chiếc</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divide-y divide-surface-variant/50">
+          <div *ngFor="let item of stats.lowStockProducts" class="py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <img [src]="item.image" [alt]="item.name" class="w-10 h-10 rounded-lg object-cover bg-surface-container shrink-0 border border-surface-variant/40">
+              <div class="flex flex-col min-w-0">
+                <span class="font-label-md text-sm text-on-surface font-semibold truncate">{{ item.name }}</span>
+                <span class="text-xs text-outline truncate">SKU: {{ item.sku }} • {{ item.glazeColor }}</span>
+              </div>
+            </div>
+            <span [ngClass]="item.stock === 1 ? 'animate-pulse' : ''" class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-label-sm font-bold whitespace-nowrap inline-flex items-center gap-1 shrink-0">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Còn {{ item.stock }} chiếc
+            </span>
+          </div>
+        </div>
+
+        <div class="pt-space-sm mt-1 border-t border-surface-variant/40">
+          <a routerLink="/products" class="w-full flex items-center justify-center gap-1 py-2 px-space-md rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-all font-semibold text-xs cursor-pointer">
+            <span>Quản lý tồn kho ngay</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL XEM & XUẤT BÁO CÁO TUẦN QUẢN TRỊ CHI TIẾT (STITCH UI) -->
+  <!-- ============================================================== -->
+  <div *ngIf="isWeeklyReportModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 sm:p-6 overflow-y-auto">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-variant/50 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-space-lg bg-[#0A2540] text-white flex items-center justify-between border-b border-surface-variant/20">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+            <span class="material-symbols-outlined text-2xl">analytics</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-lg sm:text-xl font-bold tracking-tight">Báo Cáo Doanh Thu &amp; Vận Hành Tuần</h3>
+            <p class="text-xs text-secondary-fixed mt-0.5 font-medium flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">calendar_month</span>
+              <span>Kỳ đối soát: {{ weeklyReport?.dateRangeLabel || dateRangeLabel }}</span>
+            </p>
+          </div>
+        </div>
+        <button (click)="closeWeeklyReportModal()" class="w-8 h-8 rounded-lg hover:bg-white/10 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Đóng">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-space-lg overflow-y-auto space-y-space-md text-on-surface">
+        
+        <!-- Dãy 4 Thẻ KPI Tóm Tắt Tuần -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <!-- KPI 1: Doanh Thu Thuần Tuần -->
+          <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col justify-between">
+            <span class="text-xs text-emerald-800 font-semibold uppercase tracking-wider">Doanh thu thuần tuần</span>
+            <div class="font-bold text-lg text-emerald-950 mt-1 font-mono">
+              {{ formatCurrency(weeklyReport?.totalNetRevenue || 0) }}
+            </div>
+            <span class="text-[11px] text-emerald-700 mt-1">{{ weeklyReport?.paidOrdersCount || 0 }} đơn đã thanh toán</span>
+          </div>
+
+          <!-- KPI 2: Hàng Hoàn Trả -->
+          <div class="p-3.5 rounded-xl bg-purple-50 border border-purple-200 flex flex-col justify-between">
+            <span class="text-xs text-purple-800 font-semibold uppercase tracking-wider">Hàng hoàn trả / đổi trả</span>
+            <div class="font-bold text-lg text-purple-950 mt-1 font-mono">
+              -{{ formatCurrency(weeklyReport?.totalRefundedAmount || 0) }}
+            </div>
+            <span class="text-[11px] text-purple-700 mt-1">Đã khấu trừ khỏi DT thuần</span>
+          </div>
+
+          <!-- KPI 3: Đơn Đã Hủy -->
+          <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 flex flex-col justify-between">
+            <span class="text-xs text-red-800 font-semibold uppercase tracking-wider">Đơn hàng bị hủy</span>
+            <div class="font-bold text-lg text-red-950 mt-1 font-mono">
+              {{ formatCurrency(weeklyReport?.totalCancelledAmount || 0) }}
+            </div>
+            <span class="text-[11px] text-red-700 mt-1">Không tính vào doanh thu</span>
+          </div>
+
+          <!-- KPI 4: Ngày Đạt Đỉnh -->
+          <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col justify-between">
+            <span class="text-xs text-amber-800 font-semibold uppercase tracking-wider">Ngày doanh thu cao nhất</span>
+            <div class="font-bold text-base text-amber-950 mt-1 truncate">
+              {{ weeklyReport?.peakDayLabel || 'Chưa ghi nhận' }}
+            </div>
+            <span class="text-[11px] text-amber-700 mt-1 font-mono font-bold">{{ formatCurrency(weeklyReport?.peakDayRevenue || 0) }}</span>
+          </div>
+        </div>
+
+        <!-- Bảng Liệt Kê Doanh Thu & Vận Hành Từng Ngày Trong Tuần -->
+        <div class="rounded-xl border border-surface-variant/50 overflow-hidden shadow-2xs">
+          <div class="p-3 bg-surface-container-low border-b border-surface-variant/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 class="font-bold text-sm text-primary flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base text-secondary">table_chart</span>
+                <span>Bảng Kê Chi Tiết Từng Ngày Trong Tuần</span>
+              </h4>
+              <p class="text-[11px] text-on-surface-variant mt-0.5">
+                Công thức: <strong>Doanh Thu Thuần = Tiền Thu Được - Giá Trị Hàng Hoàn Trả - Giá Trị Hàng Hủy</strong>
+              </p>
+            </div>
+            <span class="text-xs text-on-surface-variant font-medium">Đối soát đồng bộ từ dữ liệu đơn hàng thực tế</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-surface-container text-on-surface-variant uppercase font-semibold tracking-wider border-b border-surface-variant/40">
+                <tr>
+                  <th class="py-2.5 px-3">Thứ</th>
+                  <th class="py-2.5 px-3">Ngày</th>
+                  <th class="py-2.5 px-3 text-right">Tiền Thu Được</th>
+                  <th class="py-2.5 px-3 text-right text-purple-900">Hàng Hoàn Trả (-)</th>
+                  <th class="py-2.5 px-3 text-center">Đơn Hủy</th>
+                  <th class="py-2.5 px-3 text-right text-red-900">Giá Trị Hủy (-)</th>
+                  <th class="py-2.5 px-3 text-right text-emerald-900 font-bold bg-emerald-50/70 border-x border-emerald-200/60">Doanh Thu Thuần (=)</th>
+                  <th class="py-2.5 px-3 text-center">Đơn Thực Thu</th>
+                  <th class="py-2.5 px-3 text-center">Đánh Giá</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-variant/40 text-on-surface font-body-sm">
+                <tr *ngFor="let day of weeklyReport?.dailyBreakdown" [ngClass]="day.isPeak ? 'bg-secondary/5 font-medium' : 'hover:bg-surface-container-low/40'" class="transition-colors">
+                  <td class="py-2.5 px-3 font-bold" [ngClass]="day.isPeak ? 'text-secondary' : 'text-primary'">
+                    {{ day.dayLabel }}
+                  </td>
+                  <td class="py-2.5 px-3 font-mono text-on-surface-variant">
+                    {{ day.fullDateLabel }}
+                  </td>
+                  <!-- Tiền Thu Được -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.grossRevenue > 0 ? 'text-primary font-semibold' : 'text-outline'">
+                    {{ formatCurrency(day.grossRevenue || 0) }}
+                  </td>
+                  <!-- Tiền Hoàn Trả (-) -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.refundedAmount > 0 ? 'text-purple-700 font-bold' : 'text-outline'">
+                    {{ day.refundedAmount > 0 ? '-' + formatCurrency(day.refundedAmount) : '0đ' }}
+                  </td>
+                  <!-- Đơn Hủy -->
+                  <td class="py-2.5 px-3 text-center">
+                    <span *ngIf="day.cancelledOrders > 0" class="px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold text-[10px]" title="Đơn đã hủy">
+                      {{ day.cancelledOrders }} đơn
+                    </span>
+                    <span *ngIf="day.cancelledOrders === 0" class="text-outline">0</span>
+                  </td>
+                  <!-- Giá Trị Hủy (-) -->
+                  <td class="py-2.5 px-3 text-right font-mono" [ngClass]="day.cancelledAmount > 0 ? 'text-red-700 font-medium' : 'text-outline'">
+                    {{ day.cancelledAmount > 0 ? '-' + formatCurrency(day.cancelledAmount) : '0đ' }}
+                  </td>
+                  <!-- Doanh Thu Thuần (=) -->
+                  <td class="py-2.5 px-3 text-right font-mono font-bold bg-emerald-50/70 border-x border-emerald-200/60" [ngClass]="day.netRevenue > 0 ? 'text-emerald-700' : 'text-outline'">
+                    {{ formatCurrency(day.netRevenue) }}
+                  </td>
+                  <!-- Số Đơn Thực Thu -->
+                  <td class="py-2.5 px-3 text-center font-bold text-primary">
+                    {{ day.paidOrders }}
+                  </td>
+                  <!-- Đánh Giá -->
+                  <td class="py-2.5 px-3 text-center">
+                    <span *ngIf="day.isPeak" class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-bold text-[10px]">
+                      Đạt Đỉnh Tuần
+                    </span>
+                    <span *ngIf="!day.isPeak && day.netRevenue > 0" class="text-emerald-700 text-[11px] font-medium">
+                      Ổn định
+                    </span>
+                    <span *ngIf="day.netRevenue === 0" class="text-outline text-[11px]">
+                      --
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <!-- Hàng Tổng Kết Tuần -->
+              <tfoot class="bg-surface-container font-bold border-t-2 border-surface-variant/60 text-primary">
+                <tr>
+                  <td colspan="2" class="py-3 px-3 uppercase tracking-wider text-xs font-bold">
+                    Tổng Cộng Tuần
+                  </td>
+                  <!-- Tổng Tiền Thu Được -->
+                  <td class="py-3 px-3 text-right text-xs text-primary font-mono font-bold">
+                    {{ formatCurrency(weeklyReport?.totalGrossRevenue || 0) }}
+                  </td>
+                  <!-- Tổng Hoàn Trả (-) -->
+                  <td class="py-3 px-3 text-right text-xs text-purple-800 font-mono font-bold">
+                    -{{ formatCurrency(weeklyReport?.totalRefundedAmount || 0) }}
+                  </td>
+                  <!-- Số Đơn Hủy -->
+                  <td class="py-3 px-3 text-center text-xs text-red-800 font-bold">
+                    --
+                  </td>
+                  <!-- Tổng Hàng Hủy (-) -->
+                  <td class="py-3 px-3 text-right text-xs text-red-800 font-mono font-bold">
+                    -{{ formatCurrency(weeklyReport?.totalCancelledAmount || 0) }}
+                  </td>
+                  <!-- Tổng Doanh Thu Thuần (=) -->
+                  <td class="py-3 px-3 text-right text-sm text-emerald-800 font-mono font-extrabold bg-emerald-100/70 border-x border-emerald-300">
+                    {{ formatCurrency(weeklyReport?.totalNetRevenue || 0) }}
+                  </td>
+                  <td class="py-3 px-3 text-center text-xs font-extrabold text-primary">
+                    {{ weeklyReport?.paidOrdersCount || 0 }}
+                  </td>
+                  <td class="py-3 px-3 text-center text-[11px] text-emerald-800 font-bold">
+                    Đã Trừ Hủy &amp; Hoàn
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Thông Tin Đơn Hàng Giá Trị Cao Nhất -->
+        <div *ngIf="weeklyReport?.highestOrder" class="p-3.5 rounded-xl bg-surface-container-low border border-surface-variant/50 flex items-start gap-3">
+          <span class="material-symbols-outlined text-secondary text-xl shrink-0">workspace_premium</span>
+          <div class="text-xs">
+            <strong class="text-primary font-bold block text-sm">Đơn Hàng Giá Trị Kỷ Lục Trong Tuần:</strong>
+            <p class="text-on-surface-variant mt-0.5 leading-relaxed">
+              Mã đơn <strong class="text-primary font-bold">#{{ weeklyReport.highestOrder.orderCode }}</strong> — Khách hàng: <strong class="text-primary">{{ weeklyReport.highestOrder.customerName }}</strong>.
+              Tác phẩm: <span class="italic text-primary font-semibold">{{ weeklyReport.highestOrder.productName }}</span> với giá trị thực thu đạt <strong class="text-emerald-700 font-mono font-bold text-sm">{{ formatCurrency(weeklyReport.highestOrder.amount) }}</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer & Actions -->
+      <div class="p-space-md bg-surface-container-low border-t border-surface-variant/40 flex flex-wrap items-center justify-between gap-3">
+        <span class="text-xs text-on-surface-variant">
+          Dữ liệu được trích xuất tự động và khớp 100% với trạng thái đơn hàng hiện hành.
+        </span>
+        <div class="flex items-center gap-2">
+          <button (click)="closeWeeklyReportModal()" class="px-4 py-2 rounded-lg border border-surface-variant/60 hover:bg-surface-container text-primary text-xs font-semibold transition-colors cursor-pointer">
+            Đóng
+          </button>
+          <button (click)="downloadReportCsv()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold shadow-sm hover:opacity-90 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-base">download</span>
+            <span>Tải Báo Cáo Excel / CSV</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

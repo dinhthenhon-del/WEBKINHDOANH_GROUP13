@@ -1,0 +1,241 @@
+<div class="max-w-[1440px] mx-auto p-space-xl">
+  <div class="flex flex-col w-full">
+    <!-- Top Headline & Action Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-xl">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-space-xs mb-space-xs">
+          <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">Gốm Sứ Thượng Hạng</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+          <span class="font-label-sm text-label-sm text-outline tracking-wider">Hệ Thống Phân Phối</span>
+        </div>
+        <h1 class="font-headline-xl text-headline-xl text-primary font-bold">Tổng quan Đơn hàng (Dashboard)</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-1">
+          Theo dõi tiến độ, phân bổ trạng thái và doanh thu thuần từ các tác phẩm gốm Thanh Xuân
+        </p>
+      </div>
+      <div class="flex items-center gap-space-md shrink-0">
+        <button (click)="loadStats()" class="flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-primary shadow-sm hover:bg-surface-container transition-all duration-200 font-label-lg text-label-lg border border-surface-variant/40" type="button">
+          <span class="material-symbols-outlined text-lg">refresh</span>
+          <span>Làm mới</span>
+        </button>
+        <a routerLink="/orders/list" class="flex items-center gap-space-xs px-space-lg py-2.5 rounded-lg bg-primary text-on-primary shadow-sm hover:bg-[#000f22] hover:shadow-md transition-all duration-200 font-label-lg text-label-lg">
+          <span class="material-symbols-outlined text-lg">format_list_bulleted</span>
+          <span>Danh sách đơn hàng</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Revenue & High-level KPI Banner -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg mb-space-xl">
+      <!-- Total Revenue -->
+      <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh thu thuần</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-2xl lg:text-3xl text-emerald-700">
+              {{ formatCurrency(stats.totalRevenue) }}
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs text-on-surface-variant text-xs">
+          <span class="material-symbols-outlined text-sm text-emerald-600">verified</span>
+          <span>Doanh thu thuần thực thu từ {{ stats.paidOrdersCount ?? stats.completed }} đơn hàng đã thanh toán (đã trừ hoàn trả)</span>
+        </div>
+      </div>
+
+      <!-- Total Orders Count -->
+      <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Tổng số đơn hàng</span>
+            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-2xl lg:text-3xl">
+              {{ stats.totalOrders }} <span class="font-label-md text-sm text-on-surface-variant font-normal">đơn</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-[#0A2540]/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">receipt_long</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs text-on-surface-variant text-xs">
+          <span class="material-symbols-outlined text-sm text-primary">today</span>
+          <span>Đơn đặt hôm nay: <strong>{{ stats.todayOrders }}</strong> đơn</span>
+        </div>
+      </div>
+
+      <!-- Pending Attention Required -->
+      <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between border border-surface-variant/30 border-l-4 border-l-amber-500">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="font-label-sm text-label-sm text-amber-800 uppercase tracking-wider font-semibold">Cần xử lý ngay</span>
+            <div class="font-headline-lg text-headline-lg text-amber-900 font-bold mt-1 text-2xl lg:text-3xl">
+              {{ stats.pending }} <span class="font-label-md text-sm text-amber-700 font-normal">chờ duyệt</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">hourglass_top</span>
+          </div>
+        </div>
+        <div class="mt-space-md flex items-center gap-space-xs text-xs text-amber-800 font-medium">
+          <button (click)="filterByStatus('pending')" class="hover:underline flex items-center gap-1">
+            <span>Xem đơn chờ xác nhận</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Breakdown Grid (Interactive: Click to Filter) -->
+    <div class="mb-space-xl">
+      <div class="flex items-center justify-between mb-space-md">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-xl">conversion_path</span>
+          <h2 class="font-headline-sm text-lg text-primary font-bold">Thống kê theo trạng thái vận hành</h2>
+        </div>
+        <span class="font-body-sm text-xs text-on-surface-variant">Nhấp vào thẻ để lọc danh sách tương ứng</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-space-md">
+        <!-- 1. Pending -->
+        <div (click)="filterByStatus('pending')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-amber-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-amber-700 font-semibold">Chờ xác nhận</span>
+            <span class="material-symbols-outlined text-amber-600 text-lg">pending_actions</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-amber-900 mt-2">{{ stats.pending }}</div>
+          <div class="font-label-sm text-[11px] text-amber-700 mt-2 flex items-center justify-between group-hover:text-amber-900">
+            <span>Pending</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- 2. Confirmed -->
+        <div (click)="filterByStatus('confirmed')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-blue-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-blue-700 font-semibold">Đã xác nhận</span>
+            <span class="material-symbols-outlined text-blue-600 text-lg">check_circle</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-blue-900 mt-2">{{ stats.confirmed }}</div>
+          <div class="font-label-sm text-[11px] text-blue-700 mt-2 flex items-center justify-between group-hover:text-blue-900">
+            <span>Confirmed</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- 3. Processing -->
+        <div (click)="filterByStatus('processing')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-indigo-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-indigo-700 font-semibold">Xử lý xưởng</span>
+            <span class="material-symbols-outlined text-indigo-600 text-lg">inventory_2</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-indigo-900 mt-2">{{ stats.processing }}</div>
+          <div class="font-label-sm text-[11px] text-indigo-700 mt-2 flex items-center justify-between group-hover:text-indigo-900">
+            <span>Processing</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- 4. Shipping -->
+        <div (click)="filterByStatus('shipping')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-sky-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-sky-700 font-semibold">Đang giao</span>
+            <span class="material-symbols-outlined text-sky-600 text-lg">local_shipping</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-sky-900 mt-2">{{ stats.shipping }}</div>
+          <div class="font-label-sm text-[11px] text-sky-700 mt-2 flex items-center justify-between group-hover:text-sky-900">
+            <span>Shipping</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- 5. Completed -->
+        <div (click)="filterByStatus('completed')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-emerald-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-emerald-700 font-semibold">Hoàn thành</span>
+            <span class="material-symbols-outlined text-emerald-600 text-lg">task_alt</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-emerald-900 mt-2">{{ stats.completed }}</div>
+          <div class="font-label-sm text-[11px] text-emerald-700 mt-2 flex items-center justify-between group-hover:text-emerald-900">
+            <span>Completed</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- 6. Cancelled -->
+        <div (click)="filterByStatus('cancelled')" class="bg-surface-container-lowest p-space-md rounded-xl shadow-xs border border-surface-variant/30 hover:shadow-md hover:border-rose-400 cursor-pointer transition-all flex flex-col justify-between group">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-xs text-rose-700 font-semibold">Đã hủy</span>
+            <span class="material-symbols-outlined text-rose-600 text-lg">cancel</span>
+          </div>
+          <div class="font-headline-md text-2xl font-bold text-rose-900 mt-2">{{ stats.cancelled }}</div>
+          <div class="font-label-sm text-[11px] text-rose-700 mt-2 flex items-center justify-between group-hover:text-rose-900">
+            <span>Cancelled</span>
+            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders Preview Table -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant/30 overflow-hidden">
+      <div class="p-space-lg flex items-center justify-between border-b border-surface-variant/30">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-xl">history</span>
+          <h3 class="font-headline-sm text-base text-primary font-bold">Đơn hàng mới nhất cần theo dõi</h3>
+        </div>
+        <a routerLink="/orders/list" class="text-secondary font-label-md text-xs font-semibold hover:underline flex items-center gap-1">
+          <span>Xem toàn bộ {{ stats.totalOrders }} đơn</span>
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-surface-container-high h-10 font-body-sm text-xs uppercase text-outline font-semibold tracking-wider">
+              <th class="px-space-lg">Mã đơn</th>
+              <th class="px-space-md">Khách hàng</th>
+              <th class="px-space-md">Ngày đặt</th>
+              <th class="px-space-md">Tổng tiền</th>
+              <th class="px-space-md">Trạng thái</th>
+              <th class="pr-space-lg pl-space-md text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container font-body-md text-sm text-on-surface">
+            <tr *ngFor="let order of recentOrders" class="h-14 hover:bg-surface-container-low transition-colors">
+              <td class="px-space-lg font-bold text-primary">#{{ order.orderCode }}</td>
+              <td class="px-space-md">
+                <div class="flex flex-col">
+                  <span class="font-semibold text-on-surface">{{ order.customer?.fullName || order.shippingAddress?.recipientName || 'Khách vãng lai' }}</span>
+                  <span class="text-xs text-outline">{{ order.customer?.phone || order.shippingAddress?.phone }}</span>
+                </div>
+              </td>
+              <td class="px-space-md text-xs text-on-surface-variant">
+                {{ order.createdAt | date:'HH:mm, dd/MM/yyyy' }}
+              </td>
+              <td class="px-space-md font-bold text-on-surface">
+                {{ formatCurrency(order.totalAmount) }}
+              </td>
+              <td class="px-space-md">
+                <span [class]="'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ' + getStatusBadgeClass(order.orderStatus)">
+                  {{ getStatusLabel(order.orderStatus) }}
+                </span>
+              </td>
+              <td class="pr-space-lg pl-space-md text-right">
+                <a [routerLink]="['/orders', order._id || order.orderCode]" class="px-3 py-1 rounded-lg bg-surface-container-high hover:bg-primary hover:text-white text-primary text-xs font-medium transition-colors inline-flex items-center gap-1">
+                  <span>Chi tiết</span>
+                  <span class="material-symbols-outlined text-xs">chevron_right</span>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="recentOrders.length === 0 && !isLoading">
+              <td colspan="6" class="py-8 text-center text-outline">Chưa có dữ liệu đơn hàng gần đây</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

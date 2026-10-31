@@ -1,0 +1,358 @@
+<div class="max-w-[1440px] mx-auto p-space-xl">
+  <div class="flex flex-col w-full space-y-space-lg">
+
+    <!-- Top Headline & Action Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+      <div class="flex flex-col space-y-space-xs">
+        <div class="flex items-center gap-2 text-secondary font-label-sm uppercase tracking-wider font-semibold mb-1">
+          <span class="w-2 h-2 rounded-full bg-secondary shrink-0"></span>
+          <span>Kho vận &amp; Trưng bày nghệ thuật • Làng Gốm Thanh Xuân</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight leading-tight">Quản lý Sản phẩm &amp; Tồn kho</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-1 leading-normal">
+          Danh mục toàn bộ tác phẩm gốm sứ hoàng gia, kiểm định số lượng xuất nhập tồn và cập nhật giá niêm yết
+        </p>
+      </div>
+
+      <!-- Quick Action Group -->
+      <div class="flex items-center gap-space-sm">
+        <button (click)="navigateToNew()" class="inline-flex items-center gap-space-xs px-space-md h-10 rounded-lg bg-primary text-on-primary hover:bg-[#07192c] text-label-lg font-label-lg transition-all shadow-[0_2px_6px_rgba(10,37,64,0.25)] cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-lg">add</span>
+          <span>Thêm sản phẩm mới</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Metric Strip / Inventory Health Snapshot -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <!-- Card 1: Tổng danh mục -->
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container flex items-center justify-between gap-space-sm">
+        <div class="flex flex-col justify-center">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold leading-tight">Tổng danh mục</span>
+          <div class="flex items-baseline gap-1 mt-1.5">
+            <span class="font-headline-md text-headline-md text-primary font-bold leading-none">{{ summary.totalProducts }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">mẫu phẩm</span>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-xl">palette</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Tổng tồn khả dụng -->
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container flex items-center justify-between gap-space-sm">
+        <div class="flex flex-col justify-center">
+          <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold leading-tight">Tổng tồn khả dụng</span>
+          <div class="flex items-baseline gap-1 mt-1.5">
+            <span class="font-headline-md text-headline-md text-primary font-bold leading-none">{{ summary.totalStock }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">chiếc</span>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined text-xl">shelves</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Cảnh báo sắp hết -->
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container flex items-center justify-between gap-space-sm">
+        <div class="flex flex-col justify-center">
+          <span class="font-label-sm text-label-sm text-secondary uppercase font-semibold leading-tight">Cảnh báo sắp hết (≤5)</span>
+          <div class="flex items-baseline gap-1 mt-1.5">
+            <span class="font-headline-md text-headline-md text-secondary font-bold leading-none">{{ summary.lowStockProducts }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">sản phẩm</span>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-secondary-container/60 flex items-center justify-center text-secondary shrink-0">
+          <span class="material-symbols-outlined text-xl">warning</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Hết hàng trong kho -->
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container flex items-center justify-between gap-space-sm">
+        <div class="flex flex-col justify-center">
+          <span class="font-label-sm text-label-sm text-error uppercase font-semibold leading-tight">Hết hàng trong kho</span>
+          <div class="flex items-baseline gap-1 mt-1.5">
+            <span class="font-headline-md text-headline-md text-error font-bold leading-none">{{ summary.outOfStockProducts }}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">tác phẩm</span>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-error-container/60 flex items-center justify-center text-error shrink-0">
+          <span class="material-symbols-outlined text-xl">production_quantity_limits</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Toolbar Card -->
+    <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container space-y-space-md">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-space-md items-center">
+        <!-- Search Input -->
+        <div class="md:col-span-4 relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3 text-outline text-lg pointer-events-none">search</span>
+          <input [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" class="w-full h-10 pl-9 pr-3 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" placeholder="Tìm theo tên hoặc mã SKU tác phẩm..." type="text">
+        </div>
+
+        <!-- Category Filter -->
+        <div class="md:col-span-2">
+          <div class="relative">
+            <select [(ngModel)]="selectedCategory" (change)="onFilterChange()" class="w-full h-10 px-3 pr-8 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+              <option value="">Tất cả danh mục</option>
+              <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }} ({{ cat.productCount || 0 }})</option>
+            </select>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
+          </div>
+        </div>
+
+        <!-- Stock Status Filter -->
+        <div class="md:col-span-2">
+          <div class="relative">
+            <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="w-full h-10 px-3 pr-8 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+              <option value="">Tất cả trạng thái</option>
+              <option value="active">Đang bán</option>
+              <option value="inactive">Ngừng bán</option>
+            </select>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
+          </div>
+        </div>
+
+        <!-- Sorting Filter -->
+        <div class="md:col-span-2">
+          <div class="relative">
+            <select [(ngModel)]="selectedSort" (change)="onFilterChange()" class="w-full h-10 px-3 pr-8 rounded-lg bg-surface-container-low border border-surface-variant font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+              <option value="newest">Mới nhất</option>
+              <option value="price_asc">Giá tăng dần</option>
+              <option value="price_desc">Giá giảm dần</option>
+              <option value="stock_asc">Tồn kho thấp nhất</option>
+              <option value="stock_desc">Tồn kho cao nhất</option>
+            </select>
+            <span aria-hidden="true" class="select-chevron absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"></span>
+          </div>
+        </div>
+
+        <!-- Reset Filter Button -->
+        <div class="md:col-span-2 flex justify-end">
+          <button (click)="resetFilters()" class="w-full md:w-auto inline-flex items-center justify-center gap-space-xs h-10 px-space-md rounded-lg bg-surface-container-low border border-surface-variant text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors font-label-md text-label-md cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-base">restart_alt</span>
+            <span>Đặt lại bộ lọc</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table Container -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container overflow-hidden flex flex-col">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-surface-container bg-surface-container-low/50 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">
+              <th class="py-3 px-space-md font-semibold text-center w-16">Ảnh</th>
+              <th class="py-3 px-space-md font-semibold">Tên sản phẩm</th>
+              <th class="py-3 px-space-md font-semibold w-28">SKU</th>
+              <th class="py-3 px-space-md font-semibold">Bộ sưu tập</th>
+              <th class="py-3 px-space-md font-semibold">Danh mục</th>
+              <th class="py-3 px-space-md font-semibold text-right w-36">Giá niêm yết</th>
+              <th class="py-3 px-space-md font-semibold text-center w-36">Tồn kho</th>
+              <th class="py-3 px-space-md font-semibold text-center w-32">Trạng thái</th>
+              <th class="py-3 px-space-md font-semibold text-right w-36">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container">
+            <!-- Loading Row -->
+            <tr *ngIf="isLoading">
+              <td colspan="9" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined animate-spin text-3xl text-secondary inline-block mb-2">progress_activity</span>
+                <p class="font-body-md">Đang tải danh sách bảo vật gốm sứ...</p>
+              </td>
+            </tr>
+
+            <!-- Empty Row -->
+            <tr *ngIf="!isLoading && !loadError && products.length === 0">
+              <td colspan="9" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline mb-2 inline-block">inventory_2</span>
+                <p class="font-body-md font-medium text-on-surface">Chưa có sản phẩm đã xác minh</p>
+                <p class="font-body-sm text-outline text-xs mt-1">Danh sách chỉ hiển thị dữ liệu có nguồn và ảnh CDN hợp lệ.</p>
+              </td>
+            </tr>
+
+            <!-- Product Data Rows -->
+            <tr *ngFor="let p of products" class="hover:bg-surface-container-low/60 transition-colors">
+              <!-- Cột Ảnh (Hỗ trợ Base64 & URL) -->
+              <td class="py-3.5 px-space-md align-middle text-center">
+                <div class="w-12 h-12 rounded-lg overflow-hidden bg-surface-container shadow-inner border border-surface-variant inline-block shrink-0">
+                  <img *ngIf="getProductImage(p) as imageUrl; else noVerifiedProductImage" [src]="imageUrl" [alt]="p.name" (error)="onProductImageError($event)" class="w-full h-full object-cover" />
+                  <ng-template #noVerifiedProductImage><div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined">image_not_supported</span></div></ng-template>
+                </div>
+              </td>
+
+              <!-- Cột Tên sản phẩm & Men sứ -->
+              <td class="py-3.5 px-space-md align-middle font-medium text-on-surface">
+                <span (click)="editProduct(p)" class="hover:text-primary cursor-pointer transition-colors font-semibold truncate block leading-tight max-w-xs text-sm">
+                  {{ p.name }}
+                </span>
+                <span class="text-xs text-secondary mt-0.5 block font-normal">{{ p.glazeColor || 'Chưa có thông tin men' }}</span>
+              </td>
+
+              <!-- Cột SKU -->
+              <td class="py-3.5 px-space-md align-middle font-mono text-xs font-semibold text-primary">
+                {{ p.sku || 'N/A' }}
+              </td>
+
+              <!-- Cột Bộ sưu tập -->
+              <td class="py-3.5 px-space-md align-middle text-on-surface-variant text-xs">
+                <span class="font-medium text-primary">{{ p.collectionName || 'Chưa có bộ sưu tập' }}</span>
+              </td>
+
+              <!-- Cột Danh mục -->
+              <td class="py-3.5 px-space-md align-middle">
+                <span class="inline-block px-2.5 py-1 rounded-md bg-[#fcf5eb] text-tertiary border border-tertiary/20 font-label-sm text-xs font-semibold">
+                  {{ getCategoryName(p) }}
+                </span>
+              </td>
+
+              <!-- Cột Giá -->
+              <td class="py-3.5 px-space-md text-right font-mono text-primary font-bold align-middle text-sm">
+                {{ (p.price || 0) | number:'1.0-0' }}₫
+              </td>
+
+              <!-- Cột Tồn kho kèm nút chỉnh nhanh -->
+              <td class="py-3.5 px-space-md text-center font-mono align-middle">
+                <div class="inline-flex items-center gap-1.5">
+                  <button (click)="quickStockAdjust(p, -1)" [disabled]="(p.stock || 0) === 0" class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-high text-xs font-bold text-on-surface flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="Giảm 1">-</button>
+                  <span [ngClass]="{
+                    'text-error font-bold': (p.stock || 0) === 0,
+                    'text-secondary font-bold': (p.stock || 0) > 0 && (p.stock || 0) <= 5,
+                    'text-on-surface font-semibold': (p.stock || 0) > 5
+                  }" class="px-2 py-0.5 rounded text-xs min-w-[50px] text-center">
+                    {{ p.stock || 0 }} {{ p.unit || 'chiếc' }}
+                  </span>
+                  <button (click)="quickStockAdjust(p, 1)" class="w-6 h-6 rounded bg-surface-container-low hover:bg-surface-container-high text-xs font-bold text-on-surface flex items-center justify-center cursor-pointer" title="Tăng 1">+</button>
+                </div>
+              </td>
+
+              <!-- Cột Trạng thái -->
+              <td class="py-3.5 px-space-md text-center align-middle">
+                <span *ngIf="p.status === 'active'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+                  <span>Đang bán</span>
+                </span>
+                <span *ngIf="p.status !== 'active'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gray-500 shrink-0"></span>
+                  <span>Ngừng bán</span>
+                </span>
+              </td>
+
+              <!-- Cột Thao tác -->
+              <td class="py-3.5 px-space-md text-right align-middle">
+                <div class="inline-flex items-center justify-end gap-1">
+                  <!-- Sửa -->
+                  <button (click)="editProduct(p)" class="p-1.5 rounded-lg text-secondary hover:bg-secondary-container/50 transition-colors inline-flex items-center justify-center cursor-pointer" title="Chỉnh sửa thông tin">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                  </button>
+
+                  <!-- Bật / Tắt trạng thái bán -->
+                  <button (click)="openPauseModal(p)" class="p-1.5 rounded-lg text-secondary hover:bg-secondary-container/50 transition-colors inline-flex items-center justify-center cursor-pointer" [title]="p.status === 'active' ? 'Ngừng bán' : 'Kích hoạt bán'">
+                    <span class="material-symbols-outlined text-lg">{{ p.status === 'active' ? 'pause_circle' : 'play_circle' }}</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Status Legend Bar -->
+      <div class="px-space-md py-space-sm bg-surface-container-low border-t border-surface-container flex flex-wrap items-center justify-between gap-space-sm text-xs font-medium text-on-surface-variant">
+        <div class="flex items-center gap-1.5 whitespace-nowrap">
+          <span class="material-symbols-outlined text-base text-outline">info</span>
+          <span class="font-semibold text-on-surface">Quy chuẩn trạng thái bán:</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-space-md whitespace-nowrap">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+            <span>Đang bán: <strong class="font-semibold text-on-surface">Hiển thị trên gian hàng khách</strong></span>
+          </span>
+          <span class="text-outline-variant select-none">•</span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-gray-500 shrink-0"></span>
+            <span>Ngừng bán: <strong class="font-semibold text-on-surface">Tạm ẩn khỏi gian hàng</strong></span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination & Total Footer Bar -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-container whitespace-nowrap">
+      <div class="flex items-center gap-space-md">
+        <span class="font-body-md text-sm text-on-surface-variant">
+          Hiển thị <strong class="text-on-surface font-semibold">{{ products.length }}</strong> của <strong class="text-on-surface font-semibold">{{ totalItems }}</strong> sản phẩm
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button [disabled]="page <= 1" (click)="changePage(page - 1)" class="px-3 py-1.5 rounded-lg border border-surface-variant bg-surface-container-low hover:bg-surface-container text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          Trang trước
+        </button>
+        <span class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold font-mono">
+          {{ page }} / {{ totalPages || 1 }}
+        </span>
+        <button [disabled]="page >= totalPages" (click)="changePage(page + 1)" class="px-3 py-1.5 rounded-lg border border-surface-variant bg-surface-container-low hover:bg-surface-container text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          Trang sau
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= STITCH CONFIRMATION MODAL (POPUP) ================= -->
+<div *ngIf="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+  <div class="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container overflow-hidden">
+    <!-- Header Modal -->
+    <div class="p-6 border-b border-surface-container flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-secondary-container text-secondary">
+          <span class="material-symbols-outlined text-2xl">{{ modalMode === 'notice' ? 'info' : modalAction === 'stock' ? 'inventory_2' : 'pause_circle' }}</span>
+        </div>
+        <div>
+          <h3 class="font-headline-sm text-lg text-primary font-bold">{{ modalTitle }}</h3>
+          <span *ngIf="targetProduct" class="text-xs text-on-surface-variant">Mã tác phẩm: {{ targetProduct.sku || targetProduct._id }}</span>
+        </div>
+      </div>
+      <button (click)="closeConfirmModal()" [disabled]="modalLoading" aria-label="Đóng thông báo" class="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-outline cursor-pointer disabled:opacity-40">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+
+    <!-- Body Modal -->
+    <div class="p-6 space-y-4">
+      <div *ngIf="targetProduct" class="flex items-center gap-4 p-3 bg-surface-container-low rounded-xl">
+        <img *ngIf="targetProduct && getProductImage(targetProduct) as imageUrl" [src]="imageUrl" (error)="onProductImageError($event)" class="w-14 h-14 rounded-lg object-cover border border-surface-variant" />
+        <div class="flex flex-col min-w-0">
+          <span class="font-bold text-sm text-primary truncate">{{ targetProduct?.name }}</span>
+          <span class="text-xs text-secondary font-semibold">{{ targetProduct?.glazeColor }} • {{ (targetProduct?.price || 0) | number:'1.0-0' }}₫</span>
+          <span class="text-[11px] text-outline">Tồn kho hiện hữu: {{ targetProduct?.stock || 0 }} {{ targetProduct?.unit || 'chiếc' }}</span>
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container-low p-3.5 text-sm leading-relaxed text-on-surface-variant">
+        {{ modalNotice }}
+      </div>
+    </div>
+
+    <!-- Footer Modal Actions -->
+    <div class="p-6 bg-surface-container-low border-t border-surface-container flex items-center justify-end gap-3">
+      <button *ngIf="modalMode === 'confirm'" (click)="closeConfirmModal()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container transition-colors cursor-pointer" type="button">
+        Hủy bỏ
+      </button>
+      <button *ngIf="modalMode === 'confirm'" (click)="executeModalAction()" [disabled]="modalLoading" class="px-5 py-2.5 rounded-lg bg-secondary hover:bg-[#852f0e] text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-md" type="button">
+        <span *ngIf="modalLoading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+        <span>{{ modalConfirmLabel }}</span>
+      </button>
+      <button *ngIf="modalMode === 'notice' && modalCanRetry" (click)="retryProductsLoad()" class="px-5 py-2.5 rounded-lg border border-surface-variant bg-white text-on-surface font-semibold text-xs hover:bg-surface-container cursor-pointer" type="button">
+        Thử tải lại
+      </button>
+      <button *ngIf="modalMode === 'notice'" (click)="closeConfirmModal()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-semibold text-xs hover:bg-[#07192c] cursor-pointer" type="button">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>

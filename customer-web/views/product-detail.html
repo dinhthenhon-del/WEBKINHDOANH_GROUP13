@@ -1,0 +1,321 @@
+<!-- ============================================================== -->
+<!-- GIAO DIỆN CUSTOMER: CHI TIẾT SẢN PHẨM & TRẢI NGHIỆM ĐÁNH GIÁ (STITCH) -->
+<!-- ============================================================== -->
+<div class="flex flex-col w-full bg-[#f8f9fa] min-h-screen" id="productDetailView">
+  <!-- Top Heritage Breadcrumbs Bar -->
+  <section class="w-full bg-[#f3f4f5]/80 py-4 border-b border-[#EBEAE5]">
+    <div class="max-w-[1600px] mx-auto px-4 md:px-12 flex items-center justify-between">
+      <nav class="flex items-center gap-2 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e]">
+        <a class="hover:text-[#000f22] cursor-pointer" onclick="dieuHuong('home')">Trang chủ</a>
+        <span>/</span>
+        <a class="hover:text-[#000f22] cursor-pointer" id="detailBreadcrumbCategory" onclick="dieuHuong('shop')">Gian hàng di sản</a>
+        <span>/</span>
+        <span class="text-[#a23e18] font-semibold truncate max-w-[200px] md:max-w-md" id="detailBreadcrumbTitle">Chi tiết tác phẩm</span>
+      </nav>
+
+      <button
+        onclick="dieuHuong('shop')"
+        class="inline-flex items-center gap-1 text-xs text-[#74777e] hover:text-[#000f22] font-semibold transition-colors cursor-pointer"
+      >
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+        <span>Quay lại gian hàng</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Hero Product Detail Display -->
+  <section class="w-full py-8 md:py-12 bg-[#f8f9fa]">
+    <div class="max-w-[1600px] mx-auto px-4 md:px-12">
+      <!-- Loading State -->
+      <div id="detailLoading" class="py-24 text-center text-[#74777e]">
+        <span class="material-symbols-outlined text-5xl animate-spin text-[#a23e18] mb-3 block">progress_activity</span>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] text-base">Đang mở hồ sơ nghệ phẩm...</p>
+      </div>
+
+      <!-- Main Content (Hidden until loaded) -->
+      <div id="detailContent" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <!-- Column 1: Porcelain Gallery & Visual Archival System (7 Cols) -->
+        <div class="lg:col-span-7 flex flex-col-reverse md:flex-row gap-4">
+          <!-- Thumbnail strip -->
+          <div
+            id="detailThumbsContainer"
+            class="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto shrink-0 justify-start pb-2 md:pb-0 max-h-[550px]"
+          >
+            <!-- Render động các thumbnails -->
+          </div>
+
+          <!-- Main Feature Display Image Frame -->
+          <div class="relative w-full aspect-[4/5] bg-white rounded-xl overflow-hidden shadow-[0_20px_40px_-15px_rgba(10,37,64,0.06),0_1px_3px_0_rgba(10,37,64,0.04)] flex items-center justify-center p-4 md:p-8 border border-[#EBEAE5] group">
+            <!-- Authentic Kiln Stamp Seal watermark -->
+            <div class="absolute top-6 left-6 z-10 flex flex-col items-center pointer-events-none opacity-85">
+              <div class="w-16 h-16 rounded-full bg-[#a23e18]/10 border border-[#a23e18]/20 flex flex-col items-center justify-center p-1 text-center backdrop-blur-sm">
+                <span class="material-symbols-outlined text-[#a23e18] text-xl">verified</span>
+                <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[9px] uppercase tracking-tighter text-[#a23e18] font-bold leading-tight" id="detailKilnBadge">Đã<br>xác minh</span>
+              </div>
+            </div>
+
+            <!-- Active High-Res Main Image -->
+            <img
+              id="detailMainImage"
+              class="w-full h-full object-contain object-center transition-all duration-500 ease-out group-hover:scale-105"
+              src=""
+              alt=""
+            />
+            <div id="detailImageUnavailable" hidden class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#74777e] text-sm">
+              <span class="material-symbols-outlined text-4xl">image_not_supported</span>
+              <span>Ảnh sản phẩm không tải được</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Curatorial Narrative & Acquisition Actions (5 Cols) -->
+        <div class="lg:col-span-5 flex flex-col space-y-5">
+          <!-- Category & Edition Tag -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span
+              id="detailCategoryTag"
+              class="px-3 py-1 bg-[#e7e8e9] rounded-full font-['Plus_Jakarta_Sans',sans-serif] text-xs uppercase tracking-wider text-[#000f22] font-semibold"
+            >
+              
+            </span>
+            <span
+              id="detailEditionTag"
+              class="px-3 py-1 bg-[#ffdead]/40 text-[#604100] border border-[#ffdead] rounded-full font-['Plus_Jakarta_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold flex items-center gap-1"
+            >
+              <span class="material-symbols-outlined text-[13px]">verified</span> Sản phẩm đã xác minh
+            </span>
+          </div>
+
+          <!-- Product Title & SKU -->
+          <div class="space-y-1">
+            <span class="font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#74777e] uppercase tracking-widest font-semibold block" id="detailSku"></span>
+            <h1
+              id="detailTitle"
+              class="font-['Playfair_Display',serif] text-2xl md:text-3xl text-[#000f22] tracking-tight leading-snug font-bold"
+            >
+              
+            </h1>
+
+            <!-- Ratings Strip -->
+            <div class="flex items-center gap-3 pt-1">
+              <div class="flex items-center text-amber-500" id="detailStarGroup">
+                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+              </div>
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-sm font-bold text-[#000f22]" id="detailRatingScore" hidden></span>
+              <span class="text-[#74777e] font-['Plus_Jakarta_Sans',sans-serif] text-xs" id="detailReviewCount">
+                (Chưa có đánh giá)
+              </span>
+            </div>
+          </div>
+
+          <!-- Price & Packaging Inclusions -->
+          <div class="p-4 bg-white rounded-xl border border-[#EBEAE5] shadow-sm space-y-2">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span
+                id="detailPrice"
+                class="font-['Playfair_Display',serif] text-2xl md:text-3xl font-bold text-[#a23e18]"
+              >
+                0 đ
+              </span>
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] bg-[#a23e18]/10 text-[#a23e18] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                Giá niêm yết
+              </span>
+            </div>
+            <p class="text-xs text-[#74777e] font-['Plus_Jakarta_Sans',sans-serif] flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-emerald-700">inventory_2</span>
+              <span id="detailStockStatus">Đang kiểm tra tồn kho...</span>
+            </p>
+          </div>
+
+          <!-- Quantity Selector & Action Buttons -->
+          <div class="space-y-3 pt-2">
+            <!-- Số lượng -->
+            <div class="flex items-center gap-4">
+              <span class="font-['Plus_Jakarta_Sans',sans-serif] text-xs font-semibold text-[#000f22] uppercase tracking-wider">Số lượng:</span>
+              <div class="flex items-center border border-[#EBEAE5] rounded-lg bg-white overflow-hidden shadow-sm">
+                <button
+                  type="button"
+                  onclick="DetailView.decreaseQty()"
+                  class="w-9 h-9 flex items-center justify-center text-[#000f22] hover:bg-[#f3f4f5] transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-base">remove</span>
+                </button>
+                <input
+                  id="detailQtyInput"
+                  type="number"
+                  value="1"
+                  min="1"
+                  readonly
+                  class="w-12 h-9 text-center font-['Plus_Jakarta_Sans',sans-serif] font-bold text-sm bg-transparent border-0 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onclick="DetailView.increaseQty()"
+                  class="w-9 h-9 flex items-center justify-center text-[#000f22] hover:bg-[#f3f4f5] transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-base">add</span>
+                </button>
+              </div>
+              <span class="text-xs text-[#74777e]" id="detailStockAlert"></span>
+            </div>
+
+            <!-- Primary Buttons Group -->
+            <div class="flex items-center gap-3">
+              <!-- Nút Thêm vào giỏ -->
+              <button
+                id="btnAddToCart"
+                type="button"
+                onclick="DetailView.addToCart()"
+                class="flex-1 h-12 rounded-lg bg-[#000f22] text-white hover:bg-[#10162B] transition-all flex items-center justify-center gap-2 font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-sm shadow-sm cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-xl">shopping_bag</span>
+                <span>Thêm vào giỏ chế tác</span>
+              </button>
+
+              <!-- Nút Yêu thích (Wishlist Heart) -->
+              <button
+                id="btnDetailFavorite"
+                type="button"
+                onclick="DetailView.toggleFavorite()"
+                class="w-12 h-12 rounded-lg border border-[#EBEAE5] bg-white text-[#a23e18] hover:bg-[#f3f4f5] transition-all flex items-center justify-center shadow-sm cursor-pointer"
+                title="Lưu vào danh sách yêu thích"
+              >
+                <span class="material-symbols-outlined text-2xl" id="detailHeartIcon">favorite_border</span>
+              </button>
+            </div>
+
+            <!-- Nút Tự thiết kế 2D (Nếu hỗ trợ) -->
+            <div id="custom2DSection" class="pt-1">
+              <button
+                type="button"
+                onclick="dieuHuong('custom-2d')"
+                class="w-full h-11 rounded-lg border-2 border-[#a23e18] text-[#a23e18] hover:bg-[#a23e18] hover:text-white transition-all flex items-center justify-center gap-2 font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-xs uppercase tracking-wider cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-lg">palette</span>
+                <span>Tự thiết kế tác phẩm này (Custom 2D)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Specifications Table -->
+          <div class="pt-4 border-t border-[#EBEAE5] space-y-3">
+            <h3 class="font-['Plus_Jakarta_Sans',sans-serif] text-xs font-bold text-[#000f22] uppercase tracking-wider">Thông số tác phẩm</h3>
+            <div class="grid grid-cols-2 gap-2 text-xs font-['Plus_Jakarta_Sans',sans-serif]">
+              <div class="bg-white p-2.5 rounded-lg border border-[#EBEAE5]">
+                <span class="text-[#74777e] block mb-0.5">Kích thước:</span>
+                <span class="font-semibold text-[#000f22]" id="detailSpecSize">Chưa có thông tin</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-[#EBEAE5]">
+                <span class="text-[#74777e] block mb-0.5">Dòng men:</span>
+                <span class="font-semibold text-[#000f22]" id="detailSpecGlaze">Chưa có thông tin</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-[#EBEAE5]">
+                <span class="text-[#74777e] block mb-0.5">Chất liệu:</span>
+                <span class="font-semibold text-[#000f22]" id="detailSpecMaterial">Chưa có thông tin</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-[#EBEAE5]">
+                <span class="text-[#74777e] block mb-0.5">Nhiệt độ nung:</span>
+                <span class="font-semibold text-[#000f22]" id="detailSpecTemp">Chưa có thông tin</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description Story -->
+          <div class="pt-4 border-t border-[#EBEAE5]">
+            <h3 class="font-['Playfair_Display',serif] text-base font-bold text-[#000f22] mb-2">Câu chuyện chế tác</h3>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs md:text-sm text-[#43474d] leading-relaxed whitespace-pre-line" id="detailDesc">
+              Đang tải câu chuyện tác phẩm...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback & Review Section (Bảo Chứng Thưởng Ngoạn - Stitch Design) -->
+      <div id="productReviewsSection" class="mt-16 pt-12 border-t border-[#EBEAE5]">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] uppercase tracking-[0.25em] text-[#a23e18] font-bold block mb-1">BẢO CHỨNG THƯỞNG NGOẠN</span>
+          <h2 class="font-['Playfair_Display',serif] text-2xl md:text-3xl lg:text-4xl font-bold text-[#000f22] tracking-tight">Đánh Giá & Cảm Nhận Từ Nhà Sưu Tầm</h2>
+          <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs md:text-sm text-[#43474d] mt-2 leading-relaxed">
+            Tiếng nói chân thực từ những người trân quý giá trị thủ công độc bản và di sản nung củi Bát Tràng trên khắp ba miền.
+          </p>
+        </div>
+
+        <!-- Rating Summary Box -->
+        <div class="bg-white rounded-2xl border border-[#EBEAE5] shadow-sm p-6 sm:p-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex items-center gap-6">
+            <div>
+              <div class="font-['Playfair_Display',serif] text-5xl font-bold text-[#000f22] leading-none" id="reviewSummaryAverage">5.0</div>
+              <div class="flex items-center gap-1 text-amber-500 my-2" id="reviewSummaryStars">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+              </div>
+              <p class="font-['Plus_Jakarta_Sans',sans-serif] text-xs font-semibold text-[#000f22]">100% Khách Hàng Tuyệt Đối Hài Lòng</p>
+              <p class="font-['Plus_Jakarta_Sans',sans-serif] text-[11px] text-[#74777e] uppercase mt-0.5" id="reviewSummaryTotalDesc">(DỰA TRÊN ĐÁNH GIÁ ĐÃ XÁC THỰC)</p>
+            </div>
+
+            <!-- Star breakdown progress bars -->
+            <div class="hidden sm:flex flex-col gap-1.5 min-w-[200px] border-l border-[#EBEAE5] pl-6 text-xs text-[#74777e]">
+              <div class="flex items-center gap-2">
+                <span class="w-10">5 Sao</span>
+                <div class="w-32 h-2 rounded-full bg-[#f3f4f5] overflow-hidden">
+                  <div class="h-full bg-[#a23e18] rounded-full" id="bar5Star" style="width: 100%;"></div>
+                </div>
+                <span class="w-8 text-right font-semibold" id="pct5Star">100%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-10">4 Sao</span>
+                <div class="w-32 h-2 rounded-full bg-[#f3f4f5] overflow-hidden">
+                  <div class="h-full bg-[#a23e18] rounded-full" id="bar4Star" style="width: 0%;"></div>
+                </div>
+                <span class="w-8 text-right font-semibold" id="pct4Star">0%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-10">3 Sao</span>
+                <div class="w-32 h-2 rounded-full bg-[#f3f4f5] overflow-hidden">
+                  <div class="h-full bg-[#a23e18] rounded-full" id="bar3Star" style="width: 0%;"></div>
+                </div>
+                <span class="w-8 text-right font-semibold" id="pct3Star">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Feedback Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="productReviewsGrid">
+          <div class="col-span-full py-12 text-center text-[#74777e]">
+            <span class="material-symbols-outlined text-4xl animate-spin text-[#a23e18] mb-2 block">progress_activity</span>
+            <p class="font-['Plus_Jakarta_Sans',sans-serif] text-sm">Đang tải cảm nhận nhà sưu tầm...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Products Section -->
+      <div id="relatedSection" class="hidden mt-16 pt-12 border-t border-[#EBEAE5]">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <span class="font-['Plus_Jakarta_Sans',sans-serif] text-xs uppercase tracking-widest text-[#a23e18] font-bold block mb-1">Tuyển Tác Đồng Điệu</span>
+            <h2 class="font-['Playfair_Display',serif] text-2xl md:text-3xl font-bold text-[#000f22]">Các Tác Phẩm Cùng Dòng Men</h2>
+          </div>
+          <button
+            onclick="dieuHuong('shop')"
+            class="text-xs text-[#a23e18] font-bold hover:underline flex items-center gap-1"
+          >
+            <span>Khám phá toàn bộ</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="relatedProductsGrid">
+          <!-- Render động tác phẩm liên quan -->
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

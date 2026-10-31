@@ -1,0 +1,412 @@
+<!-- customer-web/views/order-detail.html -->
+<!-- Chi Tiết Đơn Hàng & Theo Dõi Trạng Thái - Minh Gốm Haute Porcelain 1705 (Chuẩn Thiết Kế Stitch) -->
+<div class="flex flex-col w-full bg-[#f8f9fa] min-h-screen text-[#191c1d] font-['Plus_Jakarta_Sans',sans-serif]">
+
+  <!-- Sub-navigation & Royal Breadcrumb -->
+  <section class="w-full bg-[#f3f4f5]/70 py-4 shadow-xs border-b border-[#EBEAE5]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-wrap items-center justify-between gap-3">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-[13px] text-[#43474d]">
+        <a class="hover:text-[#000f22] transition-colors cursor-pointer" onclick="if(window.dieuHuong) window.dieuHuong('home')">Trang chủ</a>
+        <span class="text-[#c4c6ce] text-[11px]">/</span>
+        <a class="hover:text-[#000f22] transition-colors cursor-pointer" onclick="if(window.dieuHuong) window.dieuHuong('profile')">Tài khoản thượng khách</a>
+        <span class="text-[#c4c6ce] text-[11px]">/</span>
+        <a class="hover:text-[#000f22] transition-colors cursor-pointer" onclick="if(window.dieuHuong) window.dieuHuong('profile', null, 'orders')">Lịch sử đơn hàng</a>
+        <span class="text-[#c4c6ce] text-[11px]">/</span>
+        <span id="detail-breadcrumb-code" class="text-[#000f22] font-semibold">Chi tiết đơn hàng #...</span>
+      </nav>
+      <a class="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-wider text-[#000f22] hover:text-[#a23e18] transition-colors cursor-pointer font-semibold" 
+         onclick="if(window.dieuHuong) window.dieuHuong('profile', null, 'orders')">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Quay lại Danh sách đơn hàng</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Main Order Dossier Container -->
+  <div class="max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8">
+    
+    <!-- Order Header Panel -->
+    <header class="w-full bg-white rounded-xl p-6 sm:p-8 shadow-sm relative overflow-hidden border border-[#EBEAE5]">
+      <!-- Watermark Seal Ornament -->
+      <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-[#f3f4f5]/60 pointer-events-none flex items-center justify-center select-none opacity-40">
+        <span class="font-['Playfair_Display',serif] text-[#a23e18]/30 text-5xl italic font-bold">1705</span>
+      </div>
+
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="text-[11px] uppercase tracking-widest px-2.5 py-1 rounded bg-[#EBEAE5]/70 text-[#43474d] font-semibold">
+              Ngự Phẩm Cung Đình
+            </span>
+            <span class="text-[#c4c6ce]">•</span>
+            <time id="detail-order-time" class="text-[13px] text-[#43474d] flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-[#74777e]">schedule</span>
+              --:-- - --/--/----
+            </time>
+          </div>
+
+          <div class="flex flex-wrap items-baseline gap-4 mt-1">
+            <h1 class="font-['Playfair_Display',serif] text-3xl sm:text-[38px] text-[#000f22] tracking-tight">
+              Đơn Hàng <span id="detail-order-code" class="font-normal text-[#a23e18]">#...</span>
+            </h1>
+
+            <!-- Status Badges Dynamic Container -->
+            <div id="detail-order-badges" class="flex flex-wrap items-center gap-2">
+              <span id="detail-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0a2540] text-white text-[12px] tracking-wider uppercase shadow-xs">
+                <span class="w-2 h-2 rounded-full bg-[#ffb59c] animate-ping"></span>
+                <span id="detail-status-text">Đang Xử Lý</span>
+              </span>
+              <span id="detail-payment-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e7e8e9] text-[#000f22] text-[12px] tracking-wider uppercase">
+                <span class="material-symbols-outlined text-[15px] text-[#a23e18]">verified</span>
+                <span id="detail-payment-text">Chưa Thanh Toán</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Top Actions -->
+        <div class="flex flex-wrap items-center gap-3">
+          <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded bg-[#edeeef] hover:bg-[#e7e8e9] text-[#000f22] text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">print</span>
+            <span>In hóa đơn / Chứng thư (PDF)</span>
+          </button>
+          
+          <button id="detail-btn-cancel" onclick="OrdersModule.cancelCurrentOrderDetail()" 
+                  class="hidden inline-flex items-center gap-2 px-5 py-2.5 rounded bg-white hover:bg-red-50 text-[#ba1a1a] border border-[#ba1a1a]/40 text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">cancel</span>
+            <span>Hủy Đơn Hàng</span>
+          </button>
+
+          <button id="detail-btn-return" onclick="OrdersModule.openReturnModalFromDetail()" 
+                  class="hidden inline-flex items-center gap-2 px-5 py-2.5 rounded bg-white hover:bg-secondary/10 text-primary border border-secondary/40 text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[18px]">assignment_return</span>
+            <span>Yêu cầu đổi / trả</span>
+          </button>
+
+          <!-- Nút Chứng thư bảo trợ và Tư vấn đã được gỡ theo yêu cầu -->
+        </div>
+      </div>
+
+      <!-- 5-Stage Stepper Track -->
+      <div class="mt-8 pt-6 bg-[#f8f9fa] rounded-xl p-4 sm:p-6 border border-[#EBEAE5]">
+        <h2 id="detail-stepper-title" class="text-[12px] uppercase tracking-[0.2em] text-[#43474d] mb-6 flex items-center gap-2 font-bold">
+          <span class="material-symbols-outlined text-[18px] text-[#a23e18]">route</span>
+          <span>Tiến trình chế tác & phụng vận</span>
+        </h2>
+
+        <!-- Track Đơn hàng mặc định -->
+        <div id="track-order-flow" class="relative w-full max-w-4xl mx-auto px-2">
+          <!-- Background Bar -->
+          <div class="absolute top-5 left-8 right-8 h-1 bg-[#e1e3e4] rounded z-0"></div>
+          <!-- Active Progress Bar -->
+          <div id="detail-stepper-progress" class="absolute top-5 left-8 h-1 bg-[#a23e18] transition-all duration-500 rounded z-0" style="width: 25%;"></div>
+
+          <!-- 5 Steps Grid -->
+          <div class="relative grid grid-cols-5 gap-2 text-center z-10" id="detail-stepper-steps">
+            <!-- Step 1: Pending -->
+            <div class="flex flex-col items-center" id="stepper-step-1">
+              <div class="w-10 h-10 rounded-full bg-[#0a2540] text-white flex items-center justify-center text-[15px] shadow-xs">
+                <span class="material-symbols-outlined text-[20px]">done</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#000f22] font-semibold">Chờ duyệt</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-1">Khởi tạo</span>
+            </div>
+
+            <!-- Step 2: Confirmed -->
+            <div class="flex flex-col items-center" id="stepper-step-2">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]">Đã xác nhận</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-2">Duyệt phôi</span>
+            </div>
+
+            <!-- Step 3: Shipping / Crafting -->
+            <div class="flex flex-col items-center" id="stepper-step-3">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]">Đang chế tác</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-3">Lò củi 1380°C</span>
+            </div>
+
+            <!-- Step 4: Shipping -->
+            <div class="flex flex-col items-center" id="stepper-step-4">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]">Vận chuyển</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-4">Hòm gỗ</span>
+            </div>
+
+            <!-- Step 5: Completed -->
+            <div class="flex flex-col items-center" id="stepper-step-5">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">task_alt</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="stepper-title-5">Hoàn tất</span>
+              <span class="text-[11px] text-[#74777e]" id="stepper-time-5">Đã nhận</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Track Đổi trả (Hiện khi đơn có yêu cầu đổi trả) -->
+        <div id="track-return-flow" class="hidden relative w-full max-w-3xl mx-auto px-2">
+          <!-- Background Bar -->
+          <div class="absolute top-5 left-12 right-12 h-1 bg-[#e1e3e4] rounded z-0"></div>
+          <!-- Active Progress Bar -->
+          <div id="return-stepper-progress" class="absolute top-5 left-12 h-1 bg-purple-700 transition-all duration-500 rounded z-0" style="width: 33%;"></div>
+
+          <!-- 3 Steps Grid for Return -->
+          <div class="relative grid grid-cols-3 gap-2 text-center z-10" id="return-stepper-steps">
+            <div class="flex flex-col items-center" id="return-step-1">
+              <div class="w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-[15px] shadow-xs">
+                <span class="material-symbols-outlined text-[20px]">assignment_return</span>
+              </div>
+              <span class="mt-2 text-[13px] text-purple-950 font-bold">Gửi yêu cầu đổi trả</span>
+              <span class="text-[11px] text-[#74777e]">Đã tiếp nhận hồ sơ</span>
+            </div>
+
+            <div class="flex flex-col items-center" id="return-step-2">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">hourglass_top</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="return-step-2-title">Ban thẩm định xử lý</span>
+              <span class="text-[11px] text-[#74777e]" id="return-step-2-sub">Kiểm định phôi/vết nứt</span>
+            </div>
+
+            <div class="flex flex-col items-center" id="return-step-3">
+              <div class="w-10 h-10 rounded-full bg-[#e7e8e9] text-[#74777e] flex items-center justify-center text-[15px]">
+                <span class="material-symbols-outlined text-[20px]">price_check</span>
+              </div>
+              <span class="mt-2 text-[13px] text-[#74777e]" id="return-step-3-title">Kết quả & Hoàn tiền</span>
+              <span class="text-[11px] text-[#74777e]" id="return-step-3-sub">Quyết định xưởng lò</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông báo hủy đơn nếu trạng thái là cancelled -->
+        <div id="detail-cancelled-banner" class="hidden mt-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3 text-red-900">
+          <span class="material-symbols-outlined text-[22px] text-red-600 shrink-0">cancel</span>
+          <div class="flex-1 text-[13px]">
+            <strong class="font-bold">Đơn hàng này đã bị hủy.</strong>
+            <p id="detail-cancelled-reason" class="text-red-700 mt-0.5">Lý do: Khách hàng tự hủy</p>
+          </div>
+        </div>
+
+        <!-- Thông báo Chấp nhận đổi trả & Hoàn tiền -->
+        <div id="detail-return-approved-banner" class="hidden mt-6 p-4 rounded-lg bg-emerald-50 border border-emerald-300 flex items-start gap-3 text-emerald-950">
+          <span class="material-symbols-outlined text-[24px] text-emerald-600 shrink-0">verified</span>
+          <div class="flex-1 text-[13px]">
+            <strong class="font-bold text-emerald-900 block text-[14px]">Xưởng gốm đã chấp nhận yêu cầu đổi trả!</strong>
+            <p class="text-emerald-800 mt-1 leading-relaxed">
+              Số tiền <strong id="detail-return-refund-amount" class="text-emerald-900 font-bold font-serif text-[15px]">-- ₫</strong> đã được duyệt hoàn trả về tài khoản của quý khách. Nhân sự xưởng sẽ liên hệ tiếp nhận tác phẩm tại tư gia.
+            </p>
+          </div>
+        </div>
+
+        <!-- Thông báo Từ chối đổi trả kèm Lý do từ chối -->
+        <div id="detail-return-rejected-banner" class="hidden mt-6 p-4 rounded-lg bg-amber-50 border border-amber-300 flex items-start gap-3 text-amber-950">
+          <span class="material-symbols-outlined text-[24px] text-amber-600 shrink-0">report</span>
+          <div class="flex-1 text-[13px]">
+            <strong class="font-bold text-amber-900 block text-[14px]">Yêu cầu đổi trả không được chấp thuận</strong>
+            <p class="text-amber-900 mt-1">
+              <strong>Lý do từ chối:</strong> <span id="detail-return-rejected-reason" class="italic text-amber-950 font-medium font-serif">--</span>
+            </p>
+            <p class="text-[12px] text-amber-800/90 mt-1">
+              Mọi thắc mắc cần phúc khảo, quý khách vui lòng liên hệ hotline ban nghệ nhân để được hỗ trợ trực tiếp.
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Two-Column Editorial Body -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT COLUMN: Items & Shipping (8 columns out of 12) -->
+      <div class="lg:col-span-8 flex flex-col gap-8">
+        
+        <!-- Artifacts List Section -->
+        <section class="bg-white rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 border border-[#EBEAE5]">
+          <div class="flex items-center justify-between pb-4 bg-[#f8f9fa] px-4 py-3 rounded-lg border border-[#EBEAE5]">
+            <h2 class="font-['Playfair_Display',serif] text-xl text-[#000f22] flex items-center gap-2 font-bold">
+              <span class="material-symbols-outlined text-[#a23e18]">inventory_2</span>
+              <span id="detail-items-count-title">Danh Tác Trong Đơn Hàng</span>
+            </h2>
+            <span class="text-[11px] uppercase tracking-widest text-[#74777e] font-semibold">Quy chuẩn gốc lò Bát Tràng</span>
+          </div>
+
+          <!-- Product Cards Container -->
+          <div id="detail-items-container" class="flex flex-col gap-6">
+            <!-- Loading placeholder -->
+            <div class="py-8 text-center text-[#74777e] text-[13px]">
+              Đang tải danh sách tác phẩm gốm sứ...
+            </div>
+          </div>
+        </section>
+
+        <!-- Shipping & Delivery Address Section -->
+        <section class="bg-white rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6 border border-[#EBEAE5]">
+          <div class="flex items-center justify-between pb-4 bg-[#f8f9fa] px-4 py-3 rounded-lg border border-[#EBEAE5]">
+            <h2 class="font-['Playfair_Display',serif] text-xl text-[#000f22] flex items-center gap-2 font-bold">
+              <span class="material-symbols-outlined text-[#a23e18]">pin_drop</span>
+              Thông Tin Vận Chuyển & Giao Nhận
+            </h2>
+            <span class="text-[11px] text-[#74777e] uppercase tracking-wider font-semibold">Mạng lưới vận chuyển bảo an</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Recipient Information -->
+            <div class="p-5 rounded-xl bg-[#f8f9fa] flex flex-col gap-3 border border-[#EBEAE5]">
+              <span class="text-[12px] text-[#74777e] uppercase tracking-wider font-bold">Người nhận ngự phẩm</span>
+              <div class="flex items-center gap-3">
+                <div id="detail-recipient-avatar" class="w-10 h-10 rounded-full bg-[#0a2540] text-white flex items-center justify-center text-[14px] font-bold shrink-0">
+                  QK
+                </div>
+                <div>
+                  <h4 id="detail-recipient-name" class="text-[16px] text-[#000f22] font-bold">Quý khách</h4>
+                  <p class="text-[13px] text-[#74777e]">Điện thoại: <span id="detail-recipient-phone" class="font-semibold text-[#000f22]">--</span></p>
+                </div>
+              </div>
+              <div class="mt-2 pt-3 border-t border-[#EBEAE5]">
+                <span class="text-[11px] text-[#74777e] uppercase tracking-wider block font-semibold">Địa chỉ giao hàng</span>
+                <p id="detail-recipient-address" class="text-[14px] text-[#000f22] mt-1 font-medium leading-relaxed">
+                  --
+                </p>
+              </div>
+            </div>
+
+            <!-- Artisan Courier Notes -->
+            <div class="p-5 rounded-xl bg-[#f8f9fa] flex flex-col justify-between gap-3 border border-[#EBEAE5]">
+              <div>
+                <span class="text-[12px] text-[#a23e18] uppercase tracking-wider flex items-center gap-1 font-bold">
+                  <span class="material-symbols-outlined text-[16px]">priority_high</span>
+                  Chỉ thị an toàn vận chuyển
+                </span>
+                <p id="detail-recipient-note" class="text-[13px] text-[#43474d] mt-2 italic bg-white p-3 rounded shadow-2xs leading-relaxed border border-[#EBEAE5]">
+                  "Tác phẩm gốm sứ dễ vỡ - yêu cầu giao giờ hành chính và vận chuyển bọc khung gỗ bảo hiểm."
+                </p>
+              </div>
+              <div class="flex items-center gap-2 text-[#74777e] text-[11px] pt-2">
+                <span class="material-symbols-outlined text-[18px] text-[#ac8441]">shelves</span>
+                <span>Kiện hàng được niêm phong hộp gỗ lót lụa gấm và phủ xốp định hình 4 lớp.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN: Financial Summary & Payments (4 columns out of 12) -->
+      <aside class="lg:col-span-4 flex flex-col gap-6">
+        
+        <!-- Order Financial Summary -->
+        <div class="bg-white rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-5 border border-[#EBEAE5]">
+          <h2 class="font-['Playfair_Display',serif] text-xl text-[#000f22] pb-3 border-b border-[#EBEAE5] font-bold">
+            Tổng Hợp Tài Chính
+          </h2>
+          <div class="flex flex-col gap-3 text-[14px]">
+            <div class="flex justify-between items-center text-[#43474d]">
+              <span>Tổng tiền hàng (subtotal)</span>
+              <span id="detail-subtotal" class="font-semibold text-[#000f22]">0 ₫</span>
+            </div>
+            <div class="flex justify-between items-center text-[#43474d]">
+              <span class="flex items-center gap-1">
+                Phí vận chuyển bảo hiểm
+                <span class="material-symbols-outlined text-[16px] text-[#74777e]" title="Miễn phí bảo hiểm ngự phẩm toàn quốc">help_outline</span>
+              </span>
+              <span id="detail-shipping-fee" class="text-[#a23e18] font-semibold uppercase text-[12px]">Miễn phí (0 ₫)</span>
+            </div>
+            <div class="flex justify-between items-center text-[#43474d]">
+              <span>Ưu đãi giám tuyển (discount)</span>
+              <span id="detail-discount" class="text-[#74777e]">0 ₫</span>
+            </div>
+            <div class="pt-4 mt-2 border-t border-[#EBEAE5] flex flex-col gap-1">
+              <div class="flex justify-between items-baseline">
+                <span class="text-[16px] text-[#000f22] font-bold">Tổng thanh toán:</span>
+                <span id="detail-total-amount" class="font-['Playfair_Display',serif] text-[24px] text-[#a23e18] font-bold tracking-tight">
+                  0 ₫
+                </span>
+              </div>
+              <p class="text-[11px] text-[#74777e] text-right">Đã bao gồm thuế giá trị gia tăng & phí bảo hiểm nứt vỡ</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Details Dossier -->
+        <div class="bg-white rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-5 border border-[#EBEAE5]">
+          <div class="flex items-center justify-between pb-3 border-b border-[#EBEAE5]">
+            <h3 class="text-[16px] text-[#000f22] font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#a23e18]">payments</span>
+              Chi Tiết Thanh Toán
+            </h3>
+            <span id="detail-payment-status-badge" class="px-2.5 py-0.5 rounded-full bg-[#e7e8e9] text-[#000f22] text-[11px] font-bold uppercase">
+              Chưa Thanh Toán
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-3 text-[13px]">
+            <div>
+              <span class="text-[11px] text-[#74777e] uppercase tracking-wider block font-semibold">Phương thức thanh toán</span>
+              <p id="detail-payment-method" class="text-[14px] text-[#000f22] font-semibold mt-0.5 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-[#a23e18]">account_balance</span>
+                Thanh toán khi nhận hàng (COD)
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#EBEAE5]">
+              <div>
+                <span class="text-[11px] text-[#74777e] uppercase tracking-wider block font-semibold">Mã giao dịch / Đơn</span>
+                <p id="detail-payment-txn" class="text-[14px] text-[#000f22] font-mono font-bold mt-0.5">--</p>
+              </div>
+              <div>
+                <span class="text-[11px] text-[#74777e] uppercase tracking-wider block font-semibold">Thời gian ghi nhận</span>
+                <p id="detail-payment-time" class="text-[12px] text-[#43474d] font-medium mt-0.5">--</p>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <span class="text-[11px] text-[#74777e] uppercase tracking-wider block font-semibold">Tình trạng ghi nhận</span>
+              <div class="flex items-center gap-2 text-[#000f22] font-medium mt-1">
+                <span class="material-symbols-outlined text-[18px] text-[#a23e18]">check_circle</span>
+                <span id="detail-bank-status-text">Đã tiếp nhận hồ sơ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions & Engagement -->
+          <div class="flex flex-col gap-3 pt-3">
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full py-3 px-4 rounded bg-[#0a2540] hover:bg-[#10162B] text-white text-[12px] uppercase tracking-wider font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer" type="button">
+              <span class="material-symbols-outlined text-[18px]">location_searching</span>
+              <span>Theo Dõi Tiến Trình Trực Tiếp</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Authenticity & Heritage Seal Guarantee -->
+        <div class="bg-[#f3f4f5] rounded-xl p-6 shadow-sm flex items-start gap-4 relative overflow-hidden border border-[#EBEAE5]">
+          <div class="w-14 h-14 rounded-full bg-[#a23e18]/10 shrink-0 flex items-center justify-center text-[#a23e18] border border-[#a23e18]/20">
+            <span class="material-symbols-outlined text-3xl">verified</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <h4 class="text-[15px] text-[#000f22] font-bold">Cam Kết Bảo Trợ Gốm Sứ</h4>
+            <p class="text-[12px] text-[#43474d] leading-relaxed">
+              Mỗi tác phẩm đều được đóng dấu mộc đỏ Bát Tràng và cấp kèm Chứng Thư Giám Tuyển. Làng Gốm Thanh Xuân cam kết đền bù 100% nếu có bất kỳ nứt vỡ nào trong quá trình vận chuyển tận nhà.
+            </p>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Tự động khởi tạo dữ liệu trang chi tiết đơn hàng
+  if (typeof OrdersModule !== 'undefined' && typeof OrdersModule.initOrderDetailPage === 'function') {
+    OrdersModule.initOrderDetailPage(window.currentViewParam);
+  } else if (typeof window.initOrderDetailPage === 'function') {
+    window.initOrderDetailPage(window.currentViewParam);
+  }
+</script>

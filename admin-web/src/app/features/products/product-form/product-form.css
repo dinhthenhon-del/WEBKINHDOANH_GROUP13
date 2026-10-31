@@ -1,0 +1,20 @@
+.product-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  align-items: start;
+  gap: 2.5rem;
+}
+
+.select-chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+@media (max-width: 900px) {
+  .product-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

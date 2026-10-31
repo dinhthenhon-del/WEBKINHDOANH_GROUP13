@@ -1,0 +1,23 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Mac/Windows rác
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+
+# Môi trường (Bảo mật)
+.env
+
+# Angular
+dist/
+.angular/
+
+# Hình ảnh upload thật của Server (chỉ giữ file .gitkeep)
+server/public/uploads/*
+!server/public/uploads/.gitkeep
+
+# Dữ liệu runtime TV2
+server/data/

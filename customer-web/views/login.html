@@ -1,0 +1,164 @@
+<div class="flex flex-col w-full">
+<section class="relative w-full overflow-hidden bg-surface py-space-lg lg:py-space-xl">
+<!-- Fine ambient pottery contour watermark overlay -->
+<div class="pointer-events-none absolute -right-32 -top-24 w-[540px] h-[540px] rounded-full bg-secondary-fixed/15 blur-3xl opacity-60"></div>
+<div class="pointer-events-none absolute -left-24 bottom-0 w-[420px] h-[420px] rounded-full bg-celadon-mist/20 blur-3xl opacity-50"></div>
+<div class="relative max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+<!-- Breadcrumb indicator -->
+<nav class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase mb-space-lg">
+<a class="hover:text-primary transition-colors" onclick="dieuHuong('home')" href="javascript:void(0)">Trang chủ</a>
+<span class="text-celadon-mist">/</span>
+<span class="text-secondary font-semibold">Thượng Khách Đăng Nhập</span>
+</nav>
+<!-- Main Asymmetric Dual-Portal Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-stretch">
+<!-- Left: Login Card (Strict 2 fields ONLY) -->
+<div class="lg:col-span-6 xl:col-span-5 flex flex-col justify-between bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_-15px_rgba(10,37,64,0.06),0_1px_3px_0_rgba(10,37,64,0.04)] p-space-lg md:p-space-xl relative">
+<!-- Titles -->
+<div class="flex flex-col gap-space-xs mb-space-lg">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Đăng Nhập&nbsp;</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-xs leading-relaxed">Chào mừng quý khách quay trở lại với không gian di sản Làng Gốm Thanh Xuân.</p>
+</div>
+<style>
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none !important;
+  }
+</style>
+<!-- Banner thông báo khi tài khoản bị khóa -->
+<div id="loginErrorMessage" class="hidden p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-800 text-body-sm flex items-start gap-2.5">
+  <span class="material-symbols-outlined text-red-600 text-xl shrink-0 mt-0.5">error</span>
+  <span id="loginErrorText" class="font-medium text-sm">Tài khoản của bạn hiện tại đã bị khóa</span>
+</div>
+
+<!-- Strict 2-field form -->
+<form class="flex flex-col gap-space-md" id="collectorLoginForm">
+<!-- Trường 1: Tên đăng nhập -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-title-md text-title-md text-primary flex items-center justify-between" for="collectorUsername">
+<span class="">Tên đăng nhập</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">Email, SĐT hoặc Họ tên</span>
+</label>
+<div class="relative flex items-center rounded-lg bg-surface-container-lowest">
+<span class="material-symbols-outlined absolute left-space-md text-[20px] text-secondary pointer-events-none">shield_person</span>
+<input class="w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface font-body-md text-body-md pl-12 pr-space-md py-space-sm rounded-lg outline-none transition-all duration-200 placeholder:text-outline-variant hover:bg-surface-container" id="collectorUsername" name="collectorUsername" placeholder="Nhập Email, Số điện thoại hoặc Họ tên" required="" type="text">
+</div>
+</div>
+<!-- Trường 2: Mật khẩu -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-title-md text-title-md text-primary" for="collectorPassword">Mật khẩu</label>
+<a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-container transition-colors tracking-wide" href="javascript:void(0)">Quên mật khẩu?</a>
+</div>
+<div class="relative flex items-center rounded-lg bg-surface-container-lowest">
+<span class="material-symbols-outlined absolute left-space-md text-[20px] text-secondary pointer-events-none">lock</span>
+<input class="w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface font-body-md text-body-md pl-12 pr-12 py-space-sm rounded-lg outline-none transition-all duration-200 placeholder:text-outline-variant hover:bg-surface-container" id="collectorPassword" name="collectorPassword" placeholder="Nhập mật khẩu của bạn" required="" type="password">
+<button aria-label="Ẩn hiện mật khẩu" class="absolute right-space-sm p-space-xs text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center cursor-pointer" id="togglePasswordBtn" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Ghi nhớ đăng nhập checkbox -->
+<div class="flex items-center justify-between mt-space-xs">
+<label class="flex items-center gap-space-xs cursor-pointer select-none group">
+<input checked="" class="w-4 h-4 rounded text-primary-container accent-primary-container cursor-pointer transition-all" id="rememberSession" type="checkbox">
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Ghi nhớ đăng nhập trên thiết bị này</span>
+</label>
+</div>
+<!-- Nút bấm chính: Màu nâu đất nung son / Xanh Cobalt hoàng cung -->
+<div class="flex flex-col gap-space-sm mt-space-sm">
+<button class="w-full bg-secondary hover:bg-on-secondary-container active:scale-[0.99] text-on-secondary py-space-sm px-space-lg rounded-lg shadow-md transition-all duration-300 flex items-center justify-center gap-space-sm group cursor-pointer" type="submit">
+<span class="font-title-md text-title-md tracking-wider uppercase">ĐĂNG NHẬP</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">east</span>
+</button>
+</div>
+<!-- Footer liên kết đăng ký -->
+<div class="pt-space-md text-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Chưa có tài khoản? </span>
+<a class="font-title-md text-title-md text-secondary hover:text-on-secondary-container font-semibold transition-colors" href="javascript:void(0)" onclick="dieuHuong('register')" style="cursor:pointer;">Đăng ký ngay</a>
+</div>
+</form>
+<!-- Security note inside card -->
+<div class="mt-space-lg pt-space-md flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[18px] text-on-tertiary-container">encrypted</span>
+<span class="">Mã hóa thông tin giao dịch sứ phẩm theo tiêu chuẩn mật ấn Cung đình.</span>
+</div>
+</div>
+<!-- Right: Curatorial Gallery Module & Artisanal Heritage Panel -->
+<div class="lg:col-span-6 xl:col-span-7 flex flex-col gap-gutter justify-between">
+<!-- Large Atmosphere Showcase Card -->
+<div class="relative bg-deep-indigo-night text-on-primary rounded-xl overflow-hidden p-space-lg md:p-space-xl flex flex-col justify-between min-h-[380px] shadow-xl">
+<!-- Background Image with Scrim -->
+<div class="absolute inset-0 bg-cover bg-center mix-blend-luminosity opacity-35" data-alt="Close up photography of an exquisite master Vietnamese ceramic craftsman in Bat Trang ancient village gently sculpting a fine celadon imperial vase on a traditional potter wheel, golden ambient workshop light, fine clay textures, cobalt glaze droplets, cinematic editorial atmosphere" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuA4MDUK9R2gxl8wvWWayZcLI8izlfqGYsLsf3_hDJP5hkI22rweOP81bIp6cK5Y9kReXWhZOvuP3E_C5SAx1MKL93J1uf4LKW8mNbSRH6jnjNAGEVJ3C_tArdMaY2DzYF9xbcQXdlOx5YOlr9qR_4CNWKhum12aHA-D9CbCe0WpXtukd3ob_SWjxwsWf9NKYQIS8VSrHA6gxVq5nGLsUYVU69r-s_5Lh8kG0dO1Xc9xFsR2SRfzcNBA&quot;);"></div>
+<!-- Radial gradient lighting overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-deep-indigo-night via-deep-indigo-night/80 to-transparent"></div>
+<!-- Top Tagline -->
+<div class="relative z-10 flex items-center justify-between">
+<span class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-porcelain-white/10 backdrop-blur-sm text-on-primary font-label-sm text-label-sm uppercase tracking-widest">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+                Khai đao lộc khánh • Lò bầu 1705
+              </span>
+<span class="font-headline-sm text-headline-sm text-secondary-fixed italic">Làng Gốm Thanh Xuân</span>
+</div>
+<!-- Middle Text Quote -->
+<div class="relative z-10 flex flex-col gap-space-xs my-space-md max-w-lg">
+<span class="font-label-lg text-label-lg tracking-[0.25em] text-secondary-fixed-dim uppercase">Đặc Quyền Của Người Lưu Giữ Di Sản</span>
+<h2 class="font-headline-lg text-headline-lg text-porcelain-white leading-tight font-normal">
+                Chạm vào hồn đất thiêng • Giữ ngọc trân bảo Thăng Long.
+              </h2>
+<p class="font-body-md text-body-md text-celadon-mist leading-relaxed mt-space-xs">
+                Khi đăng nhập với tư cách Thượng khách, quý vị được mở khóa quyển ảnh tư liệu độc bản, quyền đặt trước các bảo vật nung củi và hồ sơ định giá từng kỳ triển lãm quốc tế.
+              </p>
+</div>
+<!-- Curatorial Privileges Mini Bento -->
+<div class="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-space-sm pt-space-sm">
+<div class="bg-porcelain-white/5 backdrop-blur-md p-space-sm rounded-lg flex flex-col gap-space-xs">
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">palette</span>
+<span class="font-title-md text-title-md text-porcelain-white">Thiết Kế 2D</span>
+<span class="font-body-sm text-body-sm text-celadon-mist">Mô phỏng đặt men ngọc &amp; sắc chàm theo dáng sảnh.</span>
+</div>
+<div class="bg-porcelain-white/5 backdrop-blur-md p-space-sm rounded-lg flex flex-col gap-space-xs">
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">history_edu</span>
+<span class="font-title-md text-title-md text-porcelain-white">Chứng Thư Lò Nung</span>
+<span class="font-body-sm text-body-sm text-celadon-mist">Lưu trữ thẻ số hóa dấu ấn nghệ nhân Bát Tràng.</span>
+</div>
+<div class="bg-porcelain-white/5 backdrop-blur-md p-space-sm rounded-lg flex flex-col gap-space-xs">
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">room_service</span>
+<span class="font-title-md text-title-md text-porcelain-white">Giám Tuyển Riêng</span>
+<span class="font-body-sm text-body-sm text-celadon-mist">Hỗ trợ sắp đặt phong thủy tư gia cao cấp 1-kèm-1.</span>
+</div>
+</div>
+</div>
+<!-- Trust & Hotline Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Cam kết bảo mật di sản -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0 text-secondary">
+<span class="material-symbols-outlined text-[26px]">gavel</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-title-md text-title-md text-primary">Bảo Mật Bộ Sưu Tập</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">Danh tính thượng khách và thông tin kiệt tác chuyển giao được bảo chứng tuyệt mật bởi hội đồng di sản Làng Gốm Thanh Xuân.</p>
+</div>
+</div>
+<!-- Tổng đài thượng khách -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed flex items-center justify-center shrink-0 text-secondary">
+<span class="material-symbols-outlined text-[26px]">support_agent</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Đường Dây Nóng Giám Tuyển</span>
+<a class="font-headline-sm text-headline-sm text-primary font-bold hover:text-secondary transition-colors" href="tel:18001705">
+                  1800 1705
+                </a>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Phục vụ thượng khách 24/7 • Không thu phí</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Ceramic Masterwork Preview Ribbon -->
+
+</div>
+</section>
+</div>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="web_standard" name="shell-type">
+  <title>Làng Gốm Thanh Xuân - Haute Porcelain 1705</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="core/base.css">
+
+  <style>
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      overscroll-behavior: none;
+    }
+
+    main > :first-child {
+      margin-top: 0 !important;
+    }
+
+    main > :last-child {
+      margin-bottom: 0 !important;
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    input::-ms-reveal,
+    input::-ms-clear {
+      display: none !important;
+    }
+  </style>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-error-container": "#93000a",
+            "surface-container-low": "#f3f4f5",
+            "secondary-fixed": "#ffdbcf",
+            "on-secondary-fixed-variant": "#822801",
+            "tertiary": "#170c00",
+            "tertiary-fixed-dim": "#edbf76",
+            "outline-variant": "#c4c6ce",
+            "secondary-fixed-dim": "#ffb59c",
+            "error": "#ba1a1a",
+            "primary-container": "#0a2540",
+            "primary-fixed": "#d2e4ff",
+            "surface-container-highest": "#e1e3e4",
+            "tertiary-container": "#332000",
+            "on-primary-container": "#768dad",
+            "surface-variant": "#e1e3e4",
+            "on-secondary-fixed": "#390c00",
+            "deep-indigo-night": "#10162B",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#f0f1f2",
+            "surface-container-lowest": "#ffffff",
+            "background": "#f8f9fa",
+            "surface-container-high": "#e7e8e9",
+            "biscuit-sand": "#EBEAE5",
+            "on-background": "#191c1d",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#d9dadb",
+            "on-surface": "#191c1d",
+            "on-tertiary-fixed": "#281900",
+            "surface-tint": "#49607e",
+            "celadon-mist": "#C8BFB7",
+            "on-primary-fixed": "#001c37",
+            "on-primary": "#ffffff",
+            "porcelain-white": "#FFFFFF",
+            "secondary": "#a23e18",
+            "on-surface-variant": "#43474d",
+            "secondary-container": "#fe8357",
+            "surface-bright": "#f8f9fa",
+            "on-tertiary": "#ffffff",
+            "outline": "#74777e",
+            "on-primary-fixed-variant": "#314865",
+            "primary": "#000f22",
+            "primary-fixed-dim": "#b0c8eb",
+            "tertiary-fixed": "#ffdead",
+            "on-secondary-container": "#6f2000",
+            "on-tertiary-container": "#ac8441",
+            "inverse-primary": "#b0c8eb",
+            "surface": "#f8f9fa",
+            "inverse-surface": "#2e3132",
+            "on-tertiary-fixed-variant": "#604100",
+            "surface-container": "#edeeef",
+            "error-container": "#ffdad6"
+          },
+          borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+          spacing: { gutter: "1.5rem", "space-md": "1rem", "margin-desktop": "4rem", "space-sm": "0.5rem", margin: "1.25rem", "gutter-desktop": "2.5rem", "space-xl": "3.5rem", "margin-tablet": "2.5rem", "space-lg": "2rem", "space-xs": "0.25rem" },
+          fontFamily: {
+            sans: ["'Plus Jakarta Sans'", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+            serif: ["'Playfair Display'", "Georgia", "'Times New Roman'", "serif"],
+            "headline-lg-mobile": ["'Playfair Display'", "serif"],
+            "body-sm": ["'Plus Jakarta Sans'", "sans-serif"],
+            "title-md": ["'Plus Jakarta Sans'", "sans-serif"],
+            "body-md": ["'Plus Jakarta Sans'", "sans-serif"],
+            "headline-md": ["'Playfair Display'", "serif"],
+            "title-lg": ["'Plus Jakarta Sans'", "sans-serif"],
+            "display-hero-mobile": ["'Playfair Display'", "serif"],
+            "label-lg": ["'Plus Jakarta Sans'", "sans-serif"],
+            "display-hero": ["'Playfair Display'", "serif"],
+            "headline-sm": ["'Playfair Display'", "serif"],
+            "body-lg": ["'Plus Jakarta Sans'", "sans-serif"],
+            "headline-lg": ["'Playfair Display'", "serif"],
+            "label-sm": ["'Plus Jakarta Sans'", "sans-serif"]
+          },
+          fontSize: {
+            "headline-lg-mobile": ["28px", { lineHeight: "36px", letterSpacing: "0em", fontWeight: "400" }],
+            "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }],
+            "title-md": ["16px", { lineHeight: "24px", fontWeight: "600" }],
+            "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+            "headline-md": ["28px", { lineHeight: "38px", fontWeight: "400" }],
+            "title-lg": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "display-hero-mobile": ["38px", { lineHeight: "48px", letterSpacing: "-0.01em", fontWeight: "400" }],
+            "label-lg": ["12px", { lineHeight: "16px", letterSpacing: "0.08em", fontWeight: "600" }],
+            "display-hero": ["56px", { lineHeight: "68px", letterSpacing: "-0.02em", fontWeight: "400" }],
+            "headline-sm": ["22px", { lineHeight: "30px", fontWeight: "500" }],
+            "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+            "headline-lg": ["40px", { lineHeight: "52px", letterSpacing: "-0.01em", fontWeight: "400" }],
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.1em", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="bg-background text-on-surface flex flex-col min-h-screen font-sans">
+
+  <!-- 1. THANH NAVBAR CỐ ĐỊNH CHUẨN TRANG CHỦ -->
+  <div id="navbar-header"></div>
+
+  <!-- 2. KHUNG CHỨA VIEWPORT (NƠI KÉO GIAO DIỆN PHÂN HỆ VÀO) -->
+  <main id="app-viewport" class="w-full pt-20 flex-1">
+    <!-- Nội dung phân hệ tự động nạp vào đây -->
+  </main>
+
+  <!-- 3. FOOTER CỐ ĐỊNH -->
+  <div id="footer-container"></div>
+
+  <!-- CORE SCRIPTS -->
+  <script src="core/api.js"></script>
+  <script src="core/products.js"></script>
+  <script src="core/navbar.js"></script>
+  <!-- PHÂN HỆ GIỎ HÀNG, ĐẶT HÀNG & THEO DÕI ĐƠN (THÀNH VIÊN 3 - UC-C05, UC-C06, UC-C07) -->
+  <script src="modules/cart/cart.js"></script>
+  <script src="modules/orders/orders.js"></script>
+  <script src="core/footer.js"></script>
+  <!-- CHATBOT TƯ VẤN NGHỆ NHÂN (THÀNH VIÊN 4 - UC-C09) -->
+  <script src="modules/chatbot/tv4_chatbot.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,753 @@
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif]">
+<!-- Phong cách Phông chữ Đồng Bộ Trang Chủ: Playfair Display (Serif) & Plus Jakarta Sans (Sans-serif) -->
+<style>
+  #modal-return h3, #modal-review h3, .font-playfair, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif !important;
+  }
+  #modal-return, #modal-review, #modal-return input, #modal-return select, #modal-return textarea, #modal-return button,
+  #modal-review input, #modal-review select, #modal-review textarea, #modal-review button {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  }
+</style>
+
+<!-- Toast Alert Containers -->
+<div class="fixed top-24 right-6 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none transition-all duration-300" id="toast-container">
+<!-- Success Toast -->
+<div class="pointer-events-auto bg-primary-container text-on-primary p-4 rounded-lg shadow-2xl border-l-4 border-tertiary-fixed-dim transform transition-all duration-300 flex items-start gap-3 hidden" id="toast-success">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-2xl shrink-0 mt-0.5">verified</span>
+<div class="flex-1">
+<h4 class="font-title-md text-title-md text-on-primary font-semibold mb-0.5" id="toast-title">Chứng thư điện tử</h4>
+<p class="font-body-sm text-body-sm text-surface-container-high leading-relaxed" id="toast-desc">Tài khoản hiện lưu giữ 04 chứng thư độc bản gốc lò Bát Tràng.</p>
+</div>
+<button class="text-surface-container-high hover:text-on-primary transition-colors" onclick="hideToast('toast-success')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Warning / Error Toast -->
+<div class="pointer-events-auto bg-surface-container-lowest text-on-surface p-4 rounded-lg shadow-2xl border-l-4 border-secondary transform transition-all duration-300 flex items-start gap-3 hidden" id="toast-warning">
+<span class="material-symbols-outlined text-secondary text-2xl shrink-0 mt-0.5">warning</span>
+<div class="flex-1">
+<h4 class="font-title-md text-title-md text-secondary font-semibold mb-0.5" id="toast-warning-title">Bảo mật gia tộc</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="toast-warning-desc">Tính năng xác thực 2 lớp qua chìa khóa số triện ký đang bật.</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors" onclick="hideToast('toast-warning')">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Breadcrumbs & Architectural Top Bar -->
+<div class="w-full bg-surface-container-low border-b border-biscuit-sand/80">
+
+</div>
+<!-- Main Curation Workspace -->
+<div class="max-w-7xl mx-auto px-margin-desktop py-space-lg w-full">
+<!-- Grid Layout: Profile Sidebar (4 cols) & Order Atelier Content (8 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- LEFT COLUMN: Profile Dossier (4 cols) -->
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<!-- Collector ID Card -->
+<div class="bg-porcelain-white rounded-xl p-6 shadow-sm border border-biscuit-sand relative overflow-hidden">
+<!-- Background Ceramic Watermark Texture -->
+<div class="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-surface-container-low/60 pointer-events-none flex items-center justify-center">
+<span class="material-symbols-outlined text-8xl text-celadon-mist/20">fingerprint</span>
+</div>
+<div class="flex items-start gap-4 relative z-10">
+<!-- Seal Avatar with Golden Border -->
+<div class="relative group cursor-pointer">
+<div class="w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-on-tertiary-container via-secondary-container to-primary-container shadow-md">
+<div class="w-full h-full rounded-full bg-primary flex flex-col items-center justify-center text-center overflow-hidden border-2 border-porcelain-white">
+<span id="profile-avatar-monogram" class="font-headline-sm text-tertiary-fixed text-lg font-serif">阮</span>
+<span id="profile-avatar-subname" class="font-label-sm text-[9px] uppercase tracking-widest text-on-primary/80">Hoàng Nam</span>
+</div>
+</div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-on-tertiary-container text-on-primary flex items-center justify-center shadow" title="Đã xác thực triện ký">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+</div>
+</div>
+<!-- Member Meta -->
+<div class="flex-1 min-w-0">
+  <div class="flex items-start justify-between">
+    <h2 id="profile-user-name" class="font-headline-sm text-title-lg text-primary font-semibold truncate tracking-tight">Nguyễn Hoàng Nam</h2>
+    <!-- Nút Đăng xuất trên thẻ cá nhân (theo ảnh Stitch của bạn) -->
+    <button onclick="handleLogout()" class="flex flex-col items-center text-on-surface-variant hover:text-[#ba1a1a] transition-colors p-1 rounded hover:bg-surface-container-low cursor-pointer shrink-0 ml-2" title="Đăng xuất khỏi tài khoản">
+      <span class="material-symbols-outlined text-[18px]">logout</span>
+      <span class="font-label-sm text-[10px] font-medium leading-none mt-0.5">Đăng xuất</span>
+    </button>
+  </div>
+</div>
+</div>
+<div class="my-5 border-t border-biscuit-sand/70"></div>
+<!-- Collector Coordinates -->
+<div class="flex flex-col gap-3 font-body-sm text-body-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mt-0.5 shrink-0">mail</span>
+<div class="flex flex-col min-w-0">
+<span class="text-outline text-label-sm">Thư điện tử giám tuyển</span>
+<span id="profile-user-email" class="text-primary font-medium truncate">nam.nguyenhoang@heritage.vn</span>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mt-0.5 shrink-0">call</span>
+<div class="flex flex-col min-w-0">
+<span class="text-outline text-label-sm">Đường dây liên lạc riêng</span>
+<span id="profile-user-phone" class="text-primary font-medium">0918 345 678</span>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant mt-0.5 shrink-0">location_on</span>
+<div class="flex flex-col min-w-0">
+<span class="text-outline text-label-sm">Tư gia tiếp nhận gốm sứ</span>
+<span id="profile-user-address" class="text-primary font-medium leading-relaxed">Biệt thự số 18, Ngõ 12 Đặng Thai Mai, Tây Hồ, Hà Nội</span>
+</div>
+</div>
+</div>
+<!-- VIP Kiln Privileges Mini Banner -->
+
+</div>
+<!-- Account Navigation Tabs (Asymmetric dossier menu) -->
+
+
+<!-- Account Navigation Tabs: 1 Lịch sử đơn hàng, 2 Sản phẩm yêu thích, 3 Đăng xuất tài khoản -->
+<div class="bg-porcelain-white rounded-xl shadow-sm border border-biscuit-sand overflow-hidden flex flex-col">
+  <button id="tab-btn-orders" onclick="switchProfileTab('orders')" class="w-full flex items-center justify-between p-4 bg-primary text-on-primary font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[20px] text-tertiary-fixed-dim">receipt_long</span>
+      <span class="font-body-md text-sm tracking-wide">Lịch sử đơn hàng</span>
+    </div>
+    <span id="profile-order-count" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#c85a32] text-white">03</span>
+  </button>
+  <button id="tab-btn-wishlist" onclick="switchProfileTab('wishlist')" class="w-full flex items-center justify-between p-4 bg-transparent text-primary hover:bg-surface-container-low font-semibold transition-all border-b border-biscuit-sand/40 cursor-pointer">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[20px] text-secondary">favorite</span>
+      <span class="font-body-md text-sm tracking-wide">Sản phẩm yêu thích</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="profile-wishlist-count" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-surface-container-high text-primary">00</span>
+      <span class="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
+    </div>
+  </button>
+  <button onclick="handleLogout()" class="w-full flex items-center justify-between p-4 bg-transparent text-on-surface hover:text-[#ba1a1a] hover:bg-red-50/40 font-semibold transition-all cursor-pointer group">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:text-[#ba1a1a] transition-colors">logout</span>
+      <span class="font-body-md text-sm tracking-wide">Đăng xuất tài khoản</span>
+    </div>
+    <span class="material-symbols-outlined text-[18px] text-outline group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+  </button>
+</div>
+</aside>
+
+<!-- RIGHT COLUMN: Dynamic Switcher Container (8 cols) -->
+<section class="lg:col-span-8 flex flex-col gap-6" id="profile-content-area">
+  <!-- 1. VÙNG XEM LỊCH SỬ ĐƠN HÀNG -->
+  <div id="view-orders-section" class="flex flex-col gap-6">
+    <!-- Top Header & Filter Segment -->
+    <div class="bg-porcelain-white p-6 rounded-xl border border-biscuit-sand shadow-sm flex flex-col gap-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span class="font-label-sm text-label-sm tracking-[0.2em] text-secondary uppercase font-semibold">Kỷ lược giám tuyển</span>
+          <h1 class="font-headline-lg text-headline-sm sm:text-headline-md text-primary font-serif tracking-tight mt-0.5">Lịch Sử Đơn Hàng Tác Phẩm</h1>
+        </div>
+        <!-- Quick Search Order -->
+        <div class="relative w-full sm:w-64">
+          <input class="w-full bg-surface-container-low text-primary text-body-sm py-2 pl-9 pr-3 rounded border border-biscuit-sand focus:outline-none focus:border-primary transition-colors" id="orderSearchInput" onkeyup="filterOrdersBySearch()" placeholder="Tìm theo mã đơn #MG..." type="text">
+          <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-on-surface-variant text-[18px]">search</span>
+        </div>
+      </div>
+      <!-- Status Filter Tabs -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-biscuit-sand/60">
+        <button class="order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-primary text-on-primary font-semibold shadow-sm" onclick="setOrderFilter('all', this)">
+          Tất cả đơn (...)
+        </button>
+        <button class="order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50" onclick="setOrderFilter('pending', this)">
+          Chờ xử lý / Đang xếp lò (...)
+        </button>
+        <button class="order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50" onclick="setOrderFilter('completed', this)">
+          Đã hoàn thành / Đã nhận (...)
+        </button>
+        <button class="order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50" onclick="setOrderFilter('cancelled', this)">
+          Đã hủy (...)
+        </button>
+      </div>
+    </div>
+    <!-- Dynamic Orders List Container (Rendered by OrdersModule) -->
+    <div id="profile-orders-list-container" class="flex flex-col gap-5">
+      <div id="profile-orders-loading" class="p-12 text-center flex flex-col items-center justify-center gap-3">
+        <span class="material-symbols-outlined text-3xl animate-spin text-secondary">progress_activity</span>
+        <p class="font-body-sm text-sm text-on-surface-variant font-medium">Đang tải hồ sơ đơn hàng từ xưởng lò Bát Tràng...</p>
+      </div>
+    </div>
+    <!-- No Orders Found Empty State (Hidden by default) -->
+    <div class="hidden bg-porcelain-white p-12 rounded-xl border border-biscuit-sand text-center flex flex-col items-center justify-center" id="no-orders-state">
+      <div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center text-outline mb-4">
+        <span class="material-symbols-outlined text-3xl">inventory_2</span>
+      </div>
+      <h3 class="font-headline-sm text-headline-sm text-primary font-serif">Không tìm thấy đơn hàng phù hợp</h3>
+      <p class="font-body-sm text-body-sm text-on-surface-variant max-w-md mt-2">
+        Không có tác phẩm nào thỏa mãn điều kiện lọc. Quý khách vui lòng chọn lại bộ lọc hoặc liên hệ hotline xưởng.
+      </p>
+      <button class="mt-5 px-5 py-2.5 rounded bg-primary text-on-primary font-title-md text-body-sm font-medium" onclick="setOrderFilter('all', document.querySelector('.order-filter-btn'))">
+        Xem toàn bộ đơn hàng
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. VÙNG XEM SẢN PHẨM YÊU THÍCH (WISHLIST DÙNG CHUNG HÀM WISHLISTVIEW) -->
+  <div id="view-wishlist-section" class="flex-col gap-6" style="display: none;">
+    <!-- Top Header & Filter Segment -->
+    <div class="bg-porcelain-white p-6 rounded-xl border border-biscuit-sand shadow-sm flex flex-col gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-label-sm text-[11px] uppercase tracking-widest font-semibold mb-1">
+            <span class="material-symbols-outlined text-sm">favorite</span>
+            Bảo Khố Tuyển Chọn Của Quý Khách
+          </div>
+          <h1 class="font-headline-lg text-headline-sm sm:text-headline-md text-primary font-serif tracking-tight mt-0.5">Tuyển Tập Tác Phẩm Yêu Thích</h1>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Danh sách các bảo vật gốm sứ Bát Tràng quý khách đang lưu tâm và ấp ủ đưa về không gian thưởng lãm.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="bg-surface-container-low px-4 py-2 rounded-xl border border-biscuit-sand text-right">
+            <span class="font-label-sm text-xs text-outline block">Số lượng lưu giữ:</span>
+            <span class="font-headline-sm text-lg font-bold text-secondary" id="wishlistCount">0 tác phẩm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid danh sách sản phẩm yêu thích (WishlistView render) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="wishlistGrid">
+      <div class="col-span-full py-16 text-center text-outline">
+        <span class="material-symbols-outlined text-4xl animate-spin text-secondary mb-2 block">progress_activity</span>
+        <p class="font-body-md text-sm">Đang tải danh sách tác phẩm yêu thích...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="wishlistEmpty" class="hidden py-16 text-center max-w-md mx-auto bg-porcelain-white rounded-xl border border-biscuit-sand p-8">
+      <div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center text-outline mx-auto mb-3">
+        <span class="material-symbols-outlined text-3xl text-secondary">favorite_border</span>
+      </div>
+      <h3 class="font-headline-sm text-lg font-bold text-primary mb-1">Chưa có tác phẩm nào được lưu</h3>
+      <p class="font-body-sm text-xs text-on-surface-variant mb-5">
+        Quý khách hãy ghé thăm gian hàng để chiêm ngưỡng và thả tim lưu giữ các kiệt tác men lam, men rạn độc bản.
+      </p>
+      <button
+        type="button"
+        onclick="dieuHuong('shop')"
+        class="h-10 px-5 rounded-lg bg-primary text-on-primary hover:bg-deep-indigo-night transition-colors font-title-md font-semibold text-xs shadow-sm inline-flex items-center gap-2 cursor-pointer"
+      >
+        <span class="material-symbols-outlined text-base">explore</span>
+        <span>Khám phá gian hàng di sản</span>
+      </button>
+    </div>
+  </div>
+</section>
+</div>
+<!-- =========================================================================
+       MODAL 1: RETURN / EXCHANGE FORM (Phiếu Đề Nghị Đổi Trả Gốm Sứ Thượng Phẩm)
+       ========================================================================= -->
+<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity font-['Plus_Jakarta_Sans',sans-serif]" id="modal-return">
+<div class="bg-porcelain-white rounded-xl shadow-2xl border border-biscuit-sand max-w-2xl w-full max-h-[92vh] overflow-y-auto transform transition-transform animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="p-6 bg-surface-container-low border-b border-biscuit-sand flex items-center justify-between sticky top-0 z-10">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">Chính Sách Bảo Toàn Tinh Hoa</span>
+<h3 class="font-['Playfair_Display',serif] text-2xl text-primary font-bold mt-1">
+            Phiếu Đề Nghị Đổi Trả Tác Phẩm Gốm Sứ
+          </h3>
+<p class="font-body-sm text-[13px] text-on-surface-variant mt-0.5" id="modal-return-order-subtitle">Đơn hàng #MG-2025-8899</p>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors cursor-pointer" onclick="closeReturnModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<form class="p-6 flex flex-col gap-5 font-['Plus_Jakarta_Sans',sans-serif]" id="return-form" onsubmit="submitReturnForm(event)">
+<!-- 1. Select Product to Return -->
+<div class="flex flex-col gap-1.5">
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Chọn tác phẩm gốm sứ cần đổi trả</span>
+<span class="text-secondary">*</span>
+</label>
+<select class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif]" id="return-product-select" required="">
+<option value="Bình Gốm Men Lam Cá Chép Vượt Vũ Môn">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn - Bản phục dựng cổ pháp (6.800.000₫)</option>
+<option value="Bộ Trà Tử Sa Men Ngọc Hoàng Gia">Bộ Trà Tử Sa Men Ngọc Hoàng Gia (4.250.000₫)</option>
+<option value="Toàn bộ đơn hàng">Đổi trả toàn bộ đơn hàng (2 tác phẩm)</option>
+</select>
+</div>
+<!-- 2. Return Reason Selector -->
+<div class="flex flex-col gap-1.5">
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Nguyên nhân đề nghị thẩm định &amp; đổi trả</span>
+<span class="text-secondary">*</span>
+</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<input checked="" class="mt-1 accent-primary" name="return_reason" type="radio" value="Nứt rạn men ngoài ý muốn trong quá trình vận chuyển">
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Nứt rạn men ngoài ý muốn trong quá trình vận chuyển</span>
+</label>
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="mt-1 accent-primary" name="return_reason" type="radio" value="Họa tiết không đúng với bản thiết kế 2D đã duyệt">
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Họa tiết không đúng với bản thiết kế 2D đã duyệt</span>
+</label>
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="mt-1 accent-primary" name="return_reason" type="radio" value="Lỗi cốt gốm (bong bóng khí lò nung hoặc cong vênh)">
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
+</label>
+<label class="flex items-start gap-2.5 p-3 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="mt-1 accent-primary" name="return_reason" type="radio" value="Khác">
+<span class="font-body-sm text-[13px] text-on-surface leading-snug">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
+</label>
+</div>
+</div>
+<!-- 3. Detail description -->
+<div class="flex flex-col gap-1.5">
+<label class="font-title-md text-sm text-primary font-semibold flex items-center justify-between">
+<span>Mô tả chi tiết khiếm khuyết hoặc nguyện vọng đổi tác phẩm</span>
+<span class="text-outline text-xs font-normal">Tùy chọn</span>
+</label>
+<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="3"></textarea>
+</div>
+<!-- 4. Upload photo / unboxing video evidence -->
+<div class="flex flex-col gap-1.5">
+<label class="font-title-md text-sm text-primary font-semibold flex items-center gap-1">
+<span>Bằng chứng thị giác (Ảnh chụp vết nứt hoặc video khui hòm gỗ)</span>
+<span class="text-secondary">*</span>
+</label>
+<div class="border-2 border-dashed border-biscuit-sand hover:border-primary/50 rounded-lg p-5 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('file-upload').click()">
+<input accept="image/*,video/*" class="hidden" id="file-upload" multiple="" onchange="handleFileSelect(this)" type="file">
+<div class="flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant">photo_library</span>
+<p class="font-title-md text-sm text-primary font-medium mt-1">Bấm để tải ảnh chụp chi tiết hoặc video</p>
+<p class="font-label-sm text-xs text-outline">Hỗ trợ JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-2 justify-center hidden" id="file-preview-list"></div>
+</div>
+</div>
+<!-- Return Guarantee Badge -->
+<div class="p-3.5 bg-amber-50 rounded-lg border border-amber-200/80 flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-800 text-[20px] shrink-0 mt-0.5">verified</span>
+<p class="font-body-sm text-[12px] text-amber-900 leading-relaxed">
+<strong>Cam kết bảo toàn Làng Gốm Thanh Xuân:</strong> Nghệ nhân xưởng Bát Tràng sẽ đến tận tư gia thẩm định và cử xe chuyên dụng thu hồi an toàn. Toàn bộ chi phí phục chế hoặc hoàn tiền 100% do xưởng bảo trợ.
+          </p>
+</div>
+<!-- Modal Actions -->
+<div class="flex items-center justify-end gap-3 pt-4 border-t border-biscuit-sand">
+<button class="px-5 py-2.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low font-title-md text-sm transition-colors cursor-pointer" onclick="closeReturnModal()" type="button">
+            Hủy thao tác
+          </button>
+<button class="px-6 py-2.5 rounded-lg bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer" type="submit">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span>Gửi Yêu Cầu Đổi Trả</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- =========================================================================
+       MODAL 2: REVIEW ARTWORK FORM (Đánh Giá Tác Phẩm Gốm Sứ)
+       ========================================================================= -->
+<div class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-deep-indigo-night/60 backdrop-blur-sm transition-opacity font-['Plus_Jakarta_Sans',sans-serif]" id="modal-review">
+<div class="bg-porcelain-white rounded-xl shadow-2xl border border-biscuit-sand max-w-lg w-full max-h-[92vh] overflow-y-auto transform transition-transform animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="p-6 bg-surface-container-low border-b border-biscuit-sand flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-bold">Cảm Nhận Nhà Sưu Tập</span>
+<h3 class="font-['Playfair_Display',serif] text-2xl text-primary font-bold mt-1">
+            Đánh Giá Tác Phẩm Gốm Sứ
+          </h3>
+<p class="font-body-sm text-[13px] text-on-surface-variant mt-0.5" id="modal-review-target">Bình Gốm Men Lam Cá Chép Vượt Vũ Môn</p>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center transition-colors cursor-pointer" onclick="closeReviewModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Review Form -->
+<form class="p-6 flex flex-col gap-5 font-['Plus_Jakarta_Sans',sans-serif]" onsubmit="submitReviewForm(event)">
+<!-- 5-Star Ceramic Rating -->
+<div class="flex flex-col items-center justify-center p-4 bg-surface-container-low/40 rounded-lg border border-biscuit-sand">
+<span class="font-label-sm text-xs text-outline uppercase tracking-wider mb-2 font-medium">Độ hoàn thiện &amp; Hồn gốm thủ công</span>
+<div class="flex items-center gap-2" id="star-rating-container">
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="1" onclick="setStarRating(1)" type="button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</button>
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="2" onclick="setStarRating(2)" type="button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</button>
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="3" onclick="setStarRating(3)" type="button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</button>
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="4" onclick="setStarRating(4)" type="button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</button>
+<button class="star-btn text-amber-500 hover:scale-125 transition-transform cursor-pointer" data-star="5" onclick="setStarRating(5)" type="button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</button>
+</div>
+<span class="font-title-md text-sm text-primary font-semibold mt-2" id="rating-text">Tuyệt tác Hoàng Gia (5/5 Sao)</span>
+</div>
+<!-- Glaze & Stroke Critique Feedback -->
+<div class="flex flex-col gap-1.5">
+<label class="font-title-md text-sm text-primary font-semibold">
+            Cảm nhận về chất men, nét vẽ tay &amp; độ đanh tiếng chuông gốm:
+          </label>
+<textarea class="w-full bg-porcelain-white text-primary text-sm p-3 rounded-lg border border-celadon-mist focus:outline-none focus:border-secondary transition-colors font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed" id="review-content" placeholder="Chia sẻ cảm xúc khi bài trí tác phẩm trong không gian tư gia, độ sâu của lớp men lam hoặc cốt đất nung củi..." required="" rows="4"></textarea>
+</div>
+<div class="flex flex-col gap-1.5">
+<span class="font-title-md text-sm text-primary font-semibold">Tải ảnh tác phẩm thực tế tại tư gia (nếu có):</span>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary font-title-md text-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="document.getElementById('review-photo-input').click()" type="button">
+<span class="material-symbols-outlined text-[18px]">add_a_photo</span>
+<span>Đính kèm hình ảnh</span>
+</button>
+<span class="font-label-sm text-xs text-outline" id="review-photo-label">Chưa chọn ảnh</span>
+<input accept="image/*" class="hidden" id="review-photo-input" onchange="handleReviewPhotoSelect(this)" type="file">
+</div>
+</div>
+<!-- Submit Review -->
+<div class="flex items-center justify-end gap-3 pt-3 border-t border-biscuit-sand">
+<button class="px-5 py-2.5 rounded-lg text-on-surface-variant hover:text-primary transition-colors font-title-md text-sm cursor-pointer" onclick="closeReviewModal()" type="button">
+            Đóng
+          </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all font-title-md text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer" type="submit">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Gửi Đánh Giá Di Sản</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Client-side Interactive Logic -->
+<script>
+    // Star Rating State
+    let currentRating = 5;
+    const ratingLabels = {
+      1: 'Cần cải thiện chất lượng (1/5)',
+      2: 'Đạt mức cơ bản (2/5)',
+      3: 'Chất gốm hài lòng (3/5)',
+      4: 'Thượng phẩm tinh xảo (4/5)',
+      5: 'Tuyệt tác Hoàng Gia (5/5 Sao)'
+    };
+
+    function setStarRating(stars) {
+      currentRating = stars;
+      const starButtons = document.querySelectorAll('#star-rating-container .star-btn');
+      starButtons.forEach((btn, index) => {
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (index < stars) {
+          btn.classList.add('text-amber-500');
+          btn.classList.remove('text-outline-variant');
+          icon.style.fontVariationSettings = "'FILL' 1";
+        } else {
+          btn.classList.remove('text-amber-500');
+          btn.classList.add('text-outline-variant');
+          icon.style.fontVariationSettings = "'FILL' 0";
+        }
+      });
+      document.getElementById('rating-text').innerText = ratingLabels[stars] || (stars + '/5 Sao');
+    }
+
+    // Modal Control: Return
+    function openReturnModal(orderCode, orderId, items) {
+      window.activeReturnOrderId = orderId || orderCode;
+      const select = document.getElementById('return-product-select');
+      if (select && Array.isArray(items) && items.length > 0) {
+        select.innerHTML = items.map(it => {
+          const name = it.productName || (it.customization && it.customization.designName) || 'Tác phẩm';
+          return `<option value="${name}">${name} (${Number(it.unitPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
+        }).join('') + '<option value="Toàn bộ đơn hàng">Đổi trả toàn bộ đơn hàng</option>';
+      }
+      const modal = document.getElementById('modal-return');
+      document.getElementById('modal-return-order-subtitle').innerText = 'Đơn hàng #' + (orderCode || orderId);
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeReturnModal() {
+      const modal = document.getElementById('modal-return');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Modal Control: Review
+    function openReviewModal(targetName, productId, orderId) {
+      window.activeReviewProductId = productId;
+      window.activeReviewOrderId = orderId;
+      const modal = document.getElementById('modal-review');
+      document.getElementById('modal-review-target').innerText = targetName;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeReviewModal() {
+      const modal = document.getElementById('modal-review');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Toast Control
+    let toastTimeout;
+    function showToast(typeId, title, message) {
+      // Hide others first
+      document.getElementById('toast-success').classList.add('hidden');
+      document.getElementById('toast-warning').classList.add('hidden');
+
+      const targetToast = document.getElementById(typeId);
+      if (typeId === 'toast-success') {
+        document.getElementById('toast-title').innerText = title;
+        document.getElementById('toast-desc').innerText = message;
+      } else {
+        document.getElementById('toast-warning-title').innerText = title;
+        document.getElementById('toast-warning-desc').innerText = message;
+      }
+
+      targetToast.classList.remove('hidden');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        targetToast.classList.add('hidden');
+      }, 5500);
+    }
+
+    function hideToast(typeId) {
+      document.getElementById(typeId).classList.add('hidden');
+    }
+
+    // Cancellation triggers as requested in requirements
+    function cancelPendingOrder(orderId) {
+      if (confirm('Quý khách có chắc chắn muốn hủy đơn hàng phôi gốm #' + orderId + '? Sau khi hủy, phôi khắc sẽ được trả về kho.')) {
+        showToast(
+          'toast-success',
+          'Đã hủy đơn hàng thành công',
+          'Đã hủy đơn hàng #' + orderId + ' thành công! Minh Gốm đã ghi nhận yêu cầu và xưởng sẽ hoàn tiền trong vòng 24 giờ làm việc.'
+        );
+        // Visual update on the card
+        const card = document.querySelector('[data-order-id="' + orderId + '"]');
+        if (card) {
+          card.classList.add('opacity-75');
+          const badge = card.querySelector('.inline-flex');
+          if (badge) {
+            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant/60 font-label-sm text-label-sm font-semibold';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-outline"></span> Đang xử lý hoàn tiền (Cancelled)';
+          }
+        }
+      }
+    }
+
+    function triggerPendingCancelSuccess() {
+      cancelPendingOrder('MG-2025-9921');
+    }
+
+    function triggerCompletedCancelError() {
+      showToast(
+        'toast-warning',
+        '⚠️ Không thể tự hủy đơn lúc này!',
+        'Đơn hàng #MG-2025-8899 đã hoàn thành và xuất khỏi xưởng lò. Quý khách vui lòng chọn "Yêu cầu đổi trả" hoặc liên hệ Hotline Nghệ Nhân 1900 8899.'
+      );
+    }
+
+    function triggerCancelledOrderClick() {
+      showToast(
+        'toast-warning',
+        '⚠️ Đơn hàng đã đóng hoàn tất',
+        'Không thể tự hủy đơn lúc này! Đơn hàng #MG-2025-7734 đã kết thúc vòng đời lưu ký.'
+      );
+    }
+
+    function downloadHeritageCertificate(orderId) {
+      showToast(
+        'toast-success',
+        'Tải chứng thư di sản thành công',
+        'Đã tạo tệp số hóa PDF có chữ ký triện của Nghệ Nhân Dân Gian Quốc Gia cho đơn hàng #' + orderId + '.'
+      );
+    }
+
+    // Submit Return Form
+    function submitReturnForm(e) {
+      e.preventDefault();
+      closeReturnModal();
+
+      const reasonRadio = document.querySelector('input[name="return_reason"]:checked');
+      const reasonVal = reasonRadio ? reasonRadio.value : 'Yêu cầu thẩm định & đổi trả';
+      const descVal = document.getElementById('return-description') ? document.getElementById('return-description').value : '';
+
+      const activeId = window.activeReturnOrderId;
+      // Vô hiệu hóa và làm mờ nút đổi trả ngay lập tức trên giao diện
+      const targetCard = document.querySelector(`[data-order-id="${activeId}"]`) || document.querySelector(`[data-order-code="${activeId}"]`);
+      if (targetCard) {
+        const retBtn = targetCard.querySelector('button[onclick*="openReturnModal"]');
+        if (retBtn) {
+          retBtn.disabled = true;
+          retBtn.className = 'px-3.5 py-2 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-title-md text-xs font-semibold opacity-60 cursor-not-allowed flex items-center gap-1.5';
+          retBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+        }
+      }
+      const detailRetBtn = document.getElementById('detail-btn-return');
+      if (detailRetBtn) {
+        detailRetBtn.disabled = true;
+        detailRetBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-purple-100 text-purple-800 border border-purple-200 text-[12px] uppercase tracking-wider font-semibold opacity-60 cursor-not-allowed';
+        detailRetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+      }
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
+        ApiService.createReturnRequest({
+          orderId: activeId || '670000000000000000000001',
+          accountId: currentUser._id,
+          type: 'return',
+          reason: reasonVal + (descVal ? ': ' + descVal : '')
+        }, function(err, res) {
+          console.log('Return request API result:', err, res);
+          if (!err && window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+            window.OrdersModule.initProfileOrders();
+          }
+        });
+      }
+
+      showToast(
+        'toast-success',
+        '✅ Tiếp nhận yêu cầu đổi trả thành công!',
+        'Đã tiếp nhận yêu cầu đổi trả thành công! Ban giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự đến tận tư gia hỗ trợ.'
+      );
+      document.getElementById('return-form').reset();
+      const preview = document.getElementById('file-preview-list');
+      if (preview) {
+        preview.innerHTML = '';
+        preview.classList.add('hidden');
+      }
+    }
+
+    // Submit Review Form
+    function submitReviewForm(e) {
+      e.preventDefault();
+      closeReviewModal();
+      const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value : '';
+
+      if (typeof ApiService !== 'undefined' && ApiService.createReview && typeof currentUser !== 'undefined' && currentUser) {
+        ApiService.createReview({
+          accountId: currentUser._id,
+          productId: window.activeReviewProductId || '670000000000000000000001',
+          rating: currentRating,
+          comment: commentVal
+        }, function(err, res) {
+          console.log('Review API result:', err, res);
+        });
+      }
+
+      showToast(
+        'toast-success',
+        'Khắc ghi đánh giá thành công',
+        'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Nhận xét sẽ được lưu truyền vào tuyển tập nhà sưu tầm Minh Gốm.'
+      );
+      document.getElementById('review-content').value = '';
+      document.getElementById('review-photo-label').innerText = 'Chưa chọn ảnh';
+    }
+
+    // Photo input handlers
+    function handleFileSelect(input) {
+      const preview = document.getElementById('file-preview-list');
+      if (input.files && input.files.length > 0) {
+        preview.innerHTML = '';
+        preview.classList.remove('hidden');
+        Array.from(input.files).forEach((file) => {
+          const badge = document.createElement('span');
+          badge.className = 'px-2 py-1 rounded bg-surface-container-high text-primary font-label-sm text-[11px] truncate max-w-[150px]';
+          badge.innerText = '📎 ' + file.name;
+          preview.appendChild(badge);
+        });
+      }
+    }
+
+    function handleReviewPhotoSelect(input) {
+      const label = document.getElementById('review-photo-label');
+      if (input.files && input.files.length > 0) {
+        label.innerText = 'Đã đính kèm ' + input.files.length + ' ảnh thực tế';
+        label.classList.add('text-primary', 'font-medium');
+      }
+    }
+
+    // Order status filter logic
+    function setOrderFilter(status, btnElement) {
+      const buttons = document.querySelectorAll('.order-filter-btn');
+      buttons.forEach(btn => {
+        btn.className = 'order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-surface-container-low text-on-surface-variant hover:text-primary hover:bg-biscuit-sand/50';
+      });
+      btnElement.className = 'order-filter-btn px-4 py-2.5 rounded font-title-md text-body-sm whitespace-nowrap transition-all duration-200 bg-primary text-on-primary font-semibold shadow-sm';
+
+      const cards = document.querySelectorAll('.order-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cardStatus = card.getAttribute('data-status');
+        let isMatch = false;
+        if (status === 'all') {
+          isMatch = true;
+        } else if (status === 'pending') {
+          isMatch = (cardStatus === 'pending' || cardStatus === 'confirmed' || cardStatus === 'processing' || cardStatus === 'shipping');
+        } else {
+          isMatch = (cardStatus === status);
+        }
+
+        if (isMatch) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      const emptyState = document.getElementById('no-orders-state');
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    // Search filter logic
+    function filterOrdersBySearch() {
+      const query = document.getElementById('orderSearchInput').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.order-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(query)) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      const emptyState = document.getElementById('no-orders-state');
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    // Gắn toàn bộ hàm lên window để luôn có thể gọi từ inline onclick
+    window.setStarRating = setStarRating;
+    window.openReturnModal = openReturnModal;
+    window.closeReturnModal = closeReturnModal;
+    window.openReviewModal = openReviewModal;
+    window.closeReviewModal = closeReviewModal;
+    window.showToast = showToast;
+    window.hideToast = hideToast;
+    window.submitReturnForm = submitReturnForm;
+    window.submitReviewForm = submitReviewForm;
+    window.cancelPendingOrder = cancelPendingOrder;
+    window.triggerPendingCancelSuccess = triggerPendingCancelSuccess;
+    window.triggerCompletedCancelError = triggerCompletedCancelError;
+    window.triggerCancelledOrderClick = triggerCancelledOrderClick;
+    window.downloadHeritageCertificate = downloadHeritageCertificate;
+    window.handleFileSelect = handleFileSelect;
+    window.handleReviewPhotoSelect = handleReviewPhotoSelect;
+    window.setOrderFilter = setOrderFilter;
+    window.filterOrdersBySearch = filterOrdersBySearch;
+    if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+      window.OrdersModule.initProfileOrders();
+    }
+  </script>
+
+</div>

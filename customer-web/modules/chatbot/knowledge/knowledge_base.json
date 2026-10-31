@@ -1,0 +1,80 @@
+{
+  "brand": {
+    "name": "Làng Gốm Thanh Xuân",
+    "subTitle": "Kỷ nguyên nghệ thuật gốm sứ - Tinh hoa Gốm Mộc Bát Tràng",
+    "hotline": "1800 1705",
+    "email": "Thuongkhach@langgomthanhxuan.vn",
+    "locations": [
+      {
+        "name": "Cơ sở 1 - Lò Bầu Di Sản & Xưởng Chế Tác",
+        "address": "Thôn 1 Giang Cao, Làng Cổ Bát Tràng, Gia Lâm, Hà Nội",
+        "description": "Tham quan lò nung củi 1.380°C, xem nghệ nhân vuốt gốm, trải nghiệm tự nặn gốm nung mang về. Có bãi đỗ ô tô miễn phí."
+      },
+      {
+        "name": "Cơ sở 2 - Bảo Phủ Giám Tuyển (Showroom Phố Cổ)",
+        "address": "Tầng 2, 24 Tràng Tiền, Quận Hoàn Kiếm, Hà Nội",
+        "description": "Không gian thưởng trà, trưng bày các ngự tác gốm men lam, men rạn dát vàng 24K độc bản."
+      }
+    ],
+    "workingHours": "08:30 – 21:00 hàng ngày (kể cả Thứ 7, Chủ Nhật và ngày Lễ Tết)"
+  },
+  "productCategories": [
+    {
+      "category": "Bộ đồ ăn & Bát đĩa gia đình",
+      "items": [
+        "Bộ đồ ăn 09 món Jasmine Thạch Vân (988.200₫)",
+        "Bộ đồ ăn 22 món Jasmine Thạch Vân (1.710.720₫)",
+        "Bộ đồ ăn Jasmine Viền Chỉ Vàng (911.520₫)",
+        "Chén cơm, dĩa tròn, tô/thố có nắp bán lẻ (từ 63.000₫)"
+      ]
+    },
+    {
+      "category": "Bộ ấm chén & Trà đạo",
+      "items": [
+        "Bộ trà Camellia Chỉ Vàng (giữ nhiệt, thấu quang cao cấp)",
+        "Bộ ấm chén Men Rạn Bọc Đồng hoàng gia",
+        "Tách trà có nắp Hoàng Gia (380.000₫)"
+      ]
+    },
+    {
+      "category": "Bình hút lộc & Bình hoa phong thủy",
+      "items": [
+        "Mai Bình Dáng Cao (2.850.000₫ - hút tài lộc phong thủy)",
+        "Bình Hoa Tròn Cổ Sóng (1.850.000₫ - thanh nhã phòng khách)",
+        "Bình gốm Men Hỏa Biến nung 1.380°C độc bản"
+      ]
+    },
+    {
+      "category": "Đĩa sứ nghệ thuật & Quà tặng",
+      "items": [
+        "Đĩa Sứ Nghệ Thuật kèm giá gỗ tiện cao cấp (1.200.000₫)",
+        "Quà tặng doanh nghiệp: In logo, dát vàng 24K, hộp xi lụa lót nhung"
+      ]
+    }
+  ],
+  "customStudio2D": {
+    "standard": "UC-C04 E1",
+    "charLimit": 20,
+    "charLimitReason": "Đường cong phôi gốm đòi hỏi chữ khắc thanh thoát mỹ thuật, không làm rối mắt hay che lấp họa tiết chính.",
+    "steps": [
+      "Bước 1: Chọn 1 trong 5 dáng phôi thủ công",
+      "Bước 2: Chọn họa tiết 13 mẫu vẽ tay truyền thống",
+      "Bước 3: Căn chỉnh tự do xoay 360 độ, phóng to thu nhỏ (25%-150%)",
+      "Bước 4: Khắc chữ nghệ thuật (tối đa 20 ký tự)",
+      "Bước 5: Thêm vào giỏ và nghệ nhân nung chế tác 5-7 ngày"
+    ]
+  },
+  "glazes": [
+    { "name": "Men Lam", "period": "Thế kỷ XIV", "feature": "Xanh cobalt cổ kính chìm dưới men trong vắt vĩnh cửu" },
+    { "name": "Men Rạn", "period": "Thời Lê - Nguyễn", "feature": "Vân rạn tam giác/tứ giác độc bản nhờ kiểm soát co ngót nhiệt" },
+    { "name": "Men Ngọc (Celadon)", "period": "Hoàng cung thời Lý - Trần", "feature": "Xanh ngọc bích thanh khiết, bóng mịn như ngọc thạch" },
+    { "name": "Men Hỏa Biến", "period": "Lò nung 1.380°C", "feature": "Màu sắc chuyển hóa kỳ ảo từ ngọn lửa, độc bản không trùng lặp" },
+    { "name": "Dát Vàng Kim Sa", "period": "Ngự tác thủ công", "feature": "Điểm xuyết vàng ròng 24K tôn vinh vẻ vương giả và tài lộc" }
+  ],
+  "policies": {
+    "shipping": "Có sẵn giao 2-3 ngày, hàng 2D chế tác 5-7 ngày. Giao toàn quốc.",
+    "payment": "COD đồng kiểm mở hộp kiểm tra trước khi trả tiền, QR VietQR, thẻ ngân hàng.",
+    "returns": "Đổi mới 100% trong 7 ngày nếu nứt vỡ do vận chuyển (chỉ cần quay video lúc khui kiện).",
+    "warranty": "Bảo hành men vĩnh cửu, cam kết nung củi gỗ tự nhiên 1.380°C liên tục 72 giờ."
+  }
+}

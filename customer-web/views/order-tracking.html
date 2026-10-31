@@ -1,0 +1,23 @@
+<!-- customer-web/views/order-tracking.html -->
+<!-- Tự động đồng bộ và điều hướng về Tab Đơn Hàng trong Profile (Hợp nhất theo yêu cầu Lỗi 4) -->
+<div class="flex flex-col items-center justify-center min-h-[60vh] py-16 font-['Plus_Jakarta_Sans',sans-serif]">
+  <div class="w-10 h-10 border-3 border-[#a23e18] border-t-transparent rounded-full animate-spin mb-4"></div>
+  <h2 class="font-['Playfair_Display',serif] text-xl font-bold text-[#000f22]">Đang mở Hồ Sơ Đơn Hàng...</h2>
+  <p class="text-xs text-[#74777e] mt-1">Đang đồng bộ giao diện giám tuyển tác phẩm tại Làng Gốm Thanh Xuân...</p>
+</div>
+
+<script>
+  (function() {
+    const targetParam = window.currentViewParam || null;
+    if (typeof window.dieuHuong === 'function') {
+      window.dieuHuong('profile', null, targetParam);
+    } else {
+      setTimeout(() => {
+        if (typeof window.dieuHuong === 'function') {
+          window.dieuHuong('profile', null, targetParam);
+        }
+      }, 200);
+    }
+  })();
+</script>
+

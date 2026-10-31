@@ -1,0 +1,330 @@
+<div class="flex flex-col w-full font-['Plus_Jakarta_Sans',sans-serif]">
+  <!-- Top Navigation & Return Link -->
+  <div class="w-full bg-surface-container-lowest border-b border-biscuit-sand/80">
+    <div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-sm flex flex-wrap items-center justify-between gap-3">
+      <nav class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-xs uppercase tracking-wider">
+        <a class="hover:text-primary transition-colors cursor-pointer" onclick="dieuHuong('home')">Trang chủ</a>
+        <span class="text-outline-variant">/</span>
+        <a class="hover:text-primary transition-colors cursor-pointer" onclick="dieuHuong('profile')">Tài khoản thượng khách</a>
+        <span class="text-outline-variant">/</span>
+        <a class="hover:text-primary transition-colors cursor-pointer" onclick="dieuHuong('profile')">Lịch sử đơn hàng</a>
+        <span class="text-outline-variant">/</span>
+        <span class="text-primary font-semibold">Gửi yêu cầu đổi trả tác phẩm</span>
+      </nav>
+      <div>
+        <a class="inline-flex items-center gap-1.5 text-primary hover:text-secondary font-title-md text-xs tracking-widest uppercase transition-colors cursor-pointer" onclick="dieuHuong('profile')">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          Quay lại Lịch sử đơn hàng
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editorial Page Header -->
+  <section class="w-full bg-gradient-to-b from-surface-container-lowest to-surface py-space-lg">
+    <div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-[11px] tracking-[0.2em] uppercase mb-space-xs">
+          <span class="w-2 h-2 rounded-full bg-secondary"></span>
+          Quản Lý Hậu Mãi &amp; Bảo Trợ Di Sản 1705
+        </div>
+        <h1 class="font-['Playfair_Display',serif] text-headline-sm sm:text-headline-md lg:text-headline-lg text-primary font-bold leading-tight mt-1">
+          Gửi Yêu Cầu Đổi Trả Tác Phẩm
+        </h1>
+        <p class="font-body-md text-sm sm:text-base text-on-surface-variant mt-space-sm leading-relaxed">
+          Minh Gốm Bát Tràng cam kết đặc quyền bảo trợ tuyệt đối cho từng tác phẩm: hỗ trợ 100% khi phát sinh rạn nứt trong khâu vận chuyển, sai lệch quy cách men nung, hoặc khiếm khuyết cốt gốm từ lò cổ truyền. Quý thượng khách an tâm gửi thông tin để bộ phận Giám tuyển thẩm định hỗ trợ riêng.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Grid -->
+  <section class="w-full pb-space-xl">
+    <div class="max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+        
+        <!-- Form Column (Left - 8 Cols) -->
+        <form class="lg:col-span-8 flex flex-col gap-space-lg" id="standaloneReturnForm" onsubmit="handleReturnPageSubmit(event)">
+          
+          <!-- 1. Selection: orderId -->
+          <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
+            <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
+              <div class="flex items-center gap-2">
+                <span class="font-label-sm text-secondary font-bold text-sm">01.</span>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Đơn hàng cần bảo trợ</h2>
+              </div>
+              <span class="font-label-sm text-[11px] text-on-surface-variant tracking-wider uppercase font-semibold">orderId</span>
+            </div>
+            
+            <div class="mt-space-md">
+              <label class="block font-title-md text-xs text-primary font-bold uppercase tracking-wider mb-2" for="order-select-page">
+                Chọn mã đơn hàng hợp lệ <span class="text-secondary">*</span>
+              </label>
+              <div class="relative">
+                <select class="w-full bg-surface-container-low text-primary font-body-md text-sm px-4 py-3 rounded-lg appearance-none cursor-pointer border border-biscuit-sand focus:outline-none focus:border-secondary transition-colors" id="order-select-page">
+                  <option selected value="MG-2025-8899">Đơn hàng #MG-2025-8899 — Ngày nhận: 18/10/2025 (Đã hoàn tất &amp; bàn giao)</option>
+                  <option value="MG-2025-9921">Đơn hàng #MG-2025-9921 — Ngày đặt: 24/10/2025 (Chờ xếp lò củi)</option>
+                  <option value="MG-2025-7734">Đơn hàng #MG-2025-7734 — Ngày đặt: 10/09/2025 (Đã lưu ký)</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-primary">
+                  <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                </div>
+              </div>
+
+              <!-- Selected Order Summary Card -->
+              <div class="mt-space-sm p-4 rounded-lg bg-surface-container-low/70 border border-biscuit-sand/70 flex flex-wrap items-center justify-between gap-space-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px] text-tertiary-fixed-dim">verified</span>
+                  </div>
+                  <div>
+                    <span class="font-title-md text-sm text-primary font-bold">Đơn hàng #MG-2025-8899</span>
+                    <p class="font-body-sm text-xs text-on-surface-variant">Bàn giao ngày 18/10/2025 • Hòm gỗ khảm triện &amp; Thư bảo chứng</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider block">Tổng giá trị đơn</span>
+                  <div class="font-title-lg text-lg text-secondary font-bold font-serif">11.050.000 ₫</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Array: items Selection -->
+          <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
+            <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
+              <div class="flex items-center gap-2">
+                <span class="font-label-sm text-secondary font-bold text-sm">02.</span>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Danh mục tác phẩm cần đổi / trả</h2>
+              </div>
+              <span class="font-label-sm text-[11px] text-on-surface-variant tracking-wider uppercase font-semibold">items[]</span>
+            </div>
+            <p class="font-body-sm text-xs text-on-surface-variant mt-2">
+              Đánh dấu chọn tác phẩm quý khách gặp sự cố cần hỗ trợ đổi mới hoặc hoàn trả:
+            </p>
+
+            <div class="mt-space-md flex flex-col gap-3">
+              <!-- Item 1 -->
+              <label class="group relative flex items-start gap-4 p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low border border-biscuit-sand transition-all">
+                <div class="pt-1">
+                  <input checked class="w-5 h-5 rounded accent-secondary cursor-pointer" name="return_item" type="checkbox" value="Bình Gốm Men Lam Cá Chép Vượt Vũ Môn">
+                </div>
+                <div class="w-20 h-24 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand">
+                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkfbQHWJcsVJLmZ79QWTiUBpW1AsRoVBm-niLfR4tTBU75MyS59dBrxxOg0lOm3enz5UxIZ1pMrEQJxuQd43DyoMYhmRoc_ZBnm9LZuMPqeSv-8LEQBrqyPUGcob4loEfD5jYp8NzYeC0NcSwLUAfF7s6Y9IA2RjGQPCyrzOJY_hlTrqsJ1Nu3j_EiSsOGteXYAskFMrgyF_2aN3SwRpQrNSzaQNs3YpDxs-uuRB0wDx45-Ps6dO2u" alt="Bình Gốm Men Lam Cá Chép Vượt Vũ Môn">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-baseline justify-between gap-1">
+                    <h3 class="font-title-md text-sm text-primary font-bold group-hover:text-secondary transition-colors">
+                      Bình Gốm Men Lam Cá Chép Vượt Vũ Môn
+                    </h3>
+                    <span class="font-title-md text-sm text-primary font-serif font-bold">6.800.000 ₫</span>
+                  </div>
+                  <p class="font-body-sm text-xs text-on-surface-variant mt-1">Bản phục dựng cổ pháp triều Lê • Cốt nung 1.380°C</p>
+                  <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <span class="font-label-sm text-[10px] bg-surface-container px-2 py-0.5 rounded text-on-surface-variant uppercase tracking-wider font-semibold">Mã phôi: #MG-VASE-01</span>
+                    <span class="font-label-sm text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded font-bold">Số lượng: 01 bình độc bản</span>
+                  </div>
+                </div>
+              </label>
+
+              <!-- Item 2 -->
+              <label class="group relative flex items-start gap-4 p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low border border-biscuit-sand transition-all">
+                <div class="pt-1">
+                  <input class="w-5 h-5 rounded accent-secondary cursor-pointer" name="return_item" type="checkbox" value="Bộ Trà Tử Sa Men Ngọc Hoàng Gia">
+                </div>
+                <div class="w-20 h-24 rounded-lg overflow-hidden bg-surface-container shrink-0 border border-biscuit-sand">
+                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQMTwZ3Xb3nu1Sk7JCfpMyk1JUArnVWNSIiLp5r8mmYEHlC0N90gs-I1f8nK-69qH1aEUaN0xEwEu1-qcaRgMjnjywZUR7wuk_-ANboueMOIpbTp9aGelU7rtrRgyKaLdzl0_5_TVmUA7ycUHB1f6H_v4jB5NIzaxnXVvjEjYR20GM8_TlzRfswqTytIb_miV7YtDPJhpnvgRGzQ4k28Nt7XjlRrjZK5WvPlkyUfn4qrwYXUsKM28n" alt="Bộ Trà Tử Sa Men Ngọc Hoàng Gia">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-baseline justify-between gap-1">
+                    <h3 class="font-title-md text-sm text-primary font-bold group-hover:text-secondary transition-colors">
+                      Bộ Trà Tử Sa Men Ngọc Hoàng Gia
+                    </h3>
+                    <span class="font-title-md text-sm text-primary font-serif font-bold">4.250.000 ₫</span>
+                  </div>
+                  <p class="font-body-sm text-xs text-on-surface-variant mt-1">Đất phù sa sông Hồng nung yếm khí • Kèm 06 chén quân &amp; khay gỗ hương</p>
+                  <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <span class="font-label-sm text-[10px] bg-surface-container px-2 py-0.5 rounded text-on-surface-variant uppercase tracking-wider font-semibold">Mã phôi: #MG-TEA-02</span>
+                    <span class="font-label-sm text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded font-bold">Số lượng: 01 bộ</span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. Return Reason -->
+          <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
+            <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
+              <div class="flex items-center gap-2">
+                <span class="font-label-sm text-secondary font-bold text-sm">03.</span>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Nguyên nhân đề nghị thẩm định &amp; đổi trả</h2>
+              </div>
+              <span class="font-label-sm text-secondary font-bold text-xs">Bắt buộc *</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-space-md">
+              <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+                <input checked class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Nứt rạn men ngoài ý muốn trong quá trình vận chuyển">
+                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Nứt rạn men ngoài ý muốn trong quá trình vận chuyển</span>
+              </label>
+
+              <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Họa tiết không đúng với bản thiết kế 2D đã duyệt">
+                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Họa tiết không đúng với bản thiết kế 2D đã duyệt</span>
+              </label>
+
+              <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)">
+                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Lỗi cốt gốm (khí lò nung hoặc cong vênh quá sai số)</span>
+              </label>
+
+              <label class="flex items-start gap-3 p-3.5 rounded-lg border border-biscuit-sand bg-surface-container-low/40 hover:bg-surface-container-low cursor-pointer transition-colors">
+                <input class="mt-0.5 accent-secondary" name="reason_radio" type="radio" value="Nguyên nhân thẩm mỹ khác của nhà sưu tầm">
+                <span class="font-body-sm text-xs text-on-surface leading-relaxed font-medium">Nguyên nhân thẩm mỹ khác của nhà sưu tầm</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 4. Detail description -->
+          <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
+            <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
+              <div class="flex items-center gap-2">
+                <span class="font-label-sm text-secondary font-bold text-sm">04.</span>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Mô tả chi tiết khiếm khuyết</h2>
+              </div>
+              <span class="font-label-sm text-outline text-xs">Tùy chọn</span>
+            </div>
+            <div class="mt-space-md">
+              <textarea class="w-full bg-surface-container-low text-primary font-body-md text-sm p-4 rounded-lg border border-biscuit-sand focus:outline-none focus:border-secondary transition-colors" id="page-return-description" placeholder="Ví dụ: Vết rạn chân bình sâu khoảng 2cm nghi do rung lắc khi xe chuyên dụng di chuyển qua gờ giảm tốc..." rows="4"></textarea>
+            </div>
+          </div>
+
+          <!-- 5. Upload evidence -->
+          <div class="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm border border-biscuit-sand">
+            <div class="flex items-center justify-between pb-space-sm border-b border-biscuit-sand/60">
+              <div class="flex items-center gap-2">
+                <span class="font-label-sm text-secondary font-bold text-sm">05.</span>
+                <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Bằng chứng thị giác</h2>
+              </div>
+              <span class="font-label-sm text-secondary font-bold text-xs">Bắt buộc *</span>
+            </div>
+
+            <div class="mt-space-md border-2 border-dashed border-biscuit-sand hover:border-secondary/60 rounded-xl p-6 text-center bg-surface-container-low/30 cursor-pointer transition-colors" onclick="document.getElementById('page-file-upload').click()">
+              <input accept="image/*,video/*" class="hidden" id="page-file-upload" multiple onchange="handlePageFileUpload(this)" type="file">
+              <div class="flex flex-col items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-4xl text-on-surface-variant">photo_library</span>
+                <p class="font-title-md text-sm text-primary font-bold mt-2">Bấm để tải ảnh chụp chi tiết vết nứt hoặc video khui hòm</p>
+                <p class="font-label-sm text-xs text-outline">Hỗ trợ định dạng JPG, PNG, MP4 tối đa 50MB (Bao gồm ảnh chụp triện ký đáy bình)</p>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-2 justify-center hidden" id="page-file-preview-list"></div>
+            </div>
+          </div>
+
+          <!-- Submit Buttons -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <button class="w-full sm:w-auto px-6 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-title-md text-sm transition-colors cursor-pointer" onclick="dieuHuong('profile')" type="button">
+              ← Quay lại lịch sử đơn hàng
+            </button>
+            <button class="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-secondary text-on-secondary hover:bg-on-secondary-fixed-variant transition-all font-title-md text-sm font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer" type="submit">
+              <span class="material-symbols-outlined text-[20px]">send</span>
+              Gửi Yêu Cầu Đổi Trả Tác Phẩm
+            </button>
+          </div>
+        </form>
+
+        <!-- Right Column: Policy & Guarantees (4 cols) -->
+        <aside class="lg:col-span-4 flex flex-col gap-6">
+          <!-- Policy Card -->
+          <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-biscuit-sand flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center border border-secondary/20 shrink-0">
+                <span class="material-symbols-outlined text-2xl">verified_user</span>
+              </div>
+              <div>
+                <span class="font-label-sm text-[10px] text-secondary uppercase tracking-widest font-bold">Cam Kết Di Sản 1705</span>
+                <h3 class="font-['Playfair_Display',serif] text-lg text-primary font-bold">Bảo Toàn Tinh Hoa 100%</h3>
+              </div>
+            </div>
+            <p class="font-body-sm text-xs text-on-surface-variant leading-relaxed">
+              Mỗi tác phẩm gốm Bát Tràng rời xưởng đều được lập mã số định danh riêng. Nếu có bất kỳ rạn nứt ngoài mong muốn khi vận chuyển, quý khách được quyền đổi tác phẩm tương đương hoặc hoàn tiền 100%.
+            </p>
+            <div class="p-3 bg-amber-50 rounded-lg border border-amber-200/80 text-amber-900 font-label-sm text-xs leading-relaxed">
+              <strong>Thời hạn đề nghị:</strong> Trong vòng 07 ngày kể từ khi ký nhận biên bản bảo trợ cùng chuyên xa tận gia.
+            </div>
+          </div>
+
+          <!-- 3-Step Process -->
+          <div class="bg-gradient-to-br from-primary-container to-deep-indigo-night p-6 rounded-xl text-on-primary shadow-md flex flex-col gap-4">
+            <h4 class="font-['Playfair_Display',serif] text-lg font-bold text-tertiary-fixed-dim flex items-center gap-2">
+              <span class="material-symbols-outlined text-[20px]">route</span>
+              Quy Trình 3 Bước Xử Lý
+            </h4>
+            <ol class="space-y-3 font-body-sm text-xs text-biscuit-sand/90">
+              <li class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-secondary text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                <span><strong>Tiếp nhận:</strong> Ban Giám tuyển tiếp nhận hồ sơ thị giác trong vòng 02 giờ làm việc.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-secondary text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                <span><strong>Thẩm định tại gia:</strong> Nghệ nhân cùng xe bảo hiểm đến tận dinh thự kiểm tra.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-secondary text-white font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                <span><strong>Hoàn tất:</strong> Bàn giao phôi độc bản mới hoặc hoàn tiền ngay trong 24 giờ.</span>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Hotline -->
+          <div class="bg-surface-container-low p-5 rounded-xl border border-biscuit-sand flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-sm text-[11px] text-outline uppercase font-semibold">Đường dây nóng Giám tuyển</span>
+              <a class="font-title-lg text-primary font-bold hover:text-secondary transition-colors" href="tel:18001705">1800 1705 (Miễn phí)</a>
+            </div>
+            <span class="material-symbols-outlined text-secondary text-3xl">support_agent</span>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+window.handlePageFileUpload = function(input) {
+  const preview = document.getElementById('page-file-preview-list');
+  if (input.files && input.files.length > 0) {
+    preview.innerHTML = '';
+    preview.classList.remove('hidden');
+    Array.from(input.files).forEach((file) => {
+      const badge = document.createElement('span');
+      badge.className = 'px-2.5 py-1 rounded bg-surface-container-high text-primary font-label-sm text-xs font-medium';
+      badge.innerText = '📎 ' + file.name;
+      preview.appendChild(badge);
+    });
+  }
+};
+
+window.handleReturnPageSubmit = function(e) {
+  e.preventDefault();
+  const orderId = document.getElementById('order-select-page')?.value || 'MG-2025-8899';
+  const reason = document.querySelector('input[name="reason_radio"]:checked')?.value || 'Nứt rạn men ngoài ý muốn trong quá trình vận chuyển';
+  const desc = document.getElementById('page-return-description')?.value || '';
+
+  if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
+    ApiService.createReturnRequest({
+      orderId: '670000000000000000000001',
+      accountId: currentUser._id,
+      type: 'return',
+      reason: reason + (desc ? ': ' + desc : '')
+    }, function(err, res) {
+      console.log('Return request API result:', err, res);
+    });
+  }
+
+  alert('✅ ĐÃ TIẾP NHẬN YÊU CẦU ĐỔI TRẢ THÀNH CÔNG!\n\n• Mã đơn: #' + orderId + '\n• Lý do: ' + reason + '\n\nBan Giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự chuyên trách đến tận tư gia hỗ trợ.');
+  if (typeof dieuHuong === 'function') {
+    dieuHuong('profile');
+  }
+};
+</script>

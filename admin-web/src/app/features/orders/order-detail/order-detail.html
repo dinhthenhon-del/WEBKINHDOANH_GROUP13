@@ -1,0 +1,606 @@
+<div class="max-w-[1440px] mx-auto p-space-xl">
+  <!-- Toast Notification Alert -->
+  <div *ngIf="isToastVisible" class="fixed top-20 right-8 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-top-4"
+       [ngClass]="toastType === 'success' ? 'bg-emerald-900 text-white border border-emerald-500' : 'bg-rose-900 text-white border border-rose-500'">
+    <span class="material-symbols-outlined text-xl">{{ toastType === 'success' ? 'check_circle' : 'error' }}</span>
+    <span class="text-sm font-medium">{{ toastMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="p-20 text-center flex flex-col items-center justify-center gap-4">
+    <div class="w-10 h-10 border-4 border-[#0A2540] border-t-transparent rounded-full animate-spin"></div>
+    <span class="text-base text-on-surface-variant font-medium">Đang tải hồ sơ đơn hàng gốm sứ...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="p-12 text-center flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-red-200">
+    <span class="material-symbols-outlined text-5xl text-rose-600">error</span>
+    <h2 class="text-lg font-bold text-primary">{{ errorMessage }}</h2>
+    <a routerLink="/orders/list" class="px-5 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-[#07192c] transition-colors">
+      Quay lại Danh sách Đơn hàng
+    </a>
+  </div>
+
+  <!-- Detail Content Container -->
+  <div *ngIf="!isLoading && order" class="flex flex-col w-full">
+    <!-- Top Breadcrumb & Workflow Quick-Context (Stitch UI) -->
+    <div class="flex items-center justify-between pb-space-md">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-space-xs font-label-md text-label-md">
+        <a routerLink="/orders/list" class="text-on-surface-variant hover:text-[#0A2540] transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">receipt_long</span>
+          <span>Đơn hàng</span>
+        </a>
+        <span class="text-outline-variant font-body-sm">/</span>
+        <span class="text-[#0A2540] font-semibold">Chi tiết đơn hàng #{{ order.orderCode }}</span>
+      </nav>
+      <div class="flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface">
+          <span class="material-symbols-outlined text-sm text-[#C85A32]">verified</span>
+          Kênh bán: Cửa hàng Trực tuyến Thanh Xuân
+        </span>
+      </div>
+    </div>
+
+    <!-- Primary Header Bar -->
+    <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant mb-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+      <div class="flex items-start md:items-center gap-space-md">
+        <div class="w-12 h-12 rounded-xl bg-[#0A2540]/10 flex items-center justify-center text-[#0A2540] flex-shrink-0">
+          <span class="material-symbols-outlined text-2xl">local_mall</span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-space-sm flex-wrap">
+            <h1 class="font-headline-lg text-headline-lg text-[#0A2540] tracking-tight font-bold text-2xl">
+              Đơn hàng #{{ order.orderCode }}
+            </h1>
+            <span [class]="'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold shadow-xs border ' + getStatusBadgeClass(order.orderStatus)">
+              <span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>
+              {{ getStatusLabel(order.orderStatus) }}
+            </span>
+          </div>
+          <div class="flex items-center gap-space-md mt-1 text-on-surface-variant font-body-sm text-xs">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-base text-outline">schedule</span>
+              Ngày đặt: {{ order.createdAt | date:'HH:mm, dd/MM/yyyy' }}
+            </span>
+            <span class="text-outline-variant">•</span>
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-base text-outline">person_outline</span>
+              Khách hàng: {{ order.customer?.fullName || order.shippingAddress?.recipientName || 'Khách vãng lai' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strict Status-dependent Action Bar (E1, E2, E3) -->
+      <div class="flex items-center gap-space-sm self-end md:self-auto flex-wrap">
+        <!-- Nút Hủy đơn: Chỉ hiện khi chưa Completed và chưa Cancelled -->
+        <button *ngIf="canCancelOrder()" (click)="openCancelModal()" type="button"
+                class="h-10 px-4 rounded-lg bg-[#C85A32]/10 text-[#C85A32] hover:bg-[#C85A32] hover:text-white transition-colors font-label-lg text-sm flex items-center gap-1.5 shadow-sm border border-[#C85A32]/20 cursor-pointer">
+          <span class="material-symbols-outlined text-lg">cancel</span>
+          <span>Hủy đơn</span>
+        </button>
+
+        <!-- Nút Chuyển trạng thái kế tiếp: CHỈ HIỆN ĐÚNG BƯỚC TIẾP THEO HỢP LỆ (E1, E2) -->
+        <ng-container *ngIf="getNextStatus() as nextStep">
+          <div class="relative group">
+            <button (click)="canProceedToNextStatus() ? promptStatusChange(nextStep.status, nextStep.label) : null" 
+                    [disabled]="!canProceedToNextStatus()"
+                    type="button"
+                    [class]="'h-10 px-5 rounded-lg text-white transition-all font-label-lg text-sm flex items-center gap-1.5 shadow-md ' +
+                            (canProceedToNextStatus() ? 'bg-[#0A2540] hover:bg-[#071b30] cursor-pointer' : 'bg-gray-400 cursor-not-allowed opacity-70')">
+              <span class="material-symbols-outlined text-lg">{{ nextStep.icon }}</span>
+              <span>{{ nextStep.label }}</span>
+            </button>
+            <div *ngIf="!canProceedToNextStatus()" class="hidden group-hover:block absolute bottom-full mb-2 right-0 w-72 p-2.5 bg-slate-900 text-amber-300 text-xs rounded-lg shadow-xl z-30 font-medium">
+              ⚠️ {{ getDisabledNextStatusReason() }}
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Đơn hàng đã Completed (E2: Disable mọi nút chuyển trạng thái) -->
+        <div *ngIf="order.orderStatus === 'completed'" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
+          <span class="material-symbols-outlined text-base text-emerald-600">verified</span>
+          <span>Đơn hàng đã hoàn thành trọn vẹn</span>
+        </div>
+
+        <!-- Đơn hàng đã Hủy (E3: Disable mọi nút) -->
+        <div *ngIf="order.orderStatus === 'cancelled'" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 text-xs font-semibold">
+          <span class="material-symbols-outlined text-base text-rose-600">block</span>
+          <span>Đơn hàng đã hủy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Banner nếu Đơn hàng bị HỦY -->
+    <div *ngIf="order.orderStatus === 'cancelled'" class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-xl mb-space-lg shadow-xs">
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-rose-600 text-2xl">cancel</span>
+        <div class="flex flex-col">
+          <span class="font-bold text-rose-900 text-sm">Đơn hàng này đã bị hủy</span>
+          <p class="text-xs text-rose-800 mt-0.5">
+            <strong>Lý do hủy:</strong> {{ order.cancellationReason || order.cancelReason || 'Khách hàng yêu cầu hủy đơn' }}
+          </p>
+          <span class="text-[11px] text-rose-700 mt-1">Số lượng tồn kho của các sản phẩm trong đơn đã được tự động hoàn lại vào kho hàng.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Horizontal Status Stepper & Workflow Rules Rail (Stitch UI) -->
+    <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant mb-space-lg">
+      <div class="flex items-center justify-between mb-space-md">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#0A2540] text-xl">conversion_path</span>
+          <h2 class="font-headline-sm text-base text-[#0A2540] font-bold">Tiến trình thực hiện đơn hàng (orderStatus)</h2>
+        </div>
+        <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+          Trạng thái: <span class="text-[#0A2540] font-bold">{{ getStatusLabel(order.orderStatus) }}</span>
+        </span>
+      </div>
+
+      <!-- Stepper Steps Grid -->
+      <div class="relative py-4">
+        <!-- Connecting Line Background -->
+        <div class="absolute top-10 left-12 right-12 h-0.5 bg-surface-container-high z-0 hidden sm:block"></div>
+
+        <div class="relative z-10 grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
+          <!-- Step 1: Pending -->
+          <div class="flex flex-col items-center px-1">
+            <div [class]="'w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all ' +
+                 (isStepCurrent(0) ? 'bg-[#0A2540] text-white ring-4 ring-[#0A2540]/20' :
+                  isStepCompleted(0) ? 'bg-emerald-600 text-white' : 'bg-surface-container-high text-on-surface-variant opacity-60')">
+              <span class="material-symbols-outlined text-lg">{{ isStepCompleted(0) ? 'check' : 'pending_actions' }}</span>
+            </div>
+            <span [class]="'font-label-md text-xs mt-2.5 text-center leading-snug ' + (isStepCurrent(0) ? 'font-bold text-[#0A2540]' : 'text-on-surface')">
+              1. Chờ xác nhận
+            </span>
+            <span *ngIf="isStepCurrent(0)" class="mt-1 px-2 py-0.5 rounded-full bg-[#0A2540]/10 text-[#0A2540] text-[10px] font-semibold">
+              HIỆN TẠI
+            </span>
+          </div>
+
+          <!-- Step 2: Confirmed -->
+          <div class="flex flex-col items-center px-1">
+            <div [class]="'w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all ' +
+                 (isStepCurrent(1) ? 'bg-[#0A2540] text-white ring-4 ring-[#0A2540]/20' :
+                  isStepCompleted(1) ? 'bg-emerald-600 text-white' : 'bg-surface-container-high text-on-surface-variant opacity-60')">
+              <span class="material-symbols-outlined text-lg">{{ isStepCompleted(1) ? 'check' : 'check_circle' }}</span>
+            </div>
+            <span [class]="'font-label-md text-xs mt-2.5 text-center leading-snug ' + (isStepCurrent(1) ? 'font-bold text-[#0A2540]' : 'text-on-surface')">
+              2. Đã xác nhận
+            </span>
+            <span *ngIf="isStepCurrent(1)" class="mt-1 px-2 py-0.5 rounded-full bg-[#0A2540]/10 text-[#0A2540] text-[10px] font-semibold">
+              HIỆN TẠI
+            </span>
+          </div>
+
+          <!-- Step 3: Processing -->
+          <div class="flex flex-col items-center px-1">
+            <div [class]="'w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all ' +
+                 (isStepCurrent(2) ? 'bg-[#0A2540] text-white ring-4 ring-[#0A2540]/20' :
+                  isStepCompleted(2) ? 'bg-emerald-600 text-white' : 'bg-surface-container-high text-on-surface-variant opacity-60')">
+              <span class="material-symbols-outlined text-lg">{{ isStepCompleted(2) ? 'check' : 'inventory' }}</span>
+            </div>
+            <span [class]="'font-label-md text-xs mt-2.5 text-center leading-snug ' + (isStepCurrent(2) ? 'font-bold text-[#0A2540]' : 'text-on-surface')">
+              3. Xử lý xưởng
+            </span>
+            <span *ngIf="isStepCurrent(2)" class="mt-1 px-2 py-0.5 rounded-full bg-[#0A2540]/10 text-[#0A2540] text-[10px] font-semibold">
+              HIỆN TẠI
+            </span>
+          </div>
+
+          <!-- Step 4: Shipping -->
+          <div class="flex flex-col items-center px-1">
+            <div [class]="'w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all ' +
+                 (isStepCurrent(3) ? 'bg-[#0A2540] text-white ring-4 ring-[#0A2540]/20' :
+                  isStepCompleted(3) ? 'bg-emerald-600 text-white' : 'bg-surface-container-high text-on-surface-variant opacity-60')">
+              <span class="material-symbols-outlined text-lg">{{ isStepCompleted(3) ? 'check' : 'local_shipping' }}</span>
+            </div>
+            <span [class]="'font-label-md text-xs mt-2.5 text-center leading-snug ' + (isStepCurrent(3) ? 'font-bold text-[#0A2540]' : 'text-on-surface')">
+              4. Đang giao hàng
+            </span>
+            <span *ngIf="isStepCurrent(3)" class="mt-1 px-2 py-0.5 rounded-full bg-[#0A2540]/10 text-[#0A2540] text-[10px] font-semibold">
+              HIỆN TẠI
+            </span>
+          </div>
+
+          <!-- Step 5: Completed -->
+          <div class="flex flex-col items-center px-1">
+            <div [class]="'w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm transition-all ' +
+                 (isStepCurrent(4) ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/20' :
+                  isStepCompleted(4) ? 'bg-emerald-600 text-white' : 'bg-surface-container-high text-on-surface-variant opacity-60')">
+              <span class="material-symbols-outlined text-lg">task_alt</span>
+            </div>
+            <span [class]="'font-label-md text-xs mt-2.5 text-center leading-snug ' + (isStepCurrent(4) ? 'font-bold text-emerald-700' : 'text-on-surface')">
+              5. Hoàn thành
+            </span>
+            <span *ngIf="isStepCurrent(4)" class="mt-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
+              HOÀN TẤT
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Layout (2-Column Grid: 60% Left / 40% Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+      <!-- Cột Trái: Danh sách Sản phẩm, Snapshot Customization & Giám định (7/12) -->
+      <div class="lg:col-span-7 flex flex-col gap-space-lg">
+        <!-- Bảng Sản phẩm Trong Đơn (Items Table) -->
+        <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant">
+          <div class="flex items-center justify-between pb-space-md border-b border-surface-variant/40 mb-space-md">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-xl">inventory_2</span>
+              <h3 class="font-headline-sm text-base text-primary font-bold">Danh sách tác phẩm đặt hàng</h3>
+            </div>
+            <span class="text-xs text-outline font-medium">Tổng {{ order.items ? order.items.length : 0 }} mục</span>
+          </div>
+
+          <!-- Items Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="h-10 text-xs uppercase text-outline font-semibold tracking-wider border-b border-surface-container">
+                  <th class="pb-2">Tác phẩm</th>
+                  <th class="pb-2 text-center">Đơn giá</th>
+                  <th class="pb-2 text-center">SL</th>
+                  <th class="pb-2 text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-container text-sm">
+                <tr *ngFor="let item of order.items" class="py-3">
+                  <!-- Product Image & Name -->
+                  <td class="py-3 pr-3">
+                    <div class="flex items-start gap-3">
+                      <img [src]="getItemImage(item)" alt="Tác phẩm" class="w-12 h-12 rounded-lg object-cover border border-surface-container shrink-0 shadow-xs">
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-semibold text-primary text-sm leading-snug">{{ item.productName }}</span>
+                        <span class="text-xs text-outline mt-0.5">
+                          SKU: {{ (item.productId && typeof item.productId === 'object' && item.productId.sku) ? item.productId.sku : (item.product?.sku || 'GOM-BT') }}
+                        </span>
+
+                        <!-- Customization Badge if any -->
+                        <div *ngIf="item.designSnapshot" class="mt-1 flex flex-wrap gap-1">
+                          <span *ngIf="item.designSnapshot.glazeColor" class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-medium border border-blue-200">
+                            Men: {{ item.designSnapshot.glazeColor }}
+                          </span>
+                          <span *ngIf="item.designSnapshot.pattern" class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-medium border border-amber-200">
+                            Hoa văn: {{ item.designSnapshot.pattern }}
+                          </span>
+                          <span *ngIf="item.designSnapshot.engravingText" class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 text-[10px] font-medium border border-purple-200">
+                            Khắc: "{{ item.designSnapshot.engravingText }}"
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Unit Price (Snapshot lúc mua) -->
+                  <td class="py-3 text-center text-xs font-medium text-on-surface whitespace-nowrap">
+                    {{ formatCurrency(item.unitPrice) }}
+                  </td>
+
+                  <!-- Quantity -->
+                  <td class="py-3 text-center text-sm font-bold text-primary whitespace-nowrap">
+                    x{{ item.quantity }}
+                  </td>
+
+                  <!-- Line Total -->
+                  <td class="py-3 text-right font-bold text-primary text-sm whitespace-nowrap">
+                    {{ formatCurrency(item.unitPrice * item.quantity) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tiêu chuẩn Giám định & Thẩm mỹ Gốm Bát Tràng (Stitch UI) -->
+        <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant">
+          <div class="flex items-center gap-2 mb-space-md">
+            <span class="material-symbols-outlined text-secondary text-xl">verified_user</span>
+            <h3 class="font-headline-sm text-base text-primary font-bold">Tiêu chuẩn nghiệm thu nghệ phẩm trước khi xuất xưởng</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-on-surface-variant">
+            <div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+              <span class="font-bold text-[#0A2540] flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                Cốt đất tinh luyện
+              </span>
+              <p>Âm thanh thanh vang ngân, không nứt ngầm cốt gốm sứ.</p>
+            </div>
+            <div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+              <span class="font-bold text-[#0A2540] flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                Nước men truyền thống
+              </span>
+              <p>Độ bóng và chiều sâu men nung chuẩn nhiệt độ 1250°C.</p>
+            </div>
+            <div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+              <span class="font-bold text-[#0A2540] flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                Triện mộc nghệ nhân
+              </span>
+              <p>Triện dấu bản quyền xưởng gốm Thanh Xuân ở đáy bình.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lịch sử trạng thái đơn hàng (Status History Timeline) -->
+        <div *ngIf="order.statusHistory && order.statusHistory.length > 0" class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant">
+          <div class="flex items-center gap-2 mb-space-md">
+            <span class="material-symbols-outlined text-primary text-xl">history</span>
+            <h3 class="font-headline-sm text-base text-primary font-bold">Lịch sử cập nhật trạng thái</h3>
+          </div>
+
+          <div class="space-y-3">
+            <div *ngFor="let h of order.statusHistory" class="flex items-start gap-3 text-xs border-l-2 border-primary/20 pl-3 py-1">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-primary uppercase">{{ h.status }}</span>
+                  <span class="text-outline text-[11px]">{{ h.updatedAt | date:'HH:mm:ss, dd/MM/yyyy' }}</span>
+                </div>
+                <span class="text-on-surface-variant mt-0.5">{{ h.note || 'Cập nhật trạng thái' }}</span>
+                <span *ngIf="h.changedBy" class="text-[10px] text-outline">Thực hiện bởi: {{ h.changedBy }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cột Phải: Địa chỉ nhận hàng, Thanh toán & Tổng tiền (5/12) -->
+      <div class="lg:col-span-5 flex flex-col gap-space-lg">
+        <!-- Thẻ Thông tin giao nhận hàng -->
+        <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-variant/40 mb-space-md">
+            <span class="material-symbols-outlined text-primary text-xl">local_shipping</span>
+            <h3 class="font-headline-sm text-base text-primary font-bold">Thông tin nhận hàng</h3>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="flex flex-col">
+              <span class="text-outline">Người nhận hàng:</span>
+              <span class="font-bold text-sm text-primary mt-0.5">
+                {{ order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.customer?.fullName || 'Khách vãng lai' }}
+              </span>
+            </div>
+
+            <div class="flex flex-col">
+              <span class="text-outline">Số điện thoại liên hệ:</span>
+              <span class="font-semibold text-sm text-primary mt-0.5">
+                {{ order.shippingAddress?.phone || order.customer?.phone || 'Chưa cung cấp' }}
+              </span>
+            </div>
+
+            <div class="flex flex-col">
+              <span class="text-outline">Địa chỉ giao hàng chi tiết:</span>
+              <p class="font-medium text-on-surface mt-0.5 leading-relaxed">
+                {{ order.shippingAddress?.detail || order.shippingAddress?.addressDetail || '' }},
+                {{ order.shippingAddress?.ward ? 'P./Xã ' + order.shippingAddress.ward + ',' : '' }}
+                {{ order.shippingAddress?.district ? 'Q./Huyện ' + order.shippingAddress.district + ',' : '' }}
+                {{ order.shippingAddress?.province || '' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thẻ Phương thức & Trạng thái thanh toán -->
+        <div class="bg-[#FFFFFF] rounded-xl p-space-lg shadow-sm border border-surface-variant">
+          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-variant/40 mb-space-md">
+            <span class="material-symbols-outlined text-primary text-xl">payments</span>
+            <h3 class="font-headline-sm text-base text-primary font-bold">Thanh toán & Hóa đơn</h3>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-outline">Phương thức:</span>
+              <span class="font-semibold text-primary uppercase">{{ order.paymentMethod || 'COD' }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-outline">Trạng thái thanh toán:</span>
+              <span [class]="'px-2.5 py-0.5 rounded-full font-semibold border text-xs ' + getPaymentStatusBadgeClass(order.paymentStatus)">
+                {{ getPaymentStatusLabel(order.paymentStatus) }}
+              </span>
+            </div>
+
+            <!-- Payment Audit Trail Info -->
+            <div *ngIf="order.paymentConfirmedAt" class="text-[11px] text-on-surface-variant bg-surface-container-low p-2 rounded">
+              <div class="flex items-center gap-1 font-medium text-emerald-800">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>Xác nhận: {{ order.paymentConfirmedAt | date:'HH:mm, dd/MM/yyyy' }}</span>
+              </div>
+              <div *ngIf="order.paymentNote" class="text-outline mt-0.5">Ghi chú: {{ order.paymentNote }}</div>
+            </div>
+
+            <!-- Refund Info if any -->
+            <div *ngIf="order.refundedAmount" class="text-[11px] text-purple-900 bg-purple-50 p-2 rounded border border-purple-200">
+              <div class="flex items-center justify-between">
+                <span>Đã hoàn trả khách:</span>
+                <strong class="font-serif text-sm">{{ formatCurrency(order.refundedAmount) }}</strong>
+              </div>
+              <div *ngIf="order.refundedAt" class="text-[10px] text-purple-700 mt-0.5">
+                Ngày hoàn: {{ order.refundedAt | date:'HH:mm, dd/MM/yyyy' }}
+              </div>
+            </div>
+
+            <!-- Admin Payment Action Buttons -->
+            <div *ngIf="order.orderStatus !== 'cancelled'" class="pt-2 border-t border-surface-variant/40 space-y-2">
+              <!-- Case 1: Khách đã báo thanh toán (awaiting_verification) -->
+              <div *ngIf="order.paymentStatus === 'awaiting_verification'" class="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-900">
+                <div class="flex items-center gap-1.5 font-bold text-xs mb-1">
+                  <span class="material-symbols-outlined text-sm text-blue-700 animate-pulse">pending</span>
+                  <span>Khách báo đã chuyển khoản</span>
+                </div>
+                <p class="text-[11px] text-blue-800 leading-snug mb-2">
+                  Vui lòng kiểm tra tài khoản ngân hàng / ví MoMo theo mã tham chiếu của đơn.
+                </p>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="confirmPayment('paid', 'Admin xác nhận đã nhận chuyển khoản')"
+                          [disabled]="isUpdatingPayment"
+                          class="flex-1 py-1.5 px-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-[14px]">check</span>
+                    <span>Xác nhận ĐÃ NHẬN</span>
+                  </button>
+                  <button type="button" (click)="confirmPayment('pending', 'Chưa nhận được giao dịch')"
+                          [disabled]="isUpdatingPayment"
+                          class="py-1.5 px-2 rounded bg-white hover:bg-gray-100 text-rose-700 border border-rose-300 font-bold text-[11px] transition-colors cursor-pointer"
+                          title="Báo chưa nhận được tiền">
+                    <span>Chưa nhận</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Case 2: Đang chờ thanh toán (pending) -->
+              <div *ngIf="order.paymentStatus === 'pending'" class="flex items-center gap-2">
+                <button type="button" (click)="confirmPayment('paid', order.paymentMethod === 'COD' ? 'Đã thu tiền COD' : 'Admin xác nhận đã thu tiền')"
+                        [disabled]="isUpdatingPayment"
+                        class="w-full py-2 px-3 rounded-lg bg-[#0A2540] hover:bg-[#071b30] text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                  <span class="material-symbols-outlined text-sm text-emerald-400">payments</span>
+                  <span>{{ order.paymentMethod === 'COD' ? 'Xác nhận ĐÃ THU TIỀN COD' : 'Xác nhận ĐÃ THANH TOÁN' }}</span>
+                </button>
+              </div>
+
+              <!-- Case 3: Đã thanh toán nhưng đơn chưa kết thúc (có thể reset nếu nhầm lẫn) -->
+              <div *ngIf="order.paymentStatus === 'paid' && order.orderStatus !== 'completed'" class="flex items-center justify-end">
+                <button type="button" (click)="confirmPayment('pending', 'Hủy xác nhận thanh toán do nhầm lẫn')"
+                        [disabled]="isUpdatingPayment"
+                        class="text-[11px] text-outline hover:text-rose-700 underline transition-colors cursor-pointer">
+                  Đánh dấu chưa thanh toán
+                </button>
+              </div>
+            </div>
+
+            <div class="h-[1px] bg-surface-container my-2"></div>
+
+            <div class="flex items-center justify-between text-on-surface-variant">
+              <span>Tạm tính hàng hóa:</span>
+              <span class="font-medium">{{ formatCurrency(order.subtotal || order.totalAmount) }}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-on-surface-variant">
+              <span>Phí đóng gói & vận chuyển:</span>
+              <span class="font-medium">{{ formatCurrency(order.shippingFee || 0) }}</span>
+            </div>
+
+            <div *ngIf="order.discount" class="flex items-center justify-between text-emerald-700">
+              <span>Chiết khấu ưu đãi:</span>
+              <span class="font-medium">-{{ formatCurrency(order.discount) }}</span>
+            </div>
+
+            <div class="h-[1px] bg-surface-container my-2"></div>
+
+            <div class="flex items-center justify-between text-sm font-bold text-primary pt-1">
+              <span>Tổng thanh toán:</span>
+              <span class="text-lg text-emerald-800">{{ formatCurrency(order.totalAmount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút quay lại -->
+        <a routerLink="/orders/list" class="w-full py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-xs font-semibold flex items-center justify-center gap-1 transition-colors">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span>Quay lại Danh sách Đơn hàng</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN CHUYỂN TRẠNG THÁI (Confirmation Dialog) -->
+  <div *ngIf="isConfirmStatusModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-[#0A2540]/40 backdrop-blur-sm" (click)="closeConfirmStatusModal()">
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-surface-container flex flex-col gap-4 animate-in fade-in zoom-in-95" (click)="$event.stopPropagation()">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl">published_with_changes</span>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <h3 class="font-bold text-primary text-base">Xác nhận chuyển trạng thái đơn hàng</h3>
+          <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+            Bạn có chắc chắn muốn chuyển đơn hàng <strong>#{{ order?.orderCode }}</strong> sang bước:
+          </p>
+          <span class="mt-2 inline-block px-3 py-1 rounded-lg bg-primary text-white text-xs font-bold">
+            {{ nextTargetStatusLabel }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-container">
+        <button (click)="closeConfirmStatusModal()" type="button" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-on-surface transition-colors">
+          Hủy bỏ
+        </button>
+        <button (click)="confirmStatusChange()" [disabled]="isUpdatingStatus" type="button" class="px-4 py-2 rounded-lg bg-primary hover:bg-[#071b30] text-xs font-semibold text-white transition-colors flex items-center gap-1.5 shadow-sm">
+          <span *ngIf="isUpdatingStatus" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span>Xác nhận thực hiện</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL OVERLAY: DIALOG HỦY ĐƠN HÀNG (E3 Validation) -->
+  <div *ngIf="isCancelModalOpen" class="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-[#0A2540]/40 backdrop-blur-sm" (click)="closeCancelModal()">
+    <div class="relative w-full max-w-lg bg-white rounded-xl shadow-2xl p-space-xl flex flex-col gap-space-md border border-surface-variant animate-in fade-in zoom-in-95" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between gap-space-sm">
+        <div class="flex items-start gap-space-sm min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-[#C85A32]/10 text-[#C85A32] flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-2xl">warning</span>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <h3 class="font-headline-md text-lg text-[#0A2540] font-bold">Hủy đơn hàng #{{ order?.orderCode }}</h3>
+            <span class="font-body-sm text-xs text-on-surface-variant">Thao tác này sẽ tự động hoàn trả số lượng tồn kho sản phẩm</span>
+          </div>
+        </div>
+        <button (click)="closeCancelModal()" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:bg-surface-container hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Form Inputs Container -->
+      <div class="space-y-3 pt-2">
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-xs text-on-surface font-semibold flex items-center gap-1" for="cancelReasonPreset">
+            Lý do hủy đơn <span class="text-rose-600">*</span>
+          </label>
+          <div class="relative">
+            <select id="cancelReasonPreset" [(ngModel)]="selectedCancelPreset" class="w-full h-10 px-3 pr-8 rounded-lg bg-surface-container-low font-body-md text-xs text-on-surface appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0A2540]/20 border border-surface-variant cursor-pointer">
+              <option value="customer_request">Khách hàng chủ động yêu cầu hủy đơn</option>
+              <option value="out_of_stock">Tác phẩm hết hàng / phôi nung lỗi không đạt chuẩn</option>
+              <option value="wrong_info">Thông tin địa chỉ nhận không thể liên hệ xác nhận</option>
+              <option value="change_item">Khách hàng muốn đổi sang mẫu tác phẩm khác</option>
+              <option value="other">Lý do khác (Bắt buộc diễn giải chi tiết bên dưới)</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-outline pointer-events-none text-xl">arrow_drop_down</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-xs text-on-surface font-semibold flex items-center gap-1" for="cancelReasonDetail">
+            Chi tiết lý do hủy đơn <span class="text-rose-600">* (Bắt buộc không được để trống)</span>
+          </label>
+          <textarea id="cancelReasonDetail" [(ngModel)]="cancelReasonDetail" rows="3"
+                    class="w-full p-3 rounded-lg bg-surface-container-low font-body-md text-xs text-on-surface focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#0A2540]/20 resize-none border"
+                    [ngClass]="cancelErrorMessage ? 'border-rose-500 bg-rose-50/30' : 'border-surface-variant'"
+                    placeholder="Vui lòng nhập lý do cụ thể (bắt buộc)..."></textarea>
+          
+          <!-- Error validation notice (E3) -->
+          <div *ngIf="cancelErrorMessage" class="flex items-center gap-1 text-rose-600 text-[11px] font-semibold mt-0.5">
+            <span class="material-symbols-outlined text-sm">error</span>
+            <span>{{ cancelErrorMessage }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div class="flex items-center justify-end gap-space-sm pt-3 border-t border-surface-container">
+        <button (click)="closeCancelModal()" type="button" class="h-10 px-4 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-lg text-xs font-semibold transition-colors">
+          Quay lại
+        </button>
+        <button (click)="submitCancelOrder()" [disabled]="isSubmittingCancel" type="button" class="h-10 px-5 rounded-lg bg-[#C85A32] hover:bg-[#a23e18] text-white font-label-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md transition-all">
+          <span *ngIf="isSubmittingCancel" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span *ngIf="!isSubmittingCancel" class="material-symbols-outlined text-base">delete_forever</span>
+          <span>Xác nhận hủy đơn</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
