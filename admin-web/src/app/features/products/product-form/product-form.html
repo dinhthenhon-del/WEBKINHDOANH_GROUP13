@@ -264,39 +264,6 @@
             </div>
           </div>
         </div>
-
-        <!-- 5. TRẠNG THÁI & ĐẶC QUYỀN PHÁT HÀNH -->
-        <div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-container space-y-space-md">
-          <div class="flex items-center gap-2 pb-space-sm border-b border-surface-container">
-            <span class="material-symbols-outlined text-secondary text-xl">toggle_on</span>
-            <h2 class="font-headline-sm text-base text-primary font-bold">Trạng thái phát hành</h2>
-          </div>
-
-          <!-- Trạng thái bán -->
-          <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
-            <div class="flex flex-col">
-              <span class="font-label-md text-xs font-bold text-primary">Hiển thị trên gian hàng</span>
-              <span class="text-[11px] text-outline">Khách hàng có thể tìm kiếm &amp; đặt mua</span>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" [checked]="product.status === 'active'" (change)="product.status = $any($event.target).checked ? 'active' : 'inactive'" class="sr-only peer" />
-              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-            </label>
-          </div>
-
-          <!-- Cho phép cá nhân hóa 2D -->
-          <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low">
-            <div class="flex flex-col">
-              <span class="font-label-md text-xs font-bold text-primary">Hỗ trợ Xưởng 2D</span>
-              <span class="text-[11px] text-outline">Cho phép khắc ấn triện &amp; thư pháp</span>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" [(ngModel)]="product.custom2DEnabled" name="custom2DEnabled" class="sr-only peer" />
-              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
-            </label>
-          </div>
-        </div>
-
       </div>
 
     </form>

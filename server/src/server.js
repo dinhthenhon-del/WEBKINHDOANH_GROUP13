@@ -207,18 +207,22 @@ app.get('/api/products', async (req, res) => {
         query.status = status;
       }
     } else {
-      // Phía Customer (UC-C03): Không hiển thị sản phẩm trạng thái "Ngừng bán" (inactive) hoặc "Hết hàng" (stock = 0)
+      // Phía Customer: Hiển thị các sản phẩm đang bán (active)
       query.status = 'active';
-      query.stock = { $gt: 0 };
+      if (req.query.inStock === 'true') {
+        query.stock = { $gt: 0 };
+      }
     }
 
     // 6. Sắp xếp
     let sortOption = { createdAt: -1 };
-    if (sort === 'price-asc') sortOption = { price: 1 };
-    else if (sort === 'price-desc') sortOption = { price: -1 };
-    else if (sort === 'rating' || sort === 'averageRating') sortOption = { averageRating: -1, reviewCount: -1 };
-    else if (sort === 'stock-asc') sortOption = { stock: 1 };
-    else if (sort === 'stock-desc') sortOption = { stock: -1 };
+    if (sort === 'price-asc' || sort === 'price_asc') sortOption = { price: 1, _id: 1 };
+    else if (sort === 'price-desc' || sort === 'price_desc') sortOption = { price: -1, _id: 1 };
+    else if (sort === 'rating' || sort === 'averageRating') sortOption = { averageRating: -1, reviewCount: -1, _id: 1 };
+    else if (sort === 'stock-asc' || sort === 'stock_asc') sortOption = { stock: 1, _id: 1 };
+    else if (sort === 'stock-desc' || sort === 'stock_desc') sortOption = { stock: -1, _id: 1 };
+    else if (sort === 'oldest') sortOption = { createdAt: 1, _id: 1 };
+    else if (sort === 'newest') sortOption = { createdAt: -1, _id: 1 };
 
     // 7. Phân trang
     const numLimit = Number(limit) > 0 ? Number(limit) : 0;
