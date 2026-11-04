@@ -350,10 +350,8 @@ export class Returns implements OnInit {
   }
 
   // --- LIGHTBOX PREVIEW ---
-  fallbackEvidenceImage = '/broken_ceramic_evidence.jpg';
-
   getEvidenceImageUrl(img: string | undefined | null): string {
-    if (!img) return this.fallbackEvidenceImage;
+    if (!img) return '';
     const str = String(img).trim();
     if (str.startsWith('data:image/') || str.startsWith('http://') || str.startsWith('https://')) {
       return str;
@@ -366,8 +364,16 @@ export class Returns implements OnInit {
 
   onEvidenceImgError(event: Event): void {
     const target = event.target as HTMLImageElement;
-    if (target && target.src !== this.fallbackEvidenceImage) {
-      target.src = this.fallbackEvidenceImage;
+    if (target) {
+      const currentSrc = target.src || '';
+      if (!currentSrc.includes(':5000/uploads/') && !currentSrc.startsWith('data:')) {
+        const filename = currentSrc.split('/').pop();
+        if (filename) {
+          target.src = `http://localhost:5000/uploads/${filename}`;
+          return;
+        }
+      }
+      target.classList.add('opacity-30');
     }
   }
 

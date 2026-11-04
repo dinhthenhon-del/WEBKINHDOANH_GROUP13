@@ -491,7 +491,7 @@
             <div class="flex flex-col gap-space-sm">
               <div class="flex items-center justify-between">
                 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
-                  Hình ảnh &amp; Video thẩm định gửi kèm ({{ selectedReturn.evidenceImages?.length || 0 }} tệp)
+                  Hình ảnh minh chứng thẩm định gửi kèm ({{ selectedReturn.evidenceImages?.length || 0 }} tệp)
                 </span>
                 <span class="font-label-sm text-label-sm text-emerald-700 font-semibold flex items-center gap-1">
                   <span class="material-symbols-outlined text-[14px]">verified</span> Đã xác thực tệp gốc
@@ -508,13 +508,8 @@
                   </div>
                 </div>
 
-                <!-- Unboxing Video Simulation Card -->
-                <div class="group relative rounded-lg overflow-hidden h-36 bg-primary flex flex-col items-center justify-center p-2 text-center cursor-pointer shadow-sm hover:bg-[#07192c] transition-colors">
-                  <div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center mb-1 shadow-md">
-                    <span class="material-symbols-outlined text-[20px]">play_arrow</span>
-                  </div>
-                  <span class="text-on-primary font-label-sm text-label-sm font-semibold">Video bóc hộp (45s)</span>
-                  <span class="text-on-primary/70 font-body-sm text-[11px]">MP4 • 1080p FHD</span>
+                <div *ngIf="!selectedReturn.evidenceImages || selectedReturn.evidenceImages.length === 0" class="col-span-full py-8 text-center text-on-surface-variant text-sm italic">
+                  Không có hình ảnh minh chứng đính kèm
                 </div>
               </div>
             </div>
