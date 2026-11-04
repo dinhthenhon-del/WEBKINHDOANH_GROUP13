@@ -594,13 +594,14 @@
               <div>BAN QUẢN LÝ LÀNG GỐM THANH XUÂN<br><br><br><br><i>(Xác thực di sản)</i></div>
             </div>
           </div>
-          <script>
-            window.onload = function() { window.print(); };
-          <\/script>
         </body>
         </html>
       `);
       printWin.document.close();
+      printWin.focus();
+      setTimeout(function () {
+        try { printWin.print(); } catch (err) {}
+      }, 500);
     }
 
     // Chuyển file được chọn sang chuỗi Base64 DataURL (nén gọn < 800px)
