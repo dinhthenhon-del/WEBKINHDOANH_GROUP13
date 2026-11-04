@@ -81,8 +81,9 @@ export class Login {
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const loginApiUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/auth/login`;
 
-    fetch('http://localhost:5000/api/auth/login', {
+    fetch(loginApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -123,28 +124,12 @@ export class Login {
       .catch((err) => {
         clearTimeout(timeoutId);
         this.isLoading = false;
-        console.error('Lỗi đăng nhập admin:', err);
+        console.error('Lỗi kết nối máy chủ xác thực:', err);
 
-        // Fallback kiểm tra thông tin mặc định nếu server tạm thời gián đoạn
-        if (
-          (trimmedEmail === 'admin@gombattrang.vn' && this.password === 'GomBatTrang2024@') ||
-          (trimmedEmail === 'admin@gomthanhxuan.vn' && this.password === 'admin123')
-        ) {
-          const fallbackAdmin = {
-            fullName: trimmedEmail === 'admin@gomthanhxuan.vn' ? 'Quản trị viên Thanh Xuân' : 'Trưởng ban Quản trị Bát Tràng',
-            email: trimmedEmail,
-            phone: '0901234567',
-            role: 'admin',
-            status: 'active',
-          };
-          localStorage.setItem('admin_user', JSON.stringify(fallbackAdmin));
-          this.router.navigate(['/dashboard']);
+        if (err?.name === 'AbortError') {
+          this.errorMessage = 'Quá thời gian kết nối máy chủ xác thực. Vui lòng kiểm tra lại kết nối mạng!';
         } else {
-          if (err?.name === 'AbortError') {
-            this.errorMessage = 'Quá thời gian kết nối máy chủ xác thực. Vui lòng thử lại!';
-          } else {
-            this.errorMessage = 'Đăng nhập không thành công. Vui lòng kiểm tra lại Email và Mật khẩu!';
-          }
+          this.errorMessage = 'Không thể kết nối đến máy chủ xác thực (Port 5000). Vui lòng đảm bảo backend đang hoạt động!';
         }
         this.cdr.detectChanges();
       });

@@ -182,36 +182,50 @@
     </a>
   </div>
   <p class="font-label-sm text-xs text-on-surface-variant text-center leading-relaxed">
-    Bản ghi đánh giá sẽ được lưu trữ chuẩn hóa theo cấu trúc reviews (accountId, productId, orderId, rating, comment, createdAt) và xác thực bởi Minh Gốm Bát Tràng 1705.
+    Đánh giá của quý khách là nguồn động lực quý báu để các nghệ nhân Làng Gốm Thanh Xuân gìn giữ và thăng hoa tinh hoa di sản Bát Tràng.
   </p>
 </div>
 </form>
 
 <script>
-window.selectedReviewRating = 5;
-window.currentReviewIndex = 1;
-window.currentReviewProductId = 'MG-1705';
+(function() {
+  window.selectedReviewRating = 5;
+  window.currentReviewIndex = 1;
+  window.currentReviewProductId = 'MG-1705';
 
-const reviewRatingDesc = {
-  1: '1/5 • Cần Cải Thiện Chất Lượng',
-  2: '2/5 • Đạt Mức Tiêu Chuẩn Cơ Bản',
-  3: '3/5 • Hài Lòng Cốt Gốm Bát Tràng',
-  4: '4/5 • Thượng Phẩm Tinh Xảo Tuyệt Mỹ',
-  5: '5/5 • Tuyệt Tác Ngự Phẩm Cung Đình'
-};
+  var reviewRatingDesc = {
+    1: '1/5 • Cần Cải Thiện Chất Lượng',
+    2: '2/5 • Đạt Mức Tiêu Chuẩn Cơ Bản',
+    3: '3/5 • Hài Lòng Cốt Gốm Bát Tràng',
+    4: '4/5 • Thượng Phẩm Tinh Xảo Tuyệt Mỹ',
+    5: '5/5 • Tuyệt Tác Ngự Phẩm Cung Đình'
+  };
 
-const reviewArtifactList = {
-  1: {
-    id: 'MG-1705',
-    name: 'MG-1705 (Bình Hút Lộc)',
-    fullName: 'Bình Hút Lộc Men Lam Đại Việt Cổ Điển'
-  },
-  2: {
-    id: 'MG-2088',
-    name: 'MG-2088 (Bộ Chén Trà Khảm Ngọc)',
-    fullName: 'Bộ Chén Trà Khảm Ngọc Thủy Trúc Liên Hoa'
+  var reviewArtifactList = {
+    1: {
+      id: 'MG-1705',
+      name: 'MG-1705 (Bình Hút Lộc)',
+      fullName: 'Bình Hút Lộc Men Lam Đại Việt Cổ Điển'
+    },
+    2: {
+      id: 'MG-2088',
+      name: 'MG-2088 (Bộ Chén Trà Khảm Ngọc)',
+      fullName: 'Bộ Chén Trà Khảm Ngọc Thủy Trúc Liên Hoa'
+    }
+  };
+
+  // Đọc thông tin động nếu có param truyền qua router
+  var param = window.currentViewParam;
+  if (param && typeof param === 'object') {
+    if (param.productName || param.name) {
+      reviewArtifactList[1].fullName = param.productName || param.name;
+      reviewArtifactList[1].name = param.productName || param.name;
+    }
+    if (param.productId) {
+      reviewArtifactList[1].id = param.productId;
+      window.currentReviewProductId = param.productId;
+    }
   }
-};
 
 window.switchToReviewItem = function(index) {
   window.currentReviewIndex = index;
@@ -382,11 +396,12 @@ document.getElementById('collectorReviewForm')?.addEventListener('submit', funct
   }
 });
 
-// Char count listener
-document.getElementById('reviewComment')?.addEventListener('input', function() {
-  const lbl = document.getElementById('charCountLabel');
-  if (lbl) {
-    lbl.innerText = 'Đã nhập: ' + this.value.length + ' ký tự';
-  }
-});
+  // Char count listener
+  document.getElementById('reviewComment')?.addEventListener('input', function() {
+    const lbl = document.getElementById('charCountLabel');
+    if (lbl) {
+      lbl.innerText = 'Đã nhập: ' + this.value.length + ' ký tự';
+    }
+  });
+})();
 </script>

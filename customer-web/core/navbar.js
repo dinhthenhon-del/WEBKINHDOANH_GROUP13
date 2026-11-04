@@ -79,16 +79,40 @@ window.kickBlockedUser = function (message) {
   }, 250);
 };
 
-// Heartbeat định kỳ 15 giây: Kiểm tra trạng thái tài khoản không làm nghẽn mạng
+// Heartbeat định kỳ 15 giây: Chỉ đăng xuất khi máy chủ xác nhận tài khoản bị khóa thực sự (không kick khi rớt mạng tạm thời)
 setInterval(function () {
   if (currentUser && currentUser._id) {
     ApiService.checkStatus(currentUser._id, function (err, res) {
-      if (err || (res && res.isBlocked)) {
+      if (!err && res && res.isBlocked) {
         window.kickBlockedUser((res && res.message) || 'Tài khoản của bạn hiện tại đã bị khóa');
       }
     });
   }
 }, 15000);
+
+let isNavigatingFromCode = false;
+
+// Hàm phân tích Hash URL: bóc tách phân hệ và tham số truy vấn (ví dụ #shop?search=binh)
+window.parseHashUrl = function (hashStr) {
+  if (!hashStr) return { view: 'home', param: null };
+  const clean = hashStr.replace(/^#/, '');
+  const qIdx = clean.indexOf('?');
+  if (qIdx === -1) {
+    return { view: clean || 'home', param: null };
+  }
+  const view = clean.substring(0, qIdx) || 'home';
+  const queryPart = clean.substring(qIdx + 1);
+  const searchParams = new URLSearchParams(queryPart);
+  const paramObj = {};
+  for (const [k, v] of searchParams.entries()) {
+    paramObj[k] = v;
+  }
+  let resolvedParam = paramObj;
+  if (Object.keys(paramObj).length === 1 && paramObj.id) {
+    resolvedParam = paramObj.id;
+  }
+  return { view, param: resolvedParam };
+};
 
 document.addEventListener('DOMContentLoaded', function () {
   initNavbar();
@@ -96,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (currentUser && currentUser._id) {
     ApiService.checkStatus(currentUser._id, function (err, res) {
-      if (err || (res && res.isBlocked)) {
+      if (!err && res && res.isBlocked) {
         window.kickBlockedUser((res && res.message) || 'Tài khoản của bạn hiện tại đã bị khóa');
         return;
       }
@@ -104,15 +128,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Khởi tạo trang ban đầu dựa trên hash URL nếu có, mặc định là 'home'
-  const initialHash = window.location.hash ? window.location.hash.replace('#', '') : '';
-  const initialPage = initialHash || 'home';
-  window.dieuHuong(initialPage);
+  const initialParsed = window.parseHashUrl(window.location.hash);
+  window.dieuHuong(initialParsed.view || 'home', null, initialParsed.param, true);
 
-  // Lắng nghe sự kiện hash URL thay đổi
+  // Lắng nghe sự kiện hash URL thay đổi (hỗ trợ nút Back/Forward và nạp trang chuẩn xác 1 lần duy nhất)
   window.addEventListener('hashchange', function () {
-    const currentHash = window.location.hash ? window.location.hash.replace('#', '') : '';
-    if (currentHash) {
-      window.dieuHuong(currentHash);
+    if (isNavigatingFromCode) {
+      isNavigatingFromCode = false;
+      return;
+    }
+    const currentParsed = window.parseHashUrl(window.location.hash);
+    if (currentParsed.view) {
+      window.dieuHuong(currentParsed.view, null, currentParsed.param, true);
     }
   });
 });
@@ -302,11 +329,24 @@ function updateAvatarState() {
   if (window.CartView) window.CartView.refreshCount();
 }
 
-window.dieuHuong = function (tenPhanHe, element, param) {
+window.dieuHuong = function (tenPhanHe, element, param, skipHashUpdate) {
   if (element && !(element instanceof HTMLElement) && typeof element === 'object' && typeof param === 'undefined') {
     param = element;
     element = null;
   }
+
+  // Tách nếu tenPhanHe truyền vào có sẵn dấu '?'
+  if (typeof tenPhanHe === 'string' && tenPhanHe.includes('?')) {
+    const parts = tenPhanHe.split('?');
+    tenPhanHe = parts[0];
+    if (!param && parts[1]) {
+      const qParams = new URLSearchParams(parts[1]);
+      const obj = {};
+      for (const [k, v] of qParams.entries()) obj[k] = v;
+      param = (Object.keys(obj).length === 1 && obj.id) ? obj.id : obj;
+    }
+  }
+
   window.currentViewParam = param;
   const viewport = document.getElementById('app-viewport');
   if (!viewport) {
@@ -315,8 +355,32 @@ window.dieuHuong = function (tenPhanHe, element, param) {
   }
   const url = `views/${tenPhanHe}.html?v=${Date.now()}`;
 
-  // Update active state
-  window.location.hash = '#' + tenPhanHe;
+  // Update URL hash chuẩn xác 1 lần, không kích hoạt hashchange kép
+  if (!skipHashUpdate) {
+    let newHash = '#' + tenPhanHe;
+    if (param) {
+      if (typeof param === 'string' || typeof param === 'number') {
+        if (tenPhanHe === 'product-detail' || tenPhanHe === 'collection-detail') {
+          newHash += '?id=' + encodeURIComponent(param);
+        } else if (tenPhanHe === 'profile') {
+          newHash += '?tab=' + encodeURIComponent(param);
+        }
+      } else if (typeof param === 'object' && param !== null) {
+        const q = new URLSearchParams();
+        for (const k in param) {
+          if (param[k] !== undefined && param[k] !== null && typeof param[k] !== 'function') {
+            q.append(k, param[k]);
+          }
+        }
+        const qs = q.toString();
+        if (qs) newHash += '?' + qs;
+      }
+    }
+    if (window.location.hash !== newHash) {
+      isNavigatingFromCode = true;
+      window.location.hash = newHash;
+    }
+  }
   document.querySelectorAll('.nav-menu-item').forEach(el => {
     el.classList.remove('text-[#b91c1c]', 'font-bold', 'border-b-2', 'border-[#b91c1c]');
     el.classList.add('text-stone-700');
@@ -476,6 +540,24 @@ function ganSuKienLogin() {
           window.pendingAction = null;
           act();
         } else {
+          // Khôi phục bản nháp thiết kế 2D vừa tạo trước khi đăng nhập nếu có
+          try {
+            const pending2dStr = sessionStorage.getItem('craftory_pending_2d_draft');
+            if (pending2dStr) {
+              sessionStorage.removeItem('craftory_pending_2d_draft');
+              const draftData = JSON.parse(pending2dStr);
+              if (draftData && draftData.targetProductId && draftData.customization) {
+                if (window.CartModule && typeof window.CartModule.addToCart === 'function') {
+                  window.CartModule.addToCart(draftData.targetProductId, 1, draftData.customization).then(() => {
+                    window.CartModule.openDrawer();
+                  });
+                  return;
+                }
+              }
+            }
+          } catch (draftErr) {
+            console.warn('Lỗi khôi phục bản nháp 2D:', draftErr);
+          }
           dieuHuong('profile');
         }
       }

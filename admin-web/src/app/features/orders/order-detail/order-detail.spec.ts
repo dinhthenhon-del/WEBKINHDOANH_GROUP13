@@ -1,4 +1,7 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { OrderDetail } from './order-detail';
 
 describe('OrderDetail', () => {
@@ -8,6 +11,7 @@ describe('OrderDetail', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [OrderDetail],
+      providers: [provideHttpClient(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(OrderDetail);

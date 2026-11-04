@@ -5,11 +5,14 @@
 
 <!-- 2. Khi đang ở các trang Quản trị (/customers, etc.): Render khung Dashboard chuẩn Bát Tràng -->
 <div *ngIf="!isAuthPage">
-  <!-- Stitch Admin Master Layout: Sidebar Bên Trái -->
-  <aside class="fixed left-0 top-0 h-screen w-[260px] bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between">
+  <!-- Stitch Admin Master Layout: Sidebar Bên Trái (Hỗ trợ Responsive Drawer trên mobile/tablet) -->
+  <div *ngIf="isMobileSidebarOpen" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden transition-opacity" (click)="closeMobileSidebar()"></div>
+
+  <aside class="fixed left-0 top-0 h-screen w-[260px] bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out"
+    [ngClass]="isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
     <div class="flex flex-col">
       <!-- Brand Logo -->
-      <div class="h-16 px-space-lg flex items-center gap-space-sm border-b border-surface-container">
+      <div class="h-16 px-space-lg flex items-center justify-between border-b border-surface-container">
         <div class="flex items-center gap-3 w-full">
           <img alt="Logo Làng Gốm Thanh Xuân" class="h-10 w-10 rounded-xl object-cover shrink-0 shadow-sm border-2 border-[#0A2540]" src="minimalist_archway_pottery_icon.png">
           <div class="flex flex-col min-w-0">
@@ -17,32 +20,35 @@
             <span class="font-label-sm text-[10px] text-secondary uppercase font-bold tracking-wider leading-none mt-0.5">Bát Tràng Admin</span>
           </div>
         </div>
+        <button (click)="closeMobileSidebar()" class="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" type="button" aria-label="Đóng menu">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
       </div>
 
       <!-- Navigation Menu -->
       <nav class="px-space-md py-space-md space-y-space-xs flex flex-col">
         <!-- Active Module for Member 5: Dashboard -->
-        <a routerLink="/dashboard" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
+        <a routerLink="/dashboard" (click)="closeMobileSidebar()" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">dashboard</span>
           <span class="font-bold">Dashboard</span>
         </a>
         <!-- Active Module for Member 2: Products & Inventory Management -->
-        <a routerLink="/products" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg transition-colors cursor-pointer">
+        <a routerLink="/products" (click)="closeMobileSidebar()" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">inventory_2</span>
           <span class="font-bold">Sản phẩm &amp; Tồn kho</span>
         </a>
         <!-- Active Module for Member 3: Order Management (UC-A03) -->
-        <a routerLink="/orders" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
+        <a routerLink="/orders" (click)="closeMobileSidebar()" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">receipt_long</span>
           <span class="font-bold">Đơn hàng</span>
         </a>
         <!-- Active Module for Member 5: Returns & Refunds (UC-A05) -->
-        <a routerLink="/returns" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
+        <a routerLink="/returns" (click)="closeMobileSidebar()" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">published_with_changes</span>
           <span class="font-bold truncate">Đổi / Trả hàng</span>
         </a>
         <!-- Active Module for Member 1: Customer Management -->
-        <a routerLink="/customers" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg transition-colors cursor-pointer">
+        <a routerLink="/customers" (click)="closeMobileSidebar()" routerLinkActive="bg-[#0A2540] text-white shadow-sm" [routerLinkActiveOptions]="{exact: false}" class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl font-label-lg text-label-lg transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-xl">group</span>
           <span class="font-bold">Quản lý Khách hàng</span>
         </a>
@@ -83,12 +89,15 @@
   </aside>
 
   <!-- Top Header Bar -->
-  <div class="pl-[260px]">
-    <header class="fixed top-0 left-[260px] right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-xl flex items-center justify-between border-b border-surface-container">
-      <div class="flex items-center gap-space-sm font-label-md text-label-md text-on-surface-variant">
-        <span class="font-headline-sm text-base text-primary font-bold tracking-tight">Làng Gốm Thanh Xuân</span>
-        <span class="text-outline-variant mx-2 text-sm font-light">/</span>
-        <span class="font-label-md text-sm font-medium text-on-surface-variant">{{ currentModuleName }}</span>
+  <div class="pl-0 lg:pl-[260px]">
+    <header class="fixed top-0 left-0 lg:left-[260px] right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-4 lg:px-space-xl flex items-center justify-between border-b border-surface-container">
+      <div class="flex items-center gap-2 lg:gap-space-sm font-label-md text-label-md text-on-surface-variant min-w-0">
+        <button (click)="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl text-primary hover:bg-surface-container transition-colors cursor-pointer shrink-0" type="button" aria-label="Mở menu quản trị">
+          <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+        <span class="font-headline-sm text-sm sm:text-base text-primary font-bold tracking-tight truncate">Làng Gốm Thanh Xuân</span>
+        <span class="text-outline-variant mx-1 sm:mx-2 text-sm font-light">/</span>
+        <span class="font-label-md text-xs sm:text-sm font-medium text-on-surface-variant truncate">{{ currentModuleName }}</span>
       </div>
       <div class="flex items-center gap-space-lg">
         <button class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer" type="button">

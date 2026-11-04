@@ -22,7 +22,7 @@ export class Returns implements OnInit {
   searchQuery = '';
   statusFilter: 'all' | 'pending' | 'approved' | 'rejected' = 'all';
   reasonFilter = '';
-  timeframeFilter = '30d';
+  timeframeFilter = 'all';
 
   // KPI Ribbon
   kpi = {
@@ -80,9 +80,8 @@ export class Returns implements OnInit {
     this.isLoading = true;
 
     const timer = setTimeout(() => {
-      if (this.isLoading && this.returns.length === 0) {
+      if (this.isLoading) {
         this.isLoading = false;
-        this.returns = this.returnService.getFallbackReturns();
         this.calculateKpi();
         this.applyFilter();
         this.cdr.detectChanges();
@@ -93,10 +92,10 @@ export class Returns implements OnInit {
       next: (res) => {
         clearTimeout(timer);
         this.isLoading = false;
-        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+        if (res && res.success && Array.isArray(res.data)) {
           this.returns = res.data;
         } else {
-          this.returns = this.returnService.getFallbackReturns();
+          this.returns = [];
         }
         this.calculateKpi();
         this.applyFilter();
@@ -105,7 +104,7 @@ export class Returns implements OnInit {
       error: (err) => {
         clearTimeout(timer);
         this.isLoading = false;
-        console.warn('Backend chưa sẵn sàng, dùng dữ liệu mẫu Stitch:', err);
+        console.warn('Không thể nạp dữ liệu đổi/trả từ máy chủ, chuyển sang chế độ dự phòng:', err);
         this.returns = this.returnService.getFallbackReturns();
         this.calculateKpi();
         this.applyFilter();
@@ -118,6 +117,8 @@ export class Returns implements OnInit {
     this.kpi.pending = this.returns.filter(r => r.status === 'pending').length;
     this.kpi.approved = this.returns.filter(r => r.status === 'approved' || r.status === 'completed').length;
     this.kpi.rejected = this.returns.filter(r => r.status === 'rejected').length;
+    const resolved = this.kpi.approved + this.kpi.rejected;
+    this.kpi.slaRate = resolved > 0 ? Math.round((this.kpi.approved / resolved) * 1000) / 10 : 100;
   }
 
   applyFilter(): void {
@@ -139,7 +140,16 @@ export class Returns implements OnInit {
         if (this.reasonFilter === 'loi-nung' && !reasonLower.includes('nung') && !reasonLower.includes('bọt khí')) return false;
       }
 
-      // 3. Search query
+      // 3. Timeframe Filter
+      if (this.timeframeFilter && this.timeframeFilter !== 'all') {
+        const itemTime = new Date(r.createdAt || Date.now()).getTime();
+        const now = Date.now();
+        if (this.timeframeFilter === '7d' && (now - itemTime) > 7 * 86400000) return false;
+        if (this.timeframeFilter === '30d' && (now - itemTime) > 30 * 86400000) return false;
+        if (this.timeframeFilter === 'quarter' && (now - itemTime) > 90 * 86400000) return false;
+      }
+
+      // 4. Search query
       if (query) {
         const orderCode = this.getOrderCode(r).toLowerCase();
         const customerName = this.getCustomerName(r).toLowerCase();
@@ -178,7 +188,7 @@ export class Returns implements OnInit {
     this.searchQuery = '';
     this.statusFilter = 'all';
     this.reasonFilter = '';
-    this.timeframeFilter = '30d';
+    this.timeframeFilter = 'all';
     this.currentPage = 1;
     this.applyFilter();
   }

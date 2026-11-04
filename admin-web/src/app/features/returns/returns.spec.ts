@@ -23,8 +23,11 @@ describe('Returns', () => {
   });
 
   it('should have initial returns loaded and filter properly', () => {
-    component.loadReturns();
+    component.returns = component['returnService'].getFallbackReturns();
+    component.calculateKpi();
+    component.applyFilter();
     expect(component.returns.length).toBeGreaterThan(0);
+    expect(component.filteredReturns.length).toBeGreaterThan(0);
   });
 
   it('should validate E1 rejection reason when empty', () => {

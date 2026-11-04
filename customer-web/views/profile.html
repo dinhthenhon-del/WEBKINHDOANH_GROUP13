@@ -445,12 +445,13 @@
     // Modal Control: Return
     function openReturnModal(orderCode, orderId, items) {
       window.activeReturnOrderId = orderId || orderCode;
+      window.activeReturnOrderItems = Array.isArray(items) ? items : [];
       const select = document.getElementById('return-product-select');
       if (select && Array.isArray(items) && items.length > 0) {
-        select.innerHTML = items.map(it => {
+        select.innerHTML = items.map((it, idx) => {
           const name = it.productName || (it.customization && it.customization.designName) || 'Tác phẩm';
-          return `<option value="${name}">${name} (${Number(it.unitPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
-        }).join('') + '<option value="Toàn bộ đơn hàng">Đổi trả toàn bộ đơn hàng</option>';
+          return `<option value="${idx}">${name} (${Number(it.unitPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
+        }).join('') + '<option value="all">Đổi trả toàn bộ đơn hàng</option>';
       }
       const modal = document.getElementById('modal-return');
       document.getElementById('modal-return-order-subtitle').innerText = 'Đơn hàng #' + (orderCode || orderId);
@@ -555,10 +556,93 @@
     }
 
     function downloadHeritageCertificate(orderId) {
-      showToast(
-        'toast-success',
-        'Tải chứng thư di sản thành công',
-        'Đã tạo tệp số hóa PDF có chữ ký triện của Nghệ Nhân Dân Gian Quốc Gia cho đơn hàng #' + orderId + '.'
+      const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
+      const printWin = window.open('', '_blank', 'width=850,height=750');
+      if (!printWin) {
+        showToast('toast-warning', '⚠️ Trình duyệt chặn popup', 'Vui lòng cho phép mở cửa sổ popup để xem và in Chứng thư di sản.');
+        return;
+      }
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Chứng Thư Di Sản Gốm Bát Tràng - Đơn #${orderId}</title>
+          <style>
+            body { font-family: 'Times New Roman', serif; padding: 40px; background: #fffdfa; color: #0a2540; }
+            .cert-border { border: 6px double #a23e18; padding: 32px; border-radius: 12px; text-align: center; }
+            h1 { font-size: 24px; text-transform: uppercase; color: #a23e18; margin-bottom: 4px; letter-spacing: 1px; }
+            h2 { font-size: 15px; font-weight: normal; font-style: italic; color: #555; margin-top: 0; }
+            .seal { width: 90px; height: 90px; border: 3px solid #b91c1c; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #b91c1c; font-weight: bold; font-size: 12px; margin: 16px auto; transform: rotate(-6deg); }
+            .desc { font-size: 15px; line-height: 1.8; margin: 20px 0; text-align: justify; }
+            .signatures { display: flex; justify-content: space-around; margin-top: 35px; font-weight: bold; font-size: 14px; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="cert-border">
+            <h1>CHỨNG THƯ BẢO VẬT DI SẢN GỐM BÁT TRÀNG</h1>
+            <h2>Minh Gốm Bát Tràng 1705 • Làng Nghề Truyền Thống Thăng Long - Hà Nội</h2>
+            <div class="seal">TRIỆN NGỰ<br>BÁT TRÀNG</div>
+            <div class="desc">
+              Chứng nhận đơn hàng độc bản mang mã số lưu trữ: <strong>#${orderId}</strong><br>
+              Được bảo chứng và lưu ký quyền sở hữu cho Thượng khách: <strong>${u.fullName || 'Nhà Sưu Tầm Thượng Lưu'}</strong><br>
+              Tác phẩm đạt chuẩn mực cốt nung cổ pháp 1.380°C, kỹ nghệ phủ men rạn hoàng cung và chữ ký triện thủ công xác thực bởi Ban Giám Tuyển Làng Gốm Thanh Xuân.
+            </div>
+            <div class="signatures">
+              <div>NGHỆ NHÂN DÂN GIAN TRƯỞNG LÒ<br><br><br><br><i>(Đã ấn triện số)</i></div>
+              <div>BAN QUẢN LÝ LÀNG GỐM THANH XUÂN<br><br><br><br><i>(Xác thực di sản)</i></div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+
+    // Chuyển file được chọn sang chuỗi Base64 DataURL (nén gọn < 800px)
+    function convertReturnFilesToBase64(files) {
+      return Promise.all(
+        (files || []).map(file => {
+          return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const dataUrl = e.target.result;
+              if (file.type && file.type.startsWith('image/')) {
+                const img = new Image();
+                img.onload = function () {
+                  const maxDim = 800;
+                  let w = img.width;
+                  let h = img.height;
+                  if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                      h = Math.round((h * maxDim) / w);
+                      w = maxDim;
+                    } else {
+                      w = Math.round((w * maxDim) / h);
+                      h = maxDim;
+                    }
+                  }
+                  const canvas = document.createElement('canvas');
+                  canvas.width = w;
+                  canvas.height = h;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, w, h);
+                  resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+              } else {
+                resolve(dataUrl);
+              }
+            };
+            reader.onerror = () => resolve(file.name || 'minh-chung.jpg');
+            reader.readAsDataURL(file);
+          });
+        })
       );
     }
 
@@ -581,9 +665,9 @@
     }
     window.handleProfileReturnReasonChange = handleProfileReturnReasonChange;
 
-    // Submit Return Form (Bắt buộc lý do khi chọn "Lý do khác" & Bắt buộc đính kèm ảnh/video)
+    // Submit Return Form: Bắt buộc lý do & minh chứng, gửi kèm items & ảnh Base64 thật
     window.selectedReturnFiles = [];
-    function submitReturnForm(e) {
+    async function submitReturnForm(e) {
       e.preventDefault();
 
       const reasonRadio = document.querySelector('input[name="return_reason"]:checked');
@@ -609,32 +693,47 @@
       // 3. Bắt buộc đính kèm ảnh/video minh chứng
       if (!window.selectedReturnFiles || window.selectedReturnFiles.length === 0) {
         showToast('toast-warning', '⚠️ Bắt buộc đính kèm minh chứng', 'Quý khách bắt buộc phải đính kèm ít nhất 1 hình ảnh hoặc video minh chứng mới có thể gửi yêu cầu đổi trả.');
-        document.getElementById('file-upload').click();
+        const fileIn = document.getElementById('file-upload');
+        if (fileIn) fileIn.click();
         return;
       }
 
-      closeReturnModal();
-
       const activeId = window.activeReturnOrderId;
-      const targetCard = document.querySelector(`[data-order-id="${activeId}"]`) || document.querySelector(`[data-order-code="${activeId}"]`);
-      if (targetCard) {
-        const retBtn = targetCard.querySelector('button[onclick*="openReturnModal"]');
-        if (retBtn) {
-          retBtn.disabled = true;
-          retBtn.className = 'px-3.5 py-2 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-title-md text-xs font-semibold opacity-60 cursor-not-allowed flex items-center gap-1.5';
-          retBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+      const select = document.getElementById('return-product-select');
+      const selectedIdx = select ? select.value : 'all';
+      const finalReason = reasonVal === 'Lý do khác' ? ('Lý do khác: ' + descVal) : (reasonVal + (descVal ? ': ' + descVal : ''));
+
+      // 4. Thu thập items đổi trả chính xác
+      let returnItems = [];
+      const orderItems = window.activeReturnOrderItems || [];
+      if (selectedIdx === 'all' || !orderItems.length) {
+        returnItems = orderItems.map(it => ({
+          productId: it.productId || it.product || it._id,
+          quantity: it.quantity || 1,
+          reason: finalReason
+        }));
+      } else {
+        const targetItem = orderItems[Number(selectedIdx)];
+        if (targetItem) {
+          returnItems = [{
+            productId: targetItem.productId || targetItem.product || targetItem._id,
+            quantity: targetItem.quantity || 1,
+            reason: finalReason
+          }];
         }
       }
-      const detailRetBtn = document.getElementById('detail-btn-return');
-      if (detailRetBtn) {
-        detailRetBtn.disabled = true;
-        detailRetBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-purple-100 text-purple-800 border border-purple-200 text-[12px] uppercase tracking-wider font-semibold opacity-60 cursor-not-allowed';
-        detailRetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+
+      // 5. Trạng thái Loading trên nút Submit
+      const submitBtn = document.querySelector('#return-form button[type="submit"]');
+      const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Đang tải minh chứng & gửi...</span>';
       }
 
-      const evidenceNames = window.selectedReturnFiles.map(f => f.name || 'minh-chung.jpg');
+      // 6. Chuyển ảnh sang Base64 để Admin xem được thật
+      const base64Images = await convertReturnFilesToBase64(window.selectedReturnFiles);
       const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
-      const finalReason = reasonVal === 'Lý do khác' ? ('Lý do khác: ' + descVal) : (reasonVal + (descVal ? ': ' + descVal : ''));
 
       if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && u && (u._id || u.id)) {
         ApiService.createReturnRequest({
@@ -642,30 +741,70 @@
           accountId: u._id || u.id,
           type: 'return',
           reason: finalReason,
-          evidenceImages: evidenceNames
-        }, function(err, res) {
-          console.log('Return request API result:', err, res);
-          if (!err && window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
+          evidenceImages: base64Images,
+          items: returnItems
+        }, function (err, res) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origBtnHtml;
+          }
+
+          if (err || !res || !res.success) {
+            showToast(
+              'toast-warning',
+              '⚠️ Gửi yêu cầu chưa thành công',
+              (res && res.message) || err || 'Máy chủ tạm thời gián đoạn kết nối. Vui lòng thử lại!'
+            );
+            return;
+          }
+
+          // Thành công thực tế từ máy chủ
+          closeReturnModal();
+
+          const targetCard = document.querySelector(`[data-order-id="${activeId}"]`) || document.querySelector(`[data-order-code="${activeId}"]`);
+          if (targetCard) {
+            const retBtn = targetCard.querySelector('button[onclick*="openReturnModal"]');
+            if (retBtn) {
+              retBtn.disabled = true;
+              retBtn.className = 'px-3.5 py-2 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 font-title-md text-xs font-semibold opacity-60 cursor-not-allowed flex items-center gap-1.5';
+              retBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+            }
+          }
+          const detailRetBtn = document.getElementById('detail-btn-return');
+          if (detailRetBtn) {
+            detailRetBtn.disabled = true;
+            detailRetBtn.className = 'inline-flex items-center gap-2 px-5 py-2.5 rounded bg-purple-100 text-purple-800 border border-purple-200 text-[12px] uppercase tracking-wider font-semibold opacity-60 cursor-not-allowed';
+            detailRetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">hourglass_top</span><span>Đang thẩm định đổi trả</span>';
+          }
+
+          showToast(
+            'toast-success',
+            '✅ Tiếp nhận yêu cầu đổi trả thành công!',
+            'Đã tiếp nhận yêu cầu đổi trả và bằng chứng minh chứng! Ban giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự đến tận tư gia hỗ trợ.'
+          );
+
+          document.getElementById('return-form').reset();
+          window.selectedReturnFiles = [];
+          const preview = document.getElementById('file-preview-list');
+          if (preview) {
+            preview.innerHTML = '';
+            preview.classList.add('hidden');
+          }
+
+          if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {
             window.OrdersModule.initProfileOrders();
           }
         });
-      }
-
-      showToast(
-        'toast-success',
-        '✅ Tiếp nhận yêu cầu đổi trả thành công!',
-        'Đã tiếp nhận yêu cầu đổi trả và bằng chứng minh chứng! Ban giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự đến tận tư gia hỗ trợ.'
-      );
-      document.getElementById('return-form').reset();
-      window.selectedReturnFiles = [];
-      const preview = document.getElementById('file-preview-list');
-      if (preview) {
-        preview.innerHTML = '';
-        preview.classList.add('hidden');
+      } else {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origBtnHtml;
+        }
+        showToast('toast-warning', '⚠️ Chưa đăng nhập', 'Vui lòng đăng nhập tài khoản trước khi gửi yêu cầu đổi trả.');
       }
     }
 
-    // Submit Review Form (Lưu đánh giá, hiển thị và chỉ cho đánh giá 1 lần)
+    // Submit Review Form: Chỉ đổi trạng thái UI sau khi máy chủ xác nhận lưu thành công
     function submitReviewForm(e) {
       e.preventDefault();
       const commentVal = document.getElementById('review-content') ? document.getElementById('review-content').value.trim() : '';
@@ -674,42 +813,16 @@
         return;
       }
 
-      closeReviewModal();
       const pId = window.activeReviewProductId;
       const oId = window.activeReviewOrderId;
       const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
       const accId = u._id || u.id || u.accountId;
 
-      // Đánh dấu đơn hàng này đã đánh giá tác phẩm trên localStorage
-      if (oId && pId) {
-        localStorage.setItem('reviewed_' + oId + '_' + pId, 'true');
-      }
-
-      // Lưu review vào bộ nhớ đệm craftory_cached_reviews để hiển thị tức thời trên trang chi tiết sản phẩm
-      try {
-        const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
-        const newLocalReview = {
-          _id: 'rev_' + Date.now(),
-          productId: pId,
-          productName: window.activeReviewTargetName || '',
-          orderId: oId,
-          customerName: u.fullName || u.email || 'Nhà Sưu Tầm',
-          rating: Number(currentRating),
-          comment: commentVal,
-          createdAt: new Date().toISOString()
-        };
-        const deduped = cached.filter(r => !(r.productId === pId && (r.orderId === oId || r.customerName === newLocalReview.customerName)));
-        deduped.unshift(newLocalReview);
-        localStorage.setItem('craftory_cached_reviews', JSON.stringify(deduped));
-      } catch (e) {}
-
-      // Cập nhật nút trên giao diện sang "Đã đánh giá"
-      const reviewBtn = document.getElementById(`btn-review-${oId}-${pId}`) || document.querySelector(`button[onclick*="'${pId}', '${oId}'"]`);
-      if (reviewBtn) {
-        const span = document.createElement('span');
-        span.className = 'px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-[11px] font-semibold flex items-center gap-1';
-        span.innerHTML = '<span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span><span>Đã đánh giá</span>';
-        reviewBtn.replaceWith(span);
+      const submitBtn = e.target.querySelector('button[type="submit"]') || document.getElementById('btn-submit-review');
+      const origHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span><span>Đang khắc ghi...</span>';
       }
 
       if (typeof ApiService !== 'undefined' && ApiService.createReview) {
@@ -720,21 +833,62 @@
           customerName: u.fullName || u.email || 'Nhà Sưu Tầm',
           rating: currentRating,
           comment: commentVal
-        }, function(err, res) {
-          console.log('Review API result:', err, res);
-          if (err && res && res.alreadyReviewed) {
-            showToast('toast-warning', '⚠️ Đã đánh giá', res.message || 'Quý khách đã đánh giá tác phẩm này rồi.');
+        }, function (err, res) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origHtml;
           }
+
+          if (err && (!res || !res.alreadyReviewed)) {
+            showToast('toast-warning', '⚠️ Chưa thể lưu đánh giá', (res && res.message) || err || 'Máy chủ tạm thời gián đoạn. Vui lòng thử lại!');
+            return;
+          }
+
+          closeReviewModal();
+
+          // 1. Đánh dấu đơn hàng này đã đánh giá tác phẩm trên localStorage
+          if (oId && pId) {
+            localStorage.setItem('reviewed_' + oId + '_' + pId, 'true');
+          }
+
+          // 2. Lưu review vào bộ nhớ đệm craftory_cached_reviews để hiển thị tức thời trên trang chi tiết sản phẩm
+          try {
+            const cached = JSON.parse(localStorage.getItem('craftory_cached_reviews') || '[]');
+            const newLocalReview = {
+              _id: (res && res.data && res.data._id) || ('rev_' + Date.now()),
+              productId: pId,
+              productName: window.activeReviewTargetName || '',
+              orderId: oId,
+              customerName: u.fullName || u.email || 'Nhà Sưu Tầm',
+              rating: Number(currentRating),
+              comment: commentVal,
+              createdAt: new Date().toISOString()
+            };
+            const deduped = cached.filter(r => !(r.productId === pId && (r.orderId === oId || r.customerName === newLocalReview.customerName)));
+            deduped.unshift(newLocalReview);
+            localStorage.setItem('craftory_cached_reviews', JSON.stringify(deduped));
+          } catch (storageErr) {}
+
+          // 3. Cập nhật nút trên giao diện sang "Đã đánh giá"
+          const reviewBtn = document.getElementById(`btn-review-${oId}-${pId}`) || document.querySelector(`button[onclick*="'${pId}', '${oId}'"]`);
+          if (reviewBtn) {
+            const span = document.createElement('span');
+            span.className = 'px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-[11px] font-semibold flex items-center gap-1';
+            span.innerHTML = '<span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span><span>Đã đánh giá</span>';
+            reviewBtn.replaceWith(span);
+          }
+
+          showToast(
+            'toast-success',
+            'Khắc ghi đánh giá thành công',
+            'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Đánh giá đã được lưu và cập nhật điểm số sao trên sản phẩm.'
+          );
+          const reviewInput = document.getElementById('review-content');
+          if (reviewInput) reviewInput.value = '';
+          const photoLabel = document.getElementById('review-photo-label');
+          if (photoLabel) photoLabel.innerText = 'Chưa chọn ảnh';
         });
       }
-
-      showToast(
-        'toast-success',
-        'Khắc ghi đánh giá thành công',
-        'Cảm tạ quý khách đã lưu lại cảm nhận (' + currentRating + ' sao). Đánh giá đã được lưu và cập nhật điểm số sao trên sản phẩm.'
-      );
-      document.getElementById('review-content').value = '';
-      document.getElementById('review-photo-label').innerText = 'Chưa chọn ảnh';
     }
 
     // Photo input handlers

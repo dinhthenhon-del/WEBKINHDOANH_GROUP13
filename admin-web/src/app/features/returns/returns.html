@@ -166,7 +166,8 @@
 
         <!-- Timeframe Dropdown -->
         <div class="relative">
-          <select [(ngModel)]="timeframeFilter" class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md py-2 pl-3 pr-8 rounded-lg cursor-pointer border border-surface-variant/40 focus:outline-none focus:ring-1 focus:ring-primary">
+          <select [(ngModel)]="timeframeFilter" (change)="applyFilter()" class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md py-2 pl-3 pr-8 rounded-lg cursor-pointer border border-surface-variant/40 focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="all">Thời gian: Tất cả</option>
             <option value="7d">Thời gian: 7 ngày qua</option>
             <option value="30d">Thời gian: 30 ngày qua</option>
             <option value="quarter">Quý hiện tại (Q4/2026)</option>

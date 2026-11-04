@@ -125,7 +125,7 @@ export interface OrderActionResponse {
 })
 export class OrderService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api/orders/admin';
+  private readonly baseUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/orders/admin`;
 
   /**
    * Tạo HttpHeaders xác thực Admin từ localStorage

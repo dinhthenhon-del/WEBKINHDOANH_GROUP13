@@ -939,7 +939,84 @@
       return;
     }
 
-    // Tự động kiểm tra đăng nhập, nếu chưa thì kích hoạt tài khoản mẫu thượng khách
+    const shapeData = window.BLANK_SHAPES[currentStudioState.blankId] || {};
+    let targetProductId = shapeData.productId || '6ad1b189edab43aae328dcbd';
+
+    // 1. Tạo ảnh Composite xem trước thực tế có cả men, họa tiết và chữ khắc
+    let compositePreview = shapeData.image || 'assets/2d-blanks/dia-su.png';
+    try {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 400;
+      offCanvas.height = 400;
+      const offCtx = offCanvas.getContext('2d');
+      if (offCtx) {
+        const blankImg = document.getElementById('blankMainImage') || document.querySelector('#blankImageContainer img');
+        if (blankImg && blankImg.complete && blankImg.naturalWidth > 0) {
+          offCtx.drawImage(blankImg, 0, 0, 400, 400);
+
+          const motifImg = document.getElementById('motifImageEl') || document.querySelector('#motifInteractiveWrapper img');
+          if (motifImg && motifImg.complete && motifImg.naturalWidth > 0) {
+            offCtx.save();
+            const cx = (currentStudioState.motifX || 50) * 4;
+            const cy = (currentStudioState.motifY || 41) * 4;
+            offCtx.translate(cx, cy);
+            offCtx.rotate(((currentStudioState.motifRotate || 0) * Math.PI) / 180);
+            const scale = currentStudioState.motifScale || 0.72;
+            const mw = 200 * scale;
+            const mh = 200 * scale;
+            offCtx.drawImage(motifImg, -mw / 2, -mh / 2, mw, mh);
+            offCtx.restore();
+          }
+
+          if (currentStudioState.engravingText && currentStudioState.engravingText.trim()) {
+            offCtx.save();
+            const fs = Math.round((currentStudioState.engravingFontSize || 14.5) * 1.1);
+            offCtx.font = `bold ${fs}px 'Playfair Display', serif`;
+            offCtx.fillStyle = currentStudioState.engravingColor || '#0a2540';
+            offCtx.textAlign = 'center';
+            offCtx.textBaseline = 'middle';
+            const tx = 200 + (currentStudioState.engravingX || 0);
+            const ty = 345 + (currentStudioState.engravingY || 0);
+            offCtx.fillText(currentStudioState.engravingText.trim(), tx, ty);
+            offCtx.restore();
+          }
+
+          compositePreview = offCanvas.toDataURL('image/png');
+        }
+      }
+    } catch (canvasErr) {
+      console.warn('Lỗi tạo ảnh preview canvas:', canvasErr);
+    }
+
+    // 2. Tạo đối tượng customization hoàn chỉnh cho 2D Studio (Lưu đủ tọa độ, xoay, kích thước và định danh độc bản)
+    const customization = {
+      designId: '2D_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      designName: designName,
+      blankId: currentStudioState.blankId,
+      blankName: currentStudioState.blankName,
+      blankImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
+      previewImage: compositePreview,
+      glazeColor: currentStudioState.blankName || 'Men lam cổ truyền',
+      men: currentStudioState.blankName || 'Men lam cổ truyền',
+      pattern: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
+      hoaVan: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
+      motifName: currentStudioState.motifName,
+      motifImage: currentStudioState.motifImage,
+      motifX: currentStudioState.motifX,
+      motifY: currentStudioState.motifY,
+      motifScale: currentStudioState.motifScale,
+      motifRotate: currentStudioState.motifRotate,
+      engravingText: currentStudioState.engravingText || '',
+      chuKhac: currentStudioState.engravingText || '',
+      engravingColor: currentStudioState.engravingColor || '#0a2540',
+      engravingX: currentStudioState.engravingX,
+      engravingY: currentStudioState.engravingY,
+      engravingFontSize: currentStudioState.engravingFontSize,
+      price: currentStudioState.price || 1200000,
+      updatedAt: Date.now()
+    };
+
+    // 3. Kiểm tra đăng nhập thực tế (Không tự gán tài khoản ảo)
     if (!window.currentUser || !window.currentUser._id) {
       try {
         const saved = localStorage.getItem('craftory_user');
@@ -950,42 +1027,22 @@
     }
 
     if (!window.currentUser || !window.currentUser._id) {
-      window.currentUser = {
-        _id: '6ad19943d964a3cf2fc5a656',
-        fullName: 'Nguyễn Hoàng Nam',
-        email: 'hoangnam@gomthanhxuan.vn',
-        role: 'customer'
-      };
+      // Lưu lại bản nháp vào sessionStorage để khôi phục ngay sau khi đăng nhập
       try {
-        localStorage.setItem('craftory_user', JSON.stringify(window.currentUser));
-        if (typeof updateAvatarState === 'function') updateAvatarState();
+        sessionStorage.setItem('craftory_pending_2d_draft', JSON.stringify({
+          targetProductId,
+          customization,
+          studioState: currentStudioState
+        }));
       } catch (e) {}
+
+      if (confirm('Quý khách vui lòng đăng nhập để lưu tác phẩm cá nhân hóa vào giỏ hàng.\n\nBản thiết kế vừa phối sẽ được tự động lưu lại và đưa vào giỏ hàng ngay sau khi đăng nhập thành công.\n\nBấm "OK" để đến trang Đăng nhập.')) {
+        if (typeof dieuHuong === 'function') {
+          dieuHuong('login');
+        }
+      }
+      return;
     }
-
-    const shapeData = window.BLANK_SHAPES[currentStudioState.blankId] || {};
-    let targetProductId = shapeData.productId || '6ad1b189edab43aae328dcbd';
-
-    // Tạo đối tượng customization hoàn chỉnh cho 2D Studio
-    const customization = {
-      designName: designName,
-      blankId: currentStudioState.blankId,
-      blankName: currentStudioState.blankName,
-      blankImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
-      previewImage: shapeData.image || 'assets/2d-blanks/dia-su.png',
-      glazeColor: currentStudioState.blankName || 'Men lam cổ truyền',
-      men: currentStudioState.blankName || 'Men lam cổ truyền',
-      pattern: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
-      hoaVan: currentStudioState.motifName || 'Rồng Vàng Vân Mây',
-      motifName: currentStudioState.motifName,
-      motifImage: currentStudioState.motifImage,
-      motifScale: currentStudioState.motifScale,
-      motifRotate: currentStudioState.motifRotate,
-      engravingText: currentStudioState.engravingText || '',
-      chuKhac: currentStudioState.engravingText || '',
-      engravingColor: currentStudioState.engravingColor || '#0a2540',
-      price: currentStudioState.price || 1200000,
-      updatedAt: Date.now()
-    };
 
     // 1. Lưu snapshot vào localStorage để tương thích ngược
     try {

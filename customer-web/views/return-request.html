@@ -97,7 +97,7 @@
                 <span class="font-label-sm text-secondary font-bold text-sm">02.</span>
                 <h2 class="font-['Playfair_Display',serif] text-xl text-primary font-bold">Danh mục tác phẩm cần đổi / trả</h2>
               </div>
-              <span class="font-label-sm text-[11px] text-on-surface-variant tracking-wider uppercase font-semibold">items[]</span>
+              <span class="font-label-sm text-[11px] text-on-surface-variant tracking-wider uppercase font-semibold">Tuyển tập tác phẩm</span>
             </div>
             <p class="font-body-sm text-xs text-on-surface-variant mt-2">
               Đánh dấu chọn tác phẩm quý khách gặp sự cố cần hỗ trợ đổi mới hoặc hoàn trả:
@@ -330,7 +330,50 @@ window.handlePageFileUpload = function(input) {
   }
 };
 
-window.handleReturnPageSubmit = function(e) {
+// Chuyển file minh chứng sang chuỗi Base64 DataURL (nén nhẹ < 800px)
+function convertPageFilesToBase64(files) {
+  return Promise.all(
+    (files || []).map(file => {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const dataUrl = e.target.result;
+          if (file.type && file.type.startsWith('image/')) {
+            const img = new Image();
+            img.onload = function() {
+              const maxDim = 800;
+              let w = img.width;
+              let h = img.height;
+              if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+          } else {
+            resolve(dataUrl);
+          }
+        };
+        reader.onerror = () => resolve(file.name || 'minh-chung.jpg');
+        reader.readAsDataURL(file);
+      });
+    })
+  );
+}
+
+window.handleReturnPageSubmit = async function(e) {
   e.preventDefault();
   const orderId = document.getElementById('order-select-page')?.value || 'MG-2025-8899';
   const selectedRadio = document.querySelector('input[name="reason_radio"]:checked');
@@ -363,24 +406,57 @@ window.handleReturnPageSubmit = function(e) {
     return;
   }
 
-  const finalReason = reason === 'Lý do khác' ? ('Lý do khác: ' + desc) : (reason + (desc ? ' - ' + desc : ''));
-  const evidenceImages = (window.pageSelectedFiles || []).map(f => f.name || 'minh-chung.jpg');
+  // Thu thập các mục được đánh dấu chọn đổi trả
+  const checkedBoxes = Array.from(document.querySelectorAll('input[name="return_item"]:checked'));
+  const returnItems = checkedBoxes.map(chk => ({
+    productId: chk.getAttribute('data-product-id') || '6ad1b189edab43aae328dcbd',
+    productName: chk.value,
+    quantity: 1,
+    reason: reason === 'Lý do khác' ? ('Lý do khác: ' + desc) : (reason + (desc ? ' - ' + desc : ''))
+  }));
 
-  if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest && typeof currentUser !== 'undefined' && currentUser) {
-    ApiService.createReturnRequest({
-      orderId: orderId,
-      accountId: currentUser._id,
-      type: 'return',
-      reason: finalReason,
-      evidenceImages: evidenceImages
-    }, function(err, res) {
-      console.log('Return request API result:', err, res);
-    });
+  const finalReason = reason === 'Lý do khác' ? ('Lý do khác: ' + desc) : (reason + (desc ? ' - ' + desc : ''));
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]') || document.querySelector('button[onclick*="handleReturnPageSubmit"]');
+  const origBtnText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Đang tải minh chứng & gửi yêu cầu...</span>';
   }
 
-  alert('✅ ĐÃ TIẾP NHẬN YÊU CẦU ĐỔI TRẢ THÀNH CÔNG!\n\n• Mã đơn: #' + orderId + '\n• Lý do: ' + finalReason + '\n• Số lượng file minh chứng: ' + evidenceImages.length + ' tệp\n\nBan Giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự chuyên trách đến tận tư gia hỗ trợ.');
-  if (typeof dieuHuong === 'function') {
-    dieuHuong('profile');
+  const base64Images = await convertPageFilesToBase64(window.pageSelectedFiles || []);
+  const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
+  const accId = u._id || u.id || '6ad19943d964a3cf2fc5a656';
+
+  if (typeof ApiService !== 'undefined' && ApiService.createReturnRequest) {
+    ApiService.createReturnRequest({
+      orderId: orderId,
+      accountId: accId,
+      type: 'return',
+      reason: finalReason,
+      evidenceImages: base64Images,
+      items: returnItems
+    }, function(err, res) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origBtnText;
+      }
+      if (err || !res || !res.success) {
+        alert('⚠️ Gửi yêu cầu chưa thành công: ' + ((res && res.message) || err || 'Lỗi kết nối máy chủ. Vui lòng kiểm tra server tại cổng 5000 và thử lại!'));
+        return;
+      }
+
+      alert('✅ ĐÃ TIẾP NHẬN YÊU CẦU ĐỔI TRẢ THÀNH CÔNG!\n\n• Mã đơn: #' + orderId + '\n• Lý do: ' + finalReason + '\n• Số lượng file minh chứng: ' + base64Images.length + ' tệp\n\nBan Giám định nghệ nhân Bát Tràng sẽ liên hệ trong 2 giờ và cử nhân sự chuyên trách đến tận tư gia hỗ trợ.');
+      if (typeof dieuHuong === 'function') {
+        dieuHuong('profile');
+      }
+    });
+  } else {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+    }
+    alert('Không tìm thấy ApiService. Vui lòng thử lại!');
   }
 };
 </script>

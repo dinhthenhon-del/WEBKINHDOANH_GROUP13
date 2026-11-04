@@ -8,6 +8,16 @@ const Product = require('../../models/Product');
 function areCustomizationsEqual(c1, c2) {
   if (!c1 && !c2) return true;
   if (!c1 || !c2) return false;
+
+  // Nếu cả hai đều có designId độc bản
+  if (c1.designId && c2.designId) {
+    return c1.designId === c2.designId;
+  }
+
+  // Tên thiết kế tùy biến khác nhau -> Hai tác phẩm khác nhau
+  const name1 = (c1.designName || '').toString().trim().toLowerCase();
+  const name2 = (c2.designName || '').toString().trim().toLowerCase();
+  if (name1 && name2 && name1 !== name2) return false;
   
   const glaze1 = (c1.glazeColor || c1.men || '').toString().trim().toLowerCase();
   const glaze2 = (c2.glazeColor || c2.men || '').toString().trim().toLowerCase();
@@ -18,7 +28,19 @@ function areCustomizationsEqual(c1, c2) {
   const text1 = (c1.engravingText || c1.chuKhac || '').toString().trim();
   const text2 = (c2.engravingText || c2.chuKhac || '').toString().trim();
 
-  return glaze1 === glaze2 && pattern1 === pattern2 && text1 === text2;
+  if (glaze1 !== glaze2 || pattern1 !== pattern2 || text1 !== text2) {
+    return false;
+  }
+
+  // So sánh các thông số bố cục, tỉ lệ, xoay của họa tiết và chữ khắc
+  if (c1.motifScale !== undefined && c2.motifScale !== undefined && c1.motifScale !== c2.motifScale) return false;
+  if (c1.motifRotate !== undefined && c2.motifRotate !== undefined && c1.motifRotate !== c2.motifRotate) return false;
+  if (c1.motifX !== undefined && c2.motifX !== undefined && c1.motifX !== c2.motifX) return false;
+  if (c1.motifY !== undefined && c2.motifY !== undefined && c1.motifY !== c2.motifY) return false;
+  if (c1.engravingX !== undefined && c2.engravingX !== undefined && c1.engravingX !== c2.engravingX) return false;
+  if (c1.engravingY !== undefined && c2.engravingY !== undefined && c1.engravingY !== c2.engravingY) return false;
+
+  return true;
 }
 
 /**

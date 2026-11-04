@@ -20,14 +20,25 @@ export class App {
 
   currentModuleName = 'Dashboard Tổng quan';
 
+  isMobileSidebarOpen = false;
+
   constructor() {
     this.checkRoute(this.router.url);
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.checkRoute(event.urlAfterRedirects);
         this.loadAdminProfile();
+        this.isMobileSidebarOpen = false;
       }
     });
+  }
+
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
+  }
+
+  closeMobileSidebar() {
+    this.isMobileSidebarOpen = false;
   }
 
   checkRoute(url: string) {

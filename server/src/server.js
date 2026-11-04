@@ -1152,14 +1152,17 @@ app.post('/api/auth/forgot-password-reveal', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản với thông tin đã nhập' });
     }
 
+    account.passwordHash = 'GomThanhXuan@2025';
+    await account.save();
+
     res.status(200).json({
       success: true,
-      message: 'Lấy mật khẩu thành công',
+      message: 'Mật khẩu đã được cấp lại tạm thời thành công.',
       data: {
         fullName: account.fullName,
         email: account.email,
         phone: account.phone,
-        password: account.passwordHash || '123456'
+        password: 'GomThanhXuan@2025'
       }
     });
   } catch (error) {
@@ -2352,12 +2355,12 @@ app.get('/api/dashboard/stats', async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        totalRevenue: totalRevenue,
-        totalProductsCount: totalProductsCount || 125,
+        totalRevenue: typeof totalRevenue === 'number' ? totalRevenue : 0,
+        totalProductsCount: typeof totalProductsCount === 'number' ? totalProductsCount : 0,
         pendingOrdersCount: typeof pendingOrdersCount === 'number' ? pendingOrdersCount : 0,
-        lowStockCount: lowStockCount || lowStockProducts.length,
-        totalCustomersCount: totalCustomersCount || 1250,
-        pendingReturnsCount: pendingReturnsCount || 14,
+        lowStockCount: typeof lowStockCount === 'number' ? lowStockCount : 0,
+        totalCustomersCount: typeof totalCustomersCount === 'number' ? totalCustomersCount : 0,
+        pendingReturnsCount: typeof pendingReturnsCount === 'number' ? pendingReturnsCount : 0,
         recentOrders,
         lowStockProducts,
         revenueDays,

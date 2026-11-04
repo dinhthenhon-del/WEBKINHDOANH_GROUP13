@@ -112,7 +112,7 @@ export class CustomerList implements OnInit {
   toastMessage = '';
   isToastVisible = false;
 
-  private apiUrl = 'http://localhost:5000/api/admin/customers';
+  private apiUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/admin/customers`;
 
   ngOnInit() {
     this.loadCustomers();
