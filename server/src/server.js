@@ -9,6 +9,9 @@ const app = express();
 
 // Base64 product images are included in JSON requests.
 app.use(cors());
+app.use('/uploads', express.static(require('path').join(__dirname, '../public/uploads')));
+app.use(express.static(require('path').join(__dirname, '../public')));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
