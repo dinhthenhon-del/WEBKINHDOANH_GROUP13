@@ -757,6 +757,16 @@ function khoiTaoTrangProfile(param) {
     avatarSubname.innerText = parts.length > 1 ? parts.slice(-2).join(' ') : parts[0];
   }
 
+  // Khởi tạo ngay số lượng wishlist từ currentUser cache
+  const initialWishlistCount = (currentUser.wishlist && currentUser.wishlist.filter(Boolean).length) || 0;
+  const initialWishlistBadge = document.getElementById('profile-wishlist-count');
+  if (initialWishlistBadge) {
+    initialWishlistBadge.innerText = String(initialWishlistCount).padStart(2, '0');
+  }
+  if (typeof window.updateWishlistBadges === 'function') {
+    window.updateWishlistBadges(initialWishlistCount);
+  }
+
   // Lấy danh sách đơn hàng thực từ MongoDB
   ApiService.getOrders(currentUser._id, function (err, res) {
     if (!err && res && res.success) {
@@ -777,12 +787,26 @@ function khoiTaoTrangProfile(param) {
       if (typeof window.updateWishlistBadges === 'function') {
         window.updateWishlistBadges((currentUser.wishlist && currentUser.wishlist.length) || 0);
       } else {
-        const wlCount = (currentUser.wishlist && currentUser.wishlist.length) || 0;
+        const wlCount = (currentUser.wishlist && currentUser.wishlist.filter(Boolean).length) || 0;
         const countBadge = document.getElementById('profile-wishlist-count');
         if (countBadge) countBadge.innerText = String(wlCount).padStart(2, '0');
       }
     }
   });
+
+  // Đồng bộ số lượng thực từ API getWishlist
+  if (typeof ApiService !== 'undefined' && ApiService.getWishlist) {
+    ApiService.getWishlist(currentUser._id, function (err, res) {
+      if (!err && res && res.success) {
+        const count = Array.isArray(res.data) ? res.data.length : 0;
+        if (typeof window.updateWishlistBadges === 'function') {
+          window.updateWishlistBadges(count);
+        }
+        const countBadge = document.getElementById('profile-wishlist-count');
+        if (countBadge) countBadge.innerText = String(count).padStart(2, '0');
+      }
+    });
+  }
 
   // Tải danh sách đơn hàng động và tự cuộn đến đơn mục tiêu nếu có
   if (window.OrdersModule && typeof window.OrdersModule.initProfileOrders === 'function') {

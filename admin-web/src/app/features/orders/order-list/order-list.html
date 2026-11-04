@@ -45,7 +45,6 @@
           </span>
           <span class="font-body-sm text-body-sm text-outline">• Bước 1 (Pending)</span>
         </div>
-        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-secondary/5 rounded-full pointer-events-none"></div>
       </div>
 
       <!-- 2. Đang đóng gói xưởng -->
@@ -63,7 +62,6 @@
         <div class="mt-space-md flex items-center gap-space-xs">
           <span class="font-body-sm text-body-sm text-on-surface-variant">Lò gốm Thanh Xuân</span>
         </div>
-        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-primary/5 rounded-full pointer-events-none"></div>
       </div>
 
       <!-- 3. Đang giao hỏa tốc -->
@@ -81,7 +79,6 @@
         <div class="mt-space-md flex items-center gap-space-xs">
           <span class="font-body-sm text-body-sm text-on-surface-variant">Đồng kiểm khi nhận</span>
         </div>
-        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-primary/5 rounded-full pointer-events-none"></div>
       </div>
 
       <!-- 4. Doanh số thực thu -->
@@ -102,7 +99,6 @@
           </span>
           <span class="font-body-sm text-body-sm text-outline">đã thanh toán (đã trừ hoàn trả)</span>
         </div>
-        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full pointer-events-none"></div>
       </div>
     </div>
 
@@ -229,10 +225,7 @@
         <table class="w-full text-left border-collapse whitespace-nowrap">
           <thead>
             <tr class="bg-surface-container-high h-11 font-body-sm text-body-sm uppercase text-outline font-semibold tracking-wider">
-              <th class="pl-space-lg pr-space-sm w-12 text-center">
-                <input [checked]="selectAll" (change)="toggleSelectAll()" class="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer" type="checkbox">
-              </th>
-              <th class="px-space-md font-label-sm text-label-sm">Mã đơn</th>
+              <th class="pl-space-lg pr-space-md font-label-sm text-label-sm">Mã đơn</th>
               <th class="px-space-md font-label-sm text-label-sm">Tác phẩm</th>
               <th class="px-space-md font-label-sm text-label-sm">Khách hàng</th>
               <th class="px-space-md font-label-sm text-label-sm">Ngày đặt</th>
@@ -244,14 +237,9 @@
           </thead>
           <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
             <tr *ngFor="let order of filteredOrders" class="h-16 hover:bg-surface-container-low transition-colors duration-150">
-              <!-- Checkbox -->
-              <td class="pl-space-lg pr-space-sm text-center">
-                <input [checked]="isOrderSelected(order._id)" (change)="toggleSelectOrder(order._id)" class="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer" type="checkbox">
-              </td>
-
               <!-- Order Code -->
-              <td class="px-space-md">
-                <a [routerLink]="['/orders', order._id || order.orderCode]" class="font-label-lg font-bold text-primary hover:text-secondary transition-colors">
+              <td class="pl-space-lg pr-space-md">
+                <a [routerLink]="['/orders', order._id || order.orderCode]" class="font-numeric font-label-lg font-bold text-primary hover:text-secondary transition-colors">
                   #{{ order.orderCode }}
                 </a>
               </td>

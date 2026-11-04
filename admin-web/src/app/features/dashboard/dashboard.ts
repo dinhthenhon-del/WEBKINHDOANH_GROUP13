@@ -18,14 +18,38 @@ export class Dashboard implements OnInit, OnDestroy {
   private visibilityHandler: any = null;
   private focusHandler: any = null;
 
-  private static cachedStats: DashboardStats | null = null;
+    private static cachedStats: DashboardStats | null = null;
   private static cachedRevenueDays: RevenueDay[] | null = null;
   private static cachedWeeklyReport: any = null;
 
-  isLoading = !Dashboard.cachedStats;
-  isInitialLoaded = !!Dashboard.cachedStats;
-  stats: DashboardStats = Dashboard.cachedStats || this.dashboardService.getFallbackStats();
-  revenueDays: RevenueDay[] = Dashboard.cachedRevenueDays || this.dashboardService.getRevenueWeeklyChart();
+  private static getStoredStats(): DashboardStats | null {
+    if (Dashboard.cachedStats) return Dashboard.cachedStats;
+    try {
+      const stored = sessionStorage.getItem('admin_dashboard_stats');
+      if (stored) {
+        Dashboard.cachedStats = JSON.parse(stored);
+        return Dashboard.cachedStats;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  private static getStoredRevenueDays(): RevenueDay[] | null {
+    if (Dashboard.cachedRevenueDays) return Dashboard.cachedRevenueDays;
+    try {
+      const stored = sessionStorage.getItem('admin_dashboard_rev_days');
+      if (stored) {
+        Dashboard.cachedRevenueDays = JSON.parse(stored);
+        return Dashboard.cachedRevenueDays;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  isLoading = !Dashboard.getStoredStats();
+  isInitialLoaded = !!Dashboard.getStoredStats();
+  stats: DashboardStats = Dashboard.getStoredStats() || this.dashboardService.getFallbackStats();
+  revenueDays: RevenueDay[] = Dashboard.getStoredRevenueDays() || this.dashboardService.getRevenueWeeklyChart();
 
   currentWeekLabel = 'Tổng Quan Quản Trị';
   dateRangeLabel = Dashboard.cachedWeeklyReport?.dateRangeLabel || 'Tuần hiện tại';
@@ -147,6 +171,7 @@ export class Dashboard implements OnInit, OnDestroy {
           Dashboard.cachedStats = this.stats;
           Dashboard.cachedRevenueDays = this.revenueDays;
           Dashboard.cachedWeeklyReport = this.weeklyReport;
+          try { sessionStorage.setItem("admin_dashboard_stats", JSON.stringify(this.stats)); sessionStorage.setItem("admin_dashboard_rev_days", JSON.stringify(this.revenueDays)); } catch(e){}
           this.isInitialLoaded = true;
         }
         this.cdr.detectChanges();

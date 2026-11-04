@@ -39,15 +39,15 @@
               Ngự Phẩm Cung Đình
             </span>
             <span class="text-[#c4c6ce]">•</span>
-            <time id="detail-order-time" class="text-[13px] text-[#43474d] flex items-center gap-1">
+            <time id="detail-order-time" class="text-[13px] text-[#43474d] flex items-center gap-1 font-numeric">
               <span class="material-symbols-outlined text-[16px] text-[#74777e]">schedule</span>
               --:-- - --/--/----
             </time>
           </div>
 
           <div class="flex flex-wrap items-baseline gap-4 mt-1">
-            <h1 class="font-['Playfair_Display',serif] text-3xl sm:text-[38px] text-[#000f22] tracking-tight">
-              Đơn Hàng <span id="detail-order-code" class="font-normal text-[#a23e18]">#...</span>
+            <h1 class="font-['Playfair_Display',serif] text-3xl sm:text-[38px] text-[#000f22] tracking-tight flex flex-wrap items-baseline gap-2">
+              <span>Đơn Hàng</span> <span id="detail-order-code" class="font-sans font-numeric font-bold text-[#a23e18]">#...</span>
             </h1>
 
             <!-- Status Badges Dynamic Container -->
@@ -308,18 +308,18 @@
           <div class="flex flex-col gap-3 text-[14px]">
             <div class="flex justify-between items-center text-[#43474d]">
               <span>Tổng tiền hàng (subtotal)</span>
-              <span id="detail-subtotal" class="font-semibold text-[#000f22]">0 ₫</span>
+              <span id="detail-subtotal" class="font-semibold text-[#000f22] font-numeric">0 ₫</span>
             </div>
             <div class="flex justify-between items-center text-[#43474d]">
               <span class="flex items-center gap-1">
                 Phí vận chuyển bảo hiểm
                 <span class="material-symbols-outlined text-[16px] text-[#74777e]" title="Miễn phí bảo hiểm ngự phẩm toàn quốc">help_outline</span>
               </span>
-              <span id="detail-shipping-fee" class="text-[#a23e18] font-semibold uppercase text-[12px]">Miễn phí (0 ₫)</span>
+              <span id="detail-shipping-fee" class="text-[#a23e18] font-semibold uppercase text-[12px] font-numeric">Miễn phí (0 ₫)</span>
             </div>
             <div class="flex justify-between items-center text-[#43474d]">
               <span>Ưu đãi giám tuyển (discount)</span>
-              <span id="detail-discount" class="text-[#74777e]">0 ₫</span>
+              <span id="detail-discount" class="text-[#74777e] font-numeric">0 ₫</span>
             </div>
             <div class="pt-4 mt-2 border-t border-[#EBEAE5] flex flex-col gap-1">
               <div class="flex justify-between items-baseline">

@@ -35,7 +35,7 @@ function updateWishlistBadges(count) {
       return null;
     }
   })();
-  let total = typeof count === 'number' ? count : ((user && user.wishlist && user.wishlist.length) || 0);
+  let total = typeof count === 'number' ? count : ((user && user.wishlist && user.wishlist.filter(Boolean).length) || 0);
 
   const profileBadge = document.getElementById('profile-wishlist-count');
   if (profileBadge) {

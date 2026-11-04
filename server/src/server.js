@@ -74,7 +74,10 @@ function getVerifiedCatalogProductFilter() {
   };
 }
 
-// Models TV2
+// Core Models
+const Account = require('./models/Account');
+const Order = require('./models/Order');
+const Cart = require('./models/Cart');
 const Category = require('./models/Category');
 const Collection = require('./models/Collection');
 const {
@@ -818,7 +821,7 @@ app.get('/api/collections', async (req, res) => {
 app.get('/api/accounts/wishlist/:accountId', async (req, res) => {
   try {
     const account = await Account.findById(req.params.accountId)
-      .populate({ path: 'wishlist', match: getVerifiedCatalogProductFilter() })
+      .populate('wishlist')
       .lean();
 
     if (!account) {
@@ -840,9 +843,7 @@ app.get('/api/accounts/wishlist/:accountId', async (req, res) => {
 // THÀNH VIÊN 1: AUTH, PROFILE, WISHLIST, ORDERS
 // Tuân thủ 100% Phase 4 và Model Account / Order
 // ==========================================
-const Account = require('./models/Account');
-const Order = require('./models/Order');
-const Cart = require('./models/Cart');
+// Account, Order, Cart moved to top of file
 
 // Phân hệ Giỏ hàng khách hàng (UC-C05 - TV3)
 const cartRoutes = require('./modules/cart/cart.routes');
@@ -1189,7 +1190,10 @@ app.get('/api/accounts/profile/:id', async (req, res) => {
       return res.status(403).json({ success: false, isBlocked: true, message: 'Tài khoản của bạn hiện tại đã bị khóa' });
     }
 
-    res.status(200).json({ success: true, data: account });
+    const accountObj = account.toObject ? account.toObject() : JSON.parse(JSON.stringify(account));
+    accountObj.wishlist = (accountObj.wishlist || []).filter(Boolean);
+    accountObj.wishlistCount = accountObj.wishlist.length;
+    res.status(200).json({ success: true, data: accountObj });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1310,12 +1314,15 @@ app.post('/api/accounts/wishlist/toggle', async (req, res) => {
 
     await account.save();
     const updatedAccount = await Account.findById(accountId).select('-passwordHash').populate('wishlist');
+    const updatedObj = updatedAccount.toObject ? updatedAccount.toObject() : JSON.parse(JSON.stringify(updatedAccount));
+    updatedObj.wishlist = (updatedObj.wishlist || []).filter(Boolean);
+    updatedObj.wishlistCount = updatedObj.wishlist.length;
 
     res.status(200).json({
       success: true,
       message: isAdded ? 'Đã thêm vào tác phẩm yêu thích' : 'Đã bỏ khỏi danh sách yêu thích',
       isAdded,
-      data: updatedAccount
+      data: updatedObj
     });
   } catch (error) {
     console.error('Lỗi wishlist:', error);
@@ -1427,6 +1434,9 @@ app.get('/api/admin/customers/:id', async (req, res) => {
     if (!customer) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy khách hàng' });
     }
+
+    customer.wishlist = (customer.wishlist || []).filter(Boolean);
+    customer.wishlistCount = customer.wishlist.length;
 
     const orders = await Order.find({ accountId: customer._id })
       .populate('items.productId')

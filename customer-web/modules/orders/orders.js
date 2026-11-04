@@ -1692,7 +1692,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <div>
               <span class="font-label-sm text-label-sm text-outline uppercase block">Mã đơn giám tuyển</span>
-              <p class="font-title-md text-title-md text-primary font-bold hover:text-secondary flex items-center gap-1">
+              <p class="font-title-md text-title-md text-primary font-bold hover:text-secondary flex items-center gap-1 font-numeric">
                 #${escapeHtml(order.orderCode)}
               </p>
             </div>
@@ -2243,8 +2243,8 @@
                         ${escapeHtml(name)}
                       </h3>
                       <div class="text-right shrink-0">
-                        <span class="text-lg font-bold text-[#a23e18] font-['Playfair_Display',serif]">${formatMoney(itemTotal)}</span>
-                        <p class="text-[12px] text-[#74777e]">Đơn giá: ${formatMoney(price)} × ${qty}</p>
+                        <span class="text-lg font-bold text-[#a23e18] font-numeric">${formatMoney(itemTotal)}</span>
+                        <p class="text-[12px] text-[#74777e] font-numeric">Đơn giá: ${formatMoney(price)} × ${qty}</p>
                       </div>
                     </div>
                     <p class="text-[13px] text-[#43474d] mt-1 leading-relaxed">

@@ -196,10 +196,7 @@
       <table class="w-full text-left min-w-[1080px]">
         <thead>
           <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border-b border-surface-variant/50">
-            <th class="py-3.5 px-4 w-12 text-center">
-              <input class="rounded accent-primary cursor-pointer w-4 h-4" type="checkbox">
-            </th>
-            <th class="py-3.5 px-4">Mã Đơn Hàng</th>
+            <th class="py-3.5 pl-6 pr-4">Mã Đơn Hàng</th>
             <th class="py-3.5 px-4">Loại Yêu Cầu</th>
             <th class="py-3.5 px-4">Lý Do Đổi Trả</th>
             <th class="py-3.5 px-4">Ảnh Minh Chứng</th>
@@ -211,13 +208,10 @@
         </thead>
         <tbody class="divide-y divide-surface-variant/40 text-on-surface font-body-sm text-body-sm">
           <tr *ngFor="let item of paginatedReturns" class="hover:bg-surface-container/60 transition-colors">
-            <td class="py-4 px-4 text-center">
-              <input class="rounded accent-primary cursor-pointer w-4 h-4" type="checkbox">
-            </td>
-            <td class="py-4 px-4">
+            <td class="py-4 pl-6 pr-4">
               <div class="flex flex-col">
-                <span class="font-title-sm text-title-sm text-primary font-bold">{{ getOrderCode(item) }}</span>
-                <span class="text-on-surface-variant text-[11px]">{{ formatDate(item.createdAt) }}</span>
+                <span class="font-numeric font-title-sm text-title-sm text-primary font-bold">{{ getOrderCode(item) }}</span>
+                <span class="text-on-surface-variant text-[11px] font-numeric">{{ formatDate(item.createdAt) }}</span>
               </div>
             </td>
             <td class="py-4 px-4">
@@ -318,27 +312,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Operational Policy Guidelines Callout (Bat Trang Artisanal Standard) -->
-  <div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm border border-surface-variant/40 flex flex-col md:flex-row items-center justify-between gap-space-md">
-    <div class="flex items-center gap-space-md">
-      <div class="w-12 h-12 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[24px]">verified_user</span>
-      </div>
-      <div>
-        <h3 class="font-title-sm text-title-sm text-primary font-bold">Quy chuẩn thẩm định Đổi / Trả tác phẩm Di sản Thanh Xuân</h3>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">
-          1. Thời hạn tiếp nhận: Tối đa 7 ngày kể từ khi khách nhận kiện bọc xốp củi. <br class="hidden sm:inline">
-          2. Nứt rạn men tự nhiên do hỏa biến lò củi là đặc trưng mỹ thuật, không cấu thành khiếm khuyết sản phẩm.
-        </p>
-      </div>
-    </div>
-    <div class="flex items-center gap-space-sm shrink-0">
-      <a routerLink="/products" class="px-3.5 py-2 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm hover:bg-surface-container-high transition-colors font-semibold cursor-pointer">
-        Xem danh mục tác phẩm
-      </a>
-    </div>
-  </div>
 </div>
 
 <!-- ======================================================== -->
@@ -352,7 +325,7 @@
         <div class="flex items-center gap-space-xs text-xs text-on-surface-variant uppercase tracking-wider">
           <span>Quản lý Đổi - Trả</span>
           <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span class="text-secondary font-semibold">Chi tiết yêu cầu {{ getOrderCode(selectedReturn) }}</span>
+          <span class="text-secondary font-semibold">Chi tiết yêu cầu <span class="font-numeric">{{ getOrderCode(selectedReturn) }}</span></span>
         </div>
         <h2 class="font-headline-md text-headline-md text-primary font-bold mt-0.5">Xử lý Yêu cầu Đổi / Trả Hàng</h2>
       </div>
@@ -427,7 +400,7 @@
                 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Khách hàng</span>
                 <span class="font-title-sm text-title-sm text-primary font-semibold">{{ getCustomerName(selectedReturn) }}</span>
                 <span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px]">call</span> {{ getCustomerPhone(selectedReturn) }}
+                  <span class="material-symbols-outlined text-[14px]">call</span> <span class="font-numeric">{{ getCustomerPhone(selectedReturn) }}</span>
                 </span>
               </div>
               <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-low">
@@ -437,8 +410,8 @@
               </div>
               <div class="flex flex-col gap-1 p-space-sm rounded-lg bg-surface-container-low">
                 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Thanh toán &amp; Thời gian</span>
-                <span class="font-title-sm text-title-sm text-secondary font-semibold">VietQR • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ formatDate(selectedReturn.createdAt) }}</span>
+                <span class="font-title-sm text-title-sm text-secondary font-semibold font-numeric">VietQR • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant font-numeric">{{ formatDate(selectedReturn.createdAt) }}</span>
               </div>
             </div>
 
@@ -458,7 +431,7 @@
                     <span class="material-symbols-outlined text-[16px] text-amber-500">verified</span>
                     Nghệ nhân: Thanh Xuân Heritage Guild
                   </span>
-                  <span class="font-title-sm text-title-sm font-semibold text-primary">SL: 01 • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
+                  <span class="font-title-sm text-title-sm font-semibold text-primary font-numeric">SL: 01 • {{ formatCurrency(getProductPrice(selectedReturn)) }}</span>
                 </div>
               </div>
             </div>
@@ -472,7 +445,7 @@
                 <span class="font-title-md text-title-md text-primary font-bold">Chi tiết Khiếu nại &amp; Bằng chứng Khách hàng</span>
               </div>
               <span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-space-sm py-1 rounded font-semibold font-mono">
-                ID: {{ selectedReturn._id }}
+                ID: <span class="font-numeric">{{ selectedReturn._id }}</span>
               </span>
             </div>
 
