@@ -14,17 +14,43 @@ const VALID_TRANSITIONS = {
 };
 
 /**
+ * Kiểm tra xem đơn hàng đã từng được thanh toán hay chưa (được xác nhận thu tiền)
+ * Bao gồm:
+ * - paymentStatus: 'paid', 'partially_refunded', 'refunded' (đã thu tiền rồi hoàn lại)
+ * - Có mốc paymentConfirmedAt
+ * - Có lịch sử paymentHistory chuyển sang trạng thái đã thanh toán / hoàn tiền
+ */
+function wasOrderPaid(o) {
+  if (!o) return false;
+  const payment = (o.paymentStatus || '').toLowerCase();
+  if (['paid', 'partially_refunded', 'refunded'].includes(payment)) {
+    return true;
+  }
+  if (o.paymentConfirmedAt) {
+    return true;
+  }
+  if (Array.isArray(o.paymentHistory) && o.paymentHistory.some((h) => {
+    const to = (h.toStatus || '').toLowerCase();
+    const from = (h.fromStatus || '').toLowerCase();
+    return to === 'paid' || to === 'partially_refunded' || to === 'refunded' || from === 'paid';
+  })) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Hàm tính Doanh Thu Thuần (Net Revenue) duy nhất dùng chung cho toàn hệ thống:
- * Tiêu chí:
- * 1. Tiền thu được (Doanh thu gộp): CHỈ tính khi đơn hàng đã được xác nhận thanh toán (paymentStatus: 'paid' / 'partially_refunded').
- * 2. Giảm trừ do Hàng hủy: CHỈ ghi nhận khi đơn hàng ĐÃ THANH TOÁN mà bị hủy (tiền đã thu nay phải hoàn lại cho khách).
+ * Tiêu chí chuẩn mực kế toán:
+ * 1. Tiền thu được (Doanh thu gộp): CHỈ tính khi đơn hàng đã được xác nhận thanh toán (wasOrderPaid: paid / partially_refunded / refunded).
+ * 2. Giảm trừ do Hàng hủy: CHỈ ghi nhận khi đơn hàng ĐÃ THANH TOÁN mà bị hủy (khoản tiền đã thu phải chuyển sang hàng hủy để giảm trừ).
  * 3. Đơn chưa thanh toán mà hủy: TUYỆT ĐỐI KHÔNG tính vào giảm trừ doanh thu (vì chưa từng được tính vào doanh thu ban đầu).
- * 4. Giảm trừ do Hàng hoàn trả / Đổi trả: Ghi nhận khi khách nhận hàng muốn đổi/trả và yêu cầu được phê duyệt.
+ * 4. Giảm trừ do Hàng hoàn trả / Đổi trả: Ghi nhận khi khách nhận hàng muốn đổi/trả và yêu cầu được admin duyệt (returnStatus === 'approved').
  * Doanh thu thuần = Tiền thu được - Giảm trừ hàng hủy (đã thanh toán) - Giảm trừ hàng hoàn trả
  */
 async function calculateNetRevenue() {
   const allOrders = await Order.find()
-    .select('totalAmount refundedAmount returnStatus paymentStatus orderStatus status')
+    .select('totalAmount refundedAmount returnStatus paymentStatus orderStatus status paymentConfirmedAt paymentHistory')
     .lean();
 
   let totalCollected = 0;
@@ -33,23 +59,22 @@ async function calculateNetRevenue() {
 
   allOrders.forEach((o) => {
     const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
-    const payment = (o.paymentStatus || '').toLowerCase();
     const total = Number(o.totalAmount || 0);
     let refunded = Number(o.refundedAmount || 0);
 
-    const isPaid = ['paid', 'partially_refunded'].includes(payment);
+    const isPaid = wasOrderPaid(o);
 
-    // Tiêu chí 1: Phải khi admin / hệ thống xác nhận ĐÃ THANH TOÁN mới tính vào doanh thu
+    // Tiêu chí 1: Phải khi admin / hệ thống xác nhận ĐÃ THANH TOÁN mới tính vào tiền thu được
     if (isPaid) {
       totalCollected += total;
 
       if (rawStatus === 'cancelled') {
-        // Tiêu chí 2: Đã thanh toán nhưng hủy hàng -> mới ghi nhận vào các đơn giảm trừ doanh thu diện hủy hàng
+        // Tiêu chí 2: Đã thanh toán nhưng hủy đơn -> Chuyển sang hàng hủy giảm trừ doanh thu
         totalCancelled += total;
-      } else if (o.returnStatus === 'approved' || refunded > 0) {
-        // Tiêu chí 4: Khách nhận hàng muốn đổi trả -> ghi nhận vào hàng hoàn trả giảm trừ doanh thu
+      } else if (o.returnStatus === 'approved' || refunded > 0 || (o.paymentStatus || '').toLowerCase() === 'partially_refunded') {
+        // Tiêu chí 4: Khách nhận hàng muốn đổi trả nếu ta xác nhận approved -> Kê khai vô hàng hoàn trả
         if (!refunded || refunded <= 0) refunded = total;
-        totalRefunded += refunded;
+        totalRefunded += Math.min(total, refunded);
       }
     }
     // Tiêu chí 3: Nếu khách hàng đặt nhưng chưa thanh toán đã hủy -> KHÔNG ghi nhận vào các khoản giảm trừ doanh thu
@@ -103,8 +128,9 @@ async function getOrderStats() {
   // Đếm số đơn hợp lệ đã thanh toán (đóng góp vào doanh thu thuần)
   const paidOrdersCount = allOrders.filter((o) => {
     const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
-    const payment = (o.paymentStatus || '').toLowerCase();
-    return rawStatus !== 'cancelled' && ['paid', 'partially_refunded'].includes(payment);
+    const isCancelled = rawStatus === 'cancelled';
+    const isFullyReturned = o.returnStatus === 'approved' && (Number(o.refundedAmount || 0) >= Number(o.totalAmount || 0));
+    return wasOrderPaid(o) && !isCancelled && !isFullyReturned;
   }).length;
 
   return {
@@ -1146,6 +1172,7 @@ async function markOrderReturned(orderId, { amount, returnRequestId, note, admin
 }
 
 module.exports = {
+  wasOrderPaid,
   calculateNetRevenue,
   getOrderStats,
   getOrders,

@@ -47,6 +47,7 @@ export interface DailyReportItem {
   date: string;
   dayLabel: string;
   fullDateLabel: string;
+  grossRevenue?: number;
   netRevenue: number;
   refundedAmount: number;
   cancelledOrders: number;
@@ -57,9 +58,11 @@ export interface DailyReportItem {
 
 export interface WeeklyReport {
   dateRangeLabel: string;
+  totalGrossRevenue?: number;
   totalNetRevenue: number;
   totalRefundedAmount: number;
   totalCancelledAmount: number;
+  totalCancelledOrders?: number;
   paidOrdersCount: number;
   peakDayLabel: string;
   peakDayRevenue: number;

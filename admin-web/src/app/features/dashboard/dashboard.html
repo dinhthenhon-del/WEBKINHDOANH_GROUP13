@@ -337,13 +337,13 @@
             <span class="text-[11px] text-purple-700 mt-1">Đã khấu trừ khỏi DT thuần</span>
           </div>
 
-          <!-- KPI 3: Đơn Đã Hủy -->
+          <!-- KPI 3: Hàng Hủy (Đã thanh toán) -->
           <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 flex flex-col justify-between">
-            <span class="text-xs text-red-800 font-semibold uppercase tracking-wider">Đơn hàng bị hủy</span>
+            <span class="text-xs text-red-800 font-semibold uppercase tracking-wider">Hàng hủy (đã thanh toán)</span>
             <div class="font-bold text-lg text-red-950 mt-1 font-mono">
-              {{ formatCurrency(weeklyReport?.totalCancelledAmount || 0) }}
+              {{ (weeklyReport?.totalCancelledAmount || 0) > 0 ? '-' + formatCurrency(weeklyReport?.totalCancelledAmount) : '0đ' }}
             </div>
-            <span class="text-[11px] text-red-700 mt-1">Không tính vào doanh thu</span>
+            <span class="text-[11px] text-red-700 mt-1">Đã khấu trừ khỏi DT thuần</span>
           </div>
 
           <!-- KPI 4: Ngày Đạt Đỉnh -->
@@ -451,7 +451,7 @@
                   </td>
                   <!-- Số Đơn Hủy -->
                   <td class="py-3 px-3 text-center text-xs text-red-800 font-bold">
-                    --
+                    {{ (weeklyReport?.totalCancelledOrders || 0) > 0 ? (weeklyReport?.totalCancelledOrders + ' đơn') : '0' }}
                   </td>
                   <!-- Tổng Hàng Hủy (-) -->
                   <td class="py-3 px-3 text-right text-xs text-red-800 font-mono font-bold">

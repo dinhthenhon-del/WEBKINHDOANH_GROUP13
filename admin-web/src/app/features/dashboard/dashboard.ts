@@ -225,11 +225,11 @@ export class Dashboard implements OnInit, OnDestroy {
       return;
     }
 
-    let csvContent = '\uFEFFNgày,Thứ,Doanh Thu Thuần (VND),Hàng Hoàn Trả (VND),Số Đơn Hủy,Giá Trị Đơn Hủy (VND),Số Đơn Thực Thu\n';
+    let csvContent = '\uFEFFNgày,Thứ,Tiền Thu Được (VND),Hàng Hoàn Trả (VND),Số Đơn Hủy,Giá Trị Hủy (VND),Doanh Thu Thuần (VND),Số Đơn Thực Thu\n';
     this.weeklyReport.dailyBreakdown.forEach((d: any) => {
-      csvContent += `"${d.fullDateLabel}","${d.dayLabel}",${d.netRevenue},${d.refundedAmount},${d.cancelledOrders},${d.cancelledAmount},${d.paidOrders}\n`;
+      csvContent += `"${d.fullDateLabel}","${d.dayLabel}",${d.grossRevenue || 0},${d.refundedAmount || 0},${d.cancelledOrders || 0},${d.cancelledAmount || 0},${d.netRevenue || 0},${d.paidOrders || 0}\n`;
     });
-    csvContent += `\n"TỔNG CỘNG TUẦN","",${this.weeklyReport.totalNetRevenue},${this.weeklyReport.totalRefundedAmount},"",${this.weeklyReport.totalCancelledAmount},${this.weeklyReport.paidOrdersCount}\n`;
+    csvContent += `\n"TỔNG CỘNG TUẦN","",${this.weeklyReport.totalGrossRevenue || 0},${this.weeklyReport.totalRefundedAmount || 0},${this.weeklyReport.totalCancelledOrders || 0},${this.weeklyReport.totalCancelledAmount || 0},${this.weeklyReport.totalNetRevenue || 0},${this.weeklyReport.paidOrdersCount || 0}\n`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

@@ -2225,6 +2225,7 @@ app.get('/api/dashboard/stats', async (req, res) => {
     let weekTotalNet = 0;
     let weekTotalRefund = 0;
     let weekTotalCancelled = 0;
+    let weekTotalCancelledOrders = 0;
     let weekPaidOrdersCount = 0;
 
     ordersIn7Days.forEach(o => {
@@ -2233,33 +2234,39 @@ app.get('/api/dashboard/stats', async (req, res) => {
       if (!dayBucket) return;
 
       const rawStatus = (o.orderStatus || o.status || 'pending').toLowerCase();
-      const payment = (o.paymentStatus || '').toLowerCase();
       const total = Number(o.totalAmount || 0);
       let refunded = Number(o.refundedAmount || 0);
 
       const isCancelled = rawStatus === 'cancelled';
-      const isPaid = ['paid', 'partially_refunded'].includes(payment);
+      const isPaid = ordersService.wasOrderPaid(o);
 
-      // TIÊU CHÍ KẾ TOÁN DOANH THU THUẦN:
-      // 1. Chỉ khi đơn ĐÃ THANH TOÁN (isPaid) mới tính vào doanh thu bán hàng
+      // TIÊU CHÍ KẾ TOÁN DOANH THU THUẦN (UC-A06):
+      // 1. Chỉ khi đơn ĐÃ THANH TOÁN (isPaid) mới tính vào TIỀN THU ĐƯỢC (Doanh thu gộp)
       if (isPaid) {
         dayBucket.grossRevenue = (dayBucket.grossRevenue || 0) + total;
         weekTotalGross += total;
 
         if (isCancelled) {
-          // 2. Đã thanh toán nhưng hủy đơn -> ghi nhận vào các đơn giảm trừ doanh thu diện hủy hàng
-          dayBucket.cancelledOrders++;
-          dayBucket.cancelledAmount += total;
+          // 2. Đã thanh toán nhưng hủy đơn -> Chuyển sang HÀNG HỦY (giảm trừ doanh thu)
+          dayBucket.cancelledOrders = (dayBucket.cancelledOrders || 0) + 1;
+          dayBucket.cancelledAmount = (dayBucket.cancelledAmount || 0) + total;
           weekTotalCancelled += total;
-        } else if (o.returnStatus === 'approved' || refunded > 0) {
-          // 4. Khách nhận hàng muốn đổi/trả -> ghi nhận vào hàng hoàn trả giảm trừ doanh thu
-          dayBucket.returnedOrders++;
+          weekTotalCancelledOrders++;
+        } else if (o.returnStatus === 'approved' || refunded > 0 || (o.paymentStatus || '').toLowerCase() === 'partially_refunded') {
+          // 3. Khách nhận hàng muốn đổi/trả nếu ta xác nhận approved -> Kê khai vô HÀNG HOÀN TRẢ
+          dayBucket.returnedOrders = (dayBucket.returnedOrders || 0) + 1;
           if (!refunded || refunded <= 0) refunded = total;
-          dayBucket.refundedAmount += refunded;
-          weekTotalRefund += refunded;
+          const validRefund = Math.min(total, refunded);
+          dayBucket.refundedAmount = (dayBucket.refundedAmount || 0) + validRefund;
+          weekTotalRefund += validRefund;
+
+          if (total > validRefund) {
+            dayBucket.paidOrders = (dayBucket.paidOrders || 0) + 1;
+            weekPaidOrdersCount++;
+          }
         } else {
-          // Đơn hợp lệ đã thanh toán thành công
-          dayBucket.paidOrders++;
+          // Đơn hợp lệ đã thanh toán thành công giữ lại
+          dayBucket.paidOrders = (dayBucket.paidOrders || 0) + 1;
           weekPaidOrdersCount++;
         }
 
@@ -2273,10 +2280,9 @@ app.get('/api/dashboard/stats', async (req, res) => {
           };
         }
       } else {
-        // 3. Đơn CHƯA THANH TOÁN: Nếu khách hàng đặt nhưng chưa thanh toán đã hủy -> ĐỪNG ghi nhận nó vào các khoản giảm trừ doanh thu
+        // 4. Đơn CHƯA THANH TOÁN: Nếu khách hàng đặt nhưng chưa thanh toán đã hủy -> Tuyệt đối KHÔNG tính vào tiền thu được và KHÔNG ghi nhận vào các khoản giảm trừ doanh thu
         if (isCancelled) {
           dayBucket.unpaidCancelledOrders = (dayBucket.unpaidCancelledOrders || 0) + 1;
-          // Tuyệt đối KHÔNG cộng vào dayBucket.cancelledAmount và KHÔNG cộng vào weekTotalCancelled!
         }
       }
     });
@@ -2337,6 +2343,7 @@ app.get('/api/dashboard/stats', async (req, res) => {
       totalNetRevenue: weekTotalNet,
       totalRefundedAmount: weekTotalRefund,
       totalCancelledAmount: weekTotalCancelled,
+      totalCancelledOrders: weekTotalCancelledOrders,
       paidOrdersCount: weekPaidOrdersCount,
       peakDayLabel: peakIndex >= 0 ? `${revenueDays[peakIndex].dayLabel} (${revenueDays[peakIndex].fullDateLabel})` : 'Chưa có',
       peakDayRevenue: maxDayRevenue,
@@ -2345,12 +2352,12 @@ app.get('/api/dashboard/stats', async (req, res) => {
         date: d.date,
         dayLabel: d.dayLabel,
         fullDateLabel: d.fullDateLabel,
-        grossRevenue: d.grossRevenue || d.totalAmount + d.refundedAmount,
+        grossRevenue: d.grossRevenue || 0,
         netRevenue: d.totalAmount,
-        refundedAmount: d.refundedAmount,
-        cancelledOrders: d.cancelledOrders,
-        cancelledAmount: d.cancelledAmount,
-        paidOrders: d.paidOrders,
+        refundedAmount: d.refundedAmount || 0,
+        cancelledOrders: d.cancelledOrders || 0,
+        cancelledAmount: d.cancelledAmount || 0,
+        paidOrders: d.paidOrders || 0,
         isPeak: !!d.isPeak,
       })),
     };
