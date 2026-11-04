@@ -32,8 +32,7 @@
         <div class="flex items-start justify-between">
           <div>
             <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đơn chờ xử lý</span>
-            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
-              {{ stats.pending }} <span class="font-label-md text-label-md text-secondary font-medium">kiện</span>
+            <div class="font-numeric text-2xl lg:text-3xl text-primary font-bold mt-1 leading-none">{{ stats.pending }} <span class="font-label-md text-label-md text-secondary font-medium">kiện</span>
             </div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
@@ -54,8 +53,7 @@
         <div class="flex items-start justify-between">
           <div>
             <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đang chuẩn bị xưởng</span>
-            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
-              {{ stats.processing }} <span class="font-label-md text-label-md text-primary font-medium">tác phẩm</span>
+            <div class="font-numeric text-2xl lg:text-3xl text-primary font-bold mt-1 leading-none">{{ stats.processing }} <span class="font-label-md text-label-md text-primary font-medium">tác phẩm</span>
             </div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-800">
@@ -73,8 +71,7 @@
         <div class="flex items-start justify-between">
           <div>
             <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Đang giao vận</span>
-            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1">
-              {{ stats.shipping }} <span class="font-label-md text-label-md text-outline font-medium">chuyến</span>
+            <div class="font-numeric text-2xl lg:text-3xl text-primary font-bold mt-1 leading-none">{{ stats.shipping }} <span class="font-label-md text-label-md text-outline font-medium">chuyến</span>
             </div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-800">
@@ -92,8 +89,7 @@
         <div class="flex items-start justify-between">
           <div>
             <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">Doanh thu thuần</span>
-            <div class="font-headline-lg text-headline-lg text-primary font-bold mt-1 text-xl lg:text-2xl text-emerald-700">
-              {{ formatCurrency(stats.totalRevenue) }}
+            <div class="font-numeric text-xl lg:text-2xl text-emerald-700 font-bold mt-1 leading-none tracking-tight">{{ formatCurrency(stats.totalRevenue) }}
             </div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800">

@@ -33,7 +33,7 @@
   }
 
   function formatMoney(amount) {
-    return Number(amount || 0).toLocaleString('vi-VN') + '₫';
+    return Number(amount || 0).toLocaleString('vi-VN') + ' ₫';
   }
 
   function formatDate(dateStr) {
@@ -265,7 +265,7 @@
               ` : ''}
               <div class="flex items-baseline justify-between mt-1">
                 <span class="text-[11px] text-[#74777e]">SL: ${qty.toString().padStart(2, '0')} ${isCustomized ? '• Giá chế tác' : '• Đơn giá'}: ${formatMoney(unitPrice)}</span>
-                <span class="font-bold text-[15px] text-[#000f22] font-serif">${formatMoney(lineTotal)}</span>
+                <span class="font-bold text-[15px] text-[#000f22] font-numeric">${formatMoney(lineTotal)}</span>
               </div>
             </div>
           </div>
@@ -1121,7 +1121,7 @@
           <div class="flex flex-wrap items-center gap-3 sm:gap-5">
             <div>
               <span class="text-[10px] uppercase tracking-wider text-[#74777e] font-semibold block">Mã đơn giám tuyển</span>
-              <span class="font-bold text-[#000f22] text-[15px] font-serif tracking-tight">#${escapeHtml(order.orderCode)}</span>
+              <span class="font-bold text-[#000f22] text-[15px] font-numeric tracking-tight">#${escapeHtml(order.orderCode)}</span>
             </div>
             <div class="hidden sm:block h-7 w-px bg-[#EBEAE5]"></div>
             <div>
@@ -1195,7 +1195,7 @@
                   ` : ''}
                   <div class="flex items-center justify-between mt-2">
                     <span class="text-[12px] text-[#74777e]">Số lượng: <strong class="text-[#000f22]">${item.quantity}</strong></span>
-                    <span class="font-bold text-[14px] text-[#000f22] font-serif">${formatMoney(item.unitPrice * item.quantity)}</span>
+                    <span class="font-bold text-[14px] text-[#000f22] font-numeric">${formatMoney(item.unitPrice * item.quantity)}</span>
                   </div>
                 </div>
               </div>
@@ -1704,7 +1704,7 @@
             <span class="hidden sm:inline text-biscuit-sand text-xl">|</span>
             <div>
               <span class="font-label-sm text-label-sm text-outline uppercase block">Tổng thanh toán</span>
-              <p class="font-title-md text-title-md text-[#a23e18] font-bold font-serif">${formatMoney(order.totalAmount)}</p>
+              <p class="font-title-md text-title-md text-[#a23e18] font-bold font-numeric tracking-tight">${formatMoney(order.totalAmount)}</p>
             </div>
           </div>
 
@@ -1814,7 +1814,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-biscuit-sand/40">
                       <span class="font-body-sm text-xs text-outline">Số lượng: <strong class="text-primary font-semibold">${item.quantity} tác phẩm</strong></span>
                       <div class="flex items-center gap-3">
-                        <span class="font-title-md text-sm text-primary font-serif font-bold">${formatMoney(item.unitPrice * item.quantity)}</span>
+                        <span class="font-title-md text-sm text-primary font-bold font-numeric">${formatMoney(item.unitPrice * item.quantity)}</span>
                         
                         <!-- Nút Đánh giá từng sản phẩm khi đã Hoàn thành (Mỗi đơn hàng được đánh giá 1 lần) -->
                         ${isCompleted ? `

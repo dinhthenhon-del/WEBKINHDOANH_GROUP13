@@ -199,7 +199,7 @@ const ProductComponent = {
           <div>
             <!-- Giá tiền niêm yết -->
             <div class="flex items-baseline justify-between mb-3 pt-2 border-t border-[#EBEAE5]/60">
-              <span class="font-['Playfair_Display',serif] text-[#a23e18] font-bold text-lg">${price}</span>
+              <span class="font-numeric text-[#a23e18] font-bold text-lg tracking-tight">${price}</span>
               <span class="font-['Plus_Jakarta_Sans',sans-serif] text-[#74777e] text-xs">${product.unit || ''}</span>
             </div>
 

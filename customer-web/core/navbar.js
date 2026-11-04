@@ -1043,7 +1043,7 @@ function renderWishlistItems(items) {
           <div class="mt-4 pt-3 border-t border-biscuit-sand/60 flex items-center justify-between gap-2">
             <div class="flex flex-col">
               <span class="font-label-sm text-[11px] text-outline uppercase">Định giá</span>
-              <span class="font-headline-sm text-title-lg text-primary font-serif font-bold">${priceFormatted}</span>
+              <span class="font-headline-sm text-title-lg text-primary font-bold font-numeric tracking-tight">${priceFormatted}</span>
             </div>
             <button onclick="addSingleWishlistToCart('${p._id}', '${escapeHtml(p.name)}')" class="px-3.5 py-2 rounded bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-all font-title-md text-body-sm font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer">
               <span class="material-symbols-outlined text-[18px]">shopping_bag</span>

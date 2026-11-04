@@ -39,7 +39,7 @@
         </div>
         <div class="flex items-baseline justify-between mt-space-md">
           <div class="flex items-baseline gap-space-xs">
-            <span class="font-headline-lg text-headline-xl text-primary font-bold">{{ kpi.totalCustomers }}</span>
+            <span class="font-numeric text-3xl sm:text-4xl text-primary font-bold leading-none">{{ kpi.totalCustomers }}</span>
             <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">thượng khách</span>
           </div>
           <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold shrink-0">
@@ -62,7 +62,7 @@
         </div>
         <div class="flex items-baseline justify-between mt-space-md">
           <div class="flex items-baseline gap-space-xs">
-            <span class="font-headline-lg text-headline-xl text-primary font-bold">{{ kpi.activeCustomers }}</span>
+            <span class="font-numeric text-3xl sm:text-4xl text-primary font-bold leading-none">{{ kpi.activeCustomers }}</span>
             <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">tài khoản</span>
           </div>
           <span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-white bg-emerald-700 px-2.5 py-1 rounded-full shadow-sm font-semibold shrink-0">
@@ -85,7 +85,7 @@
         </div>
         <div class="flex items-baseline justify-between mt-space-md">
           <div class="flex items-baseline gap-space-xs">
-            <span class="font-headline-lg text-headline-xl text-[#C85A32] font-bold">{{ kpi.blockedCustomers }}</span>
+            <span class="font-numeric text-3xl sm:text-4xl text-[#C85A32] font-bold leading-none">{{ kpi.blockedCustomers }}</span>
             <span class="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">tài khoản</span>
           </div>
           <span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-semibold shrink-0">
@@ -413,7 +413,7 @@
               <span class="p-2 rounded-lg bg-surface-container-low text-[#c85a32] material-symbols-outlined text-xl">receipt_long</span>
             </div>
             <div class="mt-space-md">
-              <span class="font-headline-xl text-headline-xl text-[#c85a32] font-bold tracking-tight">{{ customerOrders.length }} đơn</span>
+              <span class="font-numeric text-2xl text-[#c85a32] font-bold tracking-tight">{{ customerOrders.length }} đơn</span>
               <div class="mt-1 flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
                 <span>Tổng số đơn đã thanh toán &amp; hoàn tất</span>
               </div>
@@ -427,7 +427,7 @@
               <span class="p-2 rounded-lg bg-surface-container-low text-error material-symbols-outlined text-xl">favorite</span>
             </div>
             <div class="mt-space-md">
-              <span class="font-headline-xl text-headline-xl text-error font-bold tracking-tight">{{ (selectedCustomer.wishlist || []).length || (selectedCustomer.wishlistCount || 0) }} sản phẩm</span>
+              <span class="font-numeric text-2xl text-error font-bold tracking-tight">{{ (selectedCustomer.wishlist || []).length || (selectedCustomer.wishlistCount || 0) }} sản phẩm</span>
               <div class="mt-1 flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
                 <span>Lưu trong wishlist</span>
               </div>

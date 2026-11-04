@@ -45,7 +45,7 @@
    * Định dạng tiền tệ VND
    */
   function formatMoney(amount) {
-    return Number(amount || 0).toLocaleString('vi-VN') + '₫';
+    return Number(amount || 0).toLocaleString('vi-VN') + ' ₫';
   }
 
   /**
@@ -427,7 +427,7 @@
               <div class="flex items-end justify-between mt-2 pt-1">
                 <div>
                   <span class="text-[10px] text-[#74777e] block">${isCustomized ? 'Giá thanh toán chế tác' : 'Đơn giá'}: ${formatMoney(lineUnitPrice)}</span>
-                  <span class="font-semibold text-[15px] text-[#000f22] leading-tight font-serif">${formatMoney(lineTotalPrice)}</span>
+                  <span class="font-semibold text-[15px] text-[#000f22] leading-tight font-numeric">${formatMoney(lineTotalPrice)}</span>
                 </div>
 
                 <!-- Cụm nút +/- và xóa -->

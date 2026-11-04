@@ -417,7 +417,7 @@
             <div *ngIf="order.refundedAmount" class="text-[11px] text-purple-900 bg-purple-50 p-2 rounded border border-purple-200">
               <div class="flex items-center justify-between">
                 <span>Đã hoàn trả khách:</span>
-                <strong class="font-serif text-sm">{{ formatCurrency(order.refundedAmount) }}</strong>
+                <strong class="font-numeric text-sm">{{ formatCurrency(order.refundedAmount) }}</strong>
               </div>
               <div *ngIf="order.refundedAt" class="text-[10px] text-purple-700 mt-0.5">
                 Ngày hoàn: {{ order.refundedAt | date:'HH:mm, dd/MM/yyyy' }}

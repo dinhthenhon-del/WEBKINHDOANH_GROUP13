@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="mt-space-md">
-        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalProductsCount }}</div>
+        <div class="font-numeric text-3xl lg:text-4xl text-primary leading-none font-bold">{{ stats.totalProductsCount }}</div>
         <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
           <span class="material-symbols-outlined text-sm">arrow_upward</span>
           <span>+4 sản phẩm mới tuần này</span>
@@ -62,7 +62,7 @@
         </div>
       </div>
       <div class="mt-space-md">
-        <div class="font-headline-lg text-headline-xl text-primary leading-none font-bold">{{ stats.totalCustomersCount | number }}</div>
+        <div class="font-numeric text-3xl lg:text-4xl text-primary leading-none font-bold">{{ stats.totalCustomersCount | number }}</div>
         <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary font-semibold">
           <span class="material-symbols-outlined text-sm">trending_up</span>
           <span>+18% so với tháng trước</span>
@@ -80,8 +80,7 @@
         </div>
       </div>
       <div class="mt-space-md">
-        <div class="font-headline-lg text-headline-xl text-on-primary leading-none tracking-tight font-bold whitespace-nowrap">
-          {{ formatCurrency(stats.totalRevenue) }}
+        <div class="font-numeric text-2xl lg:text-3xl text-on-primary leading-none tracking-tight font-bold whitespace-nowrap">{{ formatCurrency(stats.totalRevenue) }}
         </div>
         <div class="mt-space-sm flex items-center gap-1 text-label-sm font-label-sm text-secondary-fixed whitespace-nowrap font-medium">
           <span class="material-symbols-outlined text-sm">verified</span>

@@ -525,7 +525,7 @@ export class CustomerList implements OnInit {
   }
 
   formatPrice(price: number = 0): string {
-    return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
   }
 
   formatDate(dateStr?: string): string {

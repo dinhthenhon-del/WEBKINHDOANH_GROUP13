@@ -10,3 +10,45 @@ select {
   -moz-appearance: none !important;
   background-image: none !important;
 }
+
+/* ==========================================================================
+   HỆ THỐNG ĐỒNG BỘ CHỮ SỐ & TIỀN TỆ "NGAY HÀNG THẲNG LỐI" (LINING TABULAR FIGURES)
+   - Loại bỏ triệt để hiện tượng số thụt thò (old-style figures) của font serif.
+   - Toàn bộ số đếm KPI, số lượng, phần trăm, giá tiền đều dùng Plus Jakarta Sans
+     kết hợp OpenType lining-nums + tabular-nums để số nằm thẳng tắp trên baseline.
+   ========================================================================== */
+
+/* 1. Lớp chuyên dụng font-numeric cho mọi con số & tiền tệ */
+.font-numeric,
+.stat-number,
+.kpi-value,
+.currency-value,
+.metric-value,
+.tabular-nums,
+[data-numeric] {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+  letter-spacing: -0.01em;
+}
+
+/* 2. Đảm bảo khi các class font-headline hoặc font-serif lồng con số tiền tệ hoặc KPI, con số không bị thụt lên thụt xuống */
+.font-headline-xl.font-numeric,
+.font-headline-lg.font-numeric,
+.font-headline-md.font-numeric,
+.font-headline-sm.font-numeric,
+.font-serif.font-numeric {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+}
+
+/* 3. Chuẩn hóa canh lề và hiển thị cột tiền tệ trong bảng dữ liệu */
+.table-currency,
+td.currency-cell,
+th.currency-cell {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+  white-space: nowrap;
+}

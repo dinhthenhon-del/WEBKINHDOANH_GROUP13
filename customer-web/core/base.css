@@ -5,6 +5,7 @@
    HỆ THỐNG ĐỒNG BỘ PHÔNG CHỮ CHUẨN HOÀNG GIA (DỰA TRÊN TRANG CHỦ)
    - Tiêu đề nghệ thuật & Heritage branding: Playfair Display (Serif)
    - Thân bài, giao diện, biểu mẫu đổi trả & đánh giá: Plus Jakarta Sans (Sans-serif)
+   - Con số, số lượng, mã đơn, giá tiền: Plus Jakarta Sans (Lining Tabular Nums)
    ========================================================================== */
 
 html, body {
@@ -14,13 +15,13 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-/* Tiêu đề mang phong cách di sản gốm sứ hoàng gia 1705 */
-h1, h2, h3, h4, 
-.font-serif, 
-.font-playfair,
-.font-headline-lg, 
-.font-headline-md, 
-.font-headline-sm, 
+/* Tiêu đề mang phong cách di sản gốm sứ hoàng gia 1705 (Chỉ áp dụng cho chữ tiêu đề, không áp dụng cho con số hay giá tiền) */
+h1:not(.font-numeric):not(.price-tag), 
+h2:not(.font-numeric):not(.price-tag), 
+h3:not(.font-numeric):not(.price-tag), 
+h4:not(.font-numeric):not(.price-tag), 
+.font-serif:not(.font-numeric):not(.price-tag), 
+.font-playfair:not(.font-numeric):not(.price-tag),
 .font-display-hero,
 .font-display-hero-mobile,
 .font-headline-lg-mobile {
@@ -30,6 +31,43 @@ h1, h2, h3, h4,
 /* Toàn bộ các thành phần Form (Input, Textarea, Select, Button, Label, Radio) */
 button, input, select, textarea, label, optgroup, .font-sans {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* ==========================================================================
+   CHUẨN HOÁ CHỮ SỐ & GIÁ TIỀN "NGAY HÀNG THẲNG LỐI" (LINING TABULAR FIGURES)
+   Đảm bảo tất cả con số, số lượng, mã đơn, giá tiền đều nằm trên cùng 1 hàng,
+   không bị thụt lên thụt xuống do font serif.
+   ========================================================================== */
+.font-numeric,
+.price-tag,
+.currency-value,
+.stat-number,
+.tabular-nums,
+[data-numeric] {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+  letter-spacing: -0.01em;
+}
+
+/* Đảm bảo khi class font-serif hoặc font-headline lồng giá tiền hoặc số lượng, con số luôn thẳng hàng */
+.font-serif.font-numeric,
+.font-headline-lg.font-numeric,
+.font-headline-md.font-numeric,
+.font-headline-sm.font-numeric,
+.font-serif.price-tag {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+}
+
+/* Canh lề và hiển thị ô giá tiền, tiền tệ */
+.currency-amount,
+.money-cell {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  font-feature-settings: 'lnum' 1, 'tnum' 1 !important;
+  white-space: nowrap;
 }
 
 /* Đảm bảo ô nhập liệu không bị lỗi thụt dấu tiếng Việt */
