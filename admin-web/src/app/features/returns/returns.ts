@@ -350,9 +350,30 @@ export class Returns implements OnInit {
   }
 
   // --- LIGHTBOX PREVIEW ---
+  fallbackEvidenceImage = 'https://cdn.hstatic.net/products/200000532849/1_copy_5d87cfc2a83249b8b5cb1ac6361fe4a9.jpg';
+
+  getEvidenceImageUrl(img: string | undefined | null): string {
+    if (!img) return this.fallbackEvidenceImage;
+    const str = String(img).trim();
+    if (str.startsWith('data:image/') || str.startsWith('http://') || str.startsWith('https://')) {
+      return str;
+    }
+    if (str.startsWith('/uploads/') || str.startsWith('uploads/')) {
+      return 'http://localhost:5000/' + str.replace(/^\//, '');
+    }
+    return this.fallbackEvidenceImage;
+  }
+
+  onEvidenceImgError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target && target.src !== this.fallbackEvidenceImage) {
+      target.src = this.fallbackEvidenceImage;
+    }
+  }
+
   openImageLightbox(imgUrl: string, event?: Event): void {
     if (event) event.stopPropagation();
-    this.previewImage = imgUrl;
+    this.previewImage = this.getEvidenceImageUrl(imgUrl);
   }
 
   closeImageLightbox(): void {

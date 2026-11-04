@@ -502,7 +502,7 @@
                 <div *ngFor="let img of selectedReturn.evidenceImages; let idx = index"
                      (click)="openImageLightbox(img)"
                      class="group relative rounded-lg overflow-hidden h-36 bg-surface-container cursor-pointer shadow-sm border border-surface-variant/40">
-                  <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" [src]="img" [alt]="'Minh chứng ' + (idx + 1)">
+                  <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" [src]="getEvidenceImageUrl(img)" (error)="onEvidenceImgError($event)" [alt]="'Minh chứng ' + (idx + 1)">
                   <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex items-end p-2">
                     <span class="text-white text-xs font-semibold">Ảnh minh chứng #{{ idx + 1 }}</span>
                   </div>
@@ -744,7 +744,7 @@
 <!-- ======================================================== -->
 <div *ngIf="previewImage" (click)="closeImageLightbox()" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 cursor-pointer">
   <div class="relative max-w-4xl max-h-[90vh] bg-surface-container-lowest rounded-2xl overflow-hidden shadow-2xl p-2" (click)="$event.stopPropagation()">
-    <img [src]="previewImage" alt="Chi tiết ảnh minh chứng" class="max-w-full max-h-[82vh] object-contain rounded-xl">
+    <img [src]="getEvidenceImageUrl(previewImage)" (error)="onEvidenceImgError($event)" alt="Chi tiết ảnh minh chứng" class="max-w-full max-h-[82vh] object-contain rounded-xl">
     <div class="flex items-center justify-between p-3">
       <span class="text-xs text-on-surface-variant font-medium">Ảnh minh chứng hiện trường - Độ phân giải gốc</span>
       <button (click)="closeImageLightbox()" class="px-3 py-1 rounded-lg bg-surface-container text-primary font-semibold text-xs hover:bg-surface-container-high">
