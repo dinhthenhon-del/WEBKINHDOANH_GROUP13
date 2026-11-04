@@ -555,54 +555,7 @@
       );
     }
 
-    function downloadHeritageCertificate(orderId) {
-      const u = typeof currentUser !== 'undefined' && currentUser ? currentUser : JSON.parse(localStorage.getItem('craftory_user') || '{}');
-      const printWin = window.open('', '_blank', 'width=850,height=750');
-      if (!printWin) {
-        showToast('toast-warning', '⚠️ Trình duyệt chặn popup', 'Vui lòng cho phép mở cửa sổ popup để xem và in Chứng thư di sản.');
-        return;
-      }
-      printWin.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Chứng Thư Di Sản Gốm Bát Tràng - Đơn #${orderId}</title>
-          <style>
-            body { font-family: 'Times New Roman', serif; padding: 40px; background: #fffdfa; color: #0a2540; }
-            .cert-border { border: 6px double #a23e18; padding: 32px; border-radius: 12px; text-align: center; }
-            h1 { font-size: 24px; text-transform: uppercase; color: #a23e18; margin-bottom: 4px; letter-spacing: 1px; }
-            h2 { font-size: 15px; font-weight: normal; font-style: italic; color: #555; margin-top: 0; }
-            .seal { width: 90px; height: 90px; border: 3px solid #b91c1c; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #b91c1c; font-weight: bold; font-size: 12px; margin: 16px auto; transform: rotate(-6deg); }
-            .desc { font-size: 15px; line-height: 1.8; margin: 20px 0; text-align: justify; }
-            .signatures { display: flex; justify-content: space-around; margin-top: 35px; font-weight: bold; font-size: 14px; }
-            @media print { body { padding: 0; } }
-          </style>
-        </head>
-        <body>
-          <div class="cert-border">
-            <h1>CHỨNG THƯ BẢO VẬT DI SẢN GỐM BÁT TRÀNG</h1>
-            <h2>Minh Gốm Bát Tràng 1705 • Làng Nghề Truyền Thống Thăng Long - Hà Nội</h2>
-            <div class="seal">TRIỆN NGỰ<br>BÁT TRÀNG</div>
-            <div class="desc">
-              Chứng nhận đơn hàng độc bản mang mã số lưu trữ: <strong>#${orderId}</strong><br>
-              Được bảo chứng và lưu ký quyền sở hữu cho Thượng khách: <strong>${u.fullName || 'Nhà Sưu Tầm Thượng Lưu'}</strong><br>
-              Tác phẩm đạt chuẩn mực cốt nung cổ pháp 1.380°C, kỹ nghệ phủ men rạn hoàng cung và chữ ký triện thủ công xác thực bởi Ban Giám Tuyển Làng Gốm Thanh Xuân.
-            </div>
-            <div class="signatures">
-              <div>NGHỆ NHÂN DÂN GIAN TRƯỞNG LÒ<br><br><br><br><i>(Đã ấn triện số)</i></div>
-              <div>BAN QUẢN LÝ LÀNG GỐM THANH XUÂN<br><br><br><br><i>(Xác thực di sản)</i></div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `);
-      printWin.document.close();
-      printWin.focus();
-      setTimeout(function () {
-        try { printWin.print(); } catch (err) {}
-      }, 500);
-    }
+    // downloadHeritageCertificate chuyển sang orders.js để chống xung đột HTML parser
 
     // Chuyển file được chọn sang chuỗi Base64 DataURL (nén gọn < 800px)
     function convertReturnFilesToBase64(files) {
@@ -999,7 +952,7 @@
     window.triggerPendingCancelSuccess = triggerPendingCancelSuccess;
     window.triggerCompletedCancelError = triggerCompletedCancelError;
     window.triggerCancelledOrderClick = triggerCancelledOrderClick;
-    window.downloadHeritageCertificate = downloadHeritageCertificate;
+    // window.downloadHeritageCertificate do orders.js quản lý
     window.handleFileSelect = handleFileSelect;
     window.handleReviewPhotoSelect = handleReviewPhotoSelect;
     window.setOrderFilter = setOrderFilter;
