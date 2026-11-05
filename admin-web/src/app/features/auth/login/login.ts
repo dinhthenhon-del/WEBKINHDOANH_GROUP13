@@ -1,4 +1,5 @@
 import { Component, ChangeDetectorRef, inject } from '@angular/core';
+import { getApiBaseUrl } from '../../../core/api.config';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -81,7 +82,7 @@ export class Login {
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
-    const loginApiUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/auth/login`;
+    const loginApiUrl = `${getApiBaseUrl()}/auth/login`;
 
     fetch(loginApiUrl, {
       method: 'POST',

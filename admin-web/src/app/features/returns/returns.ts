@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReturnService, ReturnRequestData, ReturnStatusUpdatePayload } from '../../core/services/return.service';
+import { getServerBaseUrl } from '../../core/api.config';
 
 @Component({
   selector: 'app-returns',
@@ -357,7 +358,7 @@ export class Returns implements OnInit {
       return str;
     }
     if (str.startsWith('/uploads/') || str.startsWith('uploads/')) {
-      return 'http://localhost:5000/' + str.replace(/^\//, '');
+      return `${getServerBaseUrl()}/` + str.replace(/^\//, '');
     }
     return `/${str.replace(/^\//, '')}`;
   }
@@ -366,10 +367,10 @@ export class Returns implements OnInit {
     const target = event.target as HTMLImageElement;
     if (target) {
       const currentSrc = target.src || '';
-      if (!currentSrc.includes(':5000/uploads/') && !currentSrc.startsWith('data:')) {
+      if (!currentSrc.includes('/uploads/') && !currentSrc.startsWith('data:')) {
         const filename = currentSrc.split('/').pop();
         if (filename) {
-          target.src = `http://localhost:5000/uploads/${filename}`;
+          target.src = `${getServerBaseUrl()}/uploads/${filename}`;
           return;
         }
       }

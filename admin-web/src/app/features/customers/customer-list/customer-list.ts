@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { getApiBaseUrl } from '../../../core/api.config';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -112,7 +113,7 @@ export class CustomerList implements OnInit {
   toastMessage = '';
   isToastVisible = false;
 
-  private apiUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/admin/customers`;
+  private apiUrl = `${getApiBaseUrl()}/admin/customers`;
 
   ngOnInit() {
     this.loadCustomers();

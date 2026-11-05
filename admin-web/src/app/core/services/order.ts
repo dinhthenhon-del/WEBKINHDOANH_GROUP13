@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { getApiBaseUrl } from '../api.config';
 import { Observable } from 'rxjs';
 
 export interface OrderItem {
@@ -125,7 +126,7 @@ export interface OrderActionResponse {
 })
 export class OrderService {
   private http = inject(HttpClient);
-  private readonly baseUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/orders/admin`;
+  private readonly baseUrl = `${getApiBaseUrl()}/orders/admin`;
 
   /**
    * Tạo HttpHeaders xác thực Admin từ localStorage

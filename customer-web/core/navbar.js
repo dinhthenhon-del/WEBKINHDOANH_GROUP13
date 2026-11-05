@@ -873,7 +873,7 @@ async function fetchFullWishlistProducts() {
 
   // Cách 2: Gọi trực tiếp qua apiBase an toàn
   try {
-    const base = (window.CRAFTORY_API_BASE || 'http://localhost:5000/api');
+    const base = (window.CRAFTORY_API_BASE || (window.location.origin && window.location.protocol !== 'file:' && window.location.port !== '5500' ? `${window.location.origin}/api` : 'http://localhost:5000/api'));
     const res = await new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
       xhr.open('GET', `${base}/accounts/wishlist/${userId}`, true);

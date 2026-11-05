@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { getApiBaseUrl } from '../api.config';
 import { Observable } from 'rxjs';
 
 export interface ReturnItemProduct {
@@ -73,7 +74,7 @@ export interface ApiResponse<T> {
 })
 export class ReturnService {
   private http = inject(HttpClient);
-  private apiRoot = `${window.location.protocol}//${window.location.hostname}:5000/api`;
+  private apiRoot = getApiBaseUrl();
   private returnsUrl = `${this.apiRoot}/returns`;
 
   getReturns(filters?: { status?: string; type?: string; search?: string }): Observable<ApiResponse<ReturnRequestData[]>> {

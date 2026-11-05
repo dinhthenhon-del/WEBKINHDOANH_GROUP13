@@ -9,8 +9,23 @@ const app = express();
 
 // Base64 product images are included in JSON requests.
 app.use(cors());
-app.use('/uploads', express.static(require('path').join(__dirname, '../public/uploads')));
-app.use(express.static(require('path').join(__dirname, '../public')));
+const path = require('path');
+const fs = require('fs');
+
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Phục vụ giao diện khách hàng (Customer Web) tại root /
+const customerWebPath = path.resolve(__dirname, '../../customer-web');
+if (fs.existsSync(customerWebPath)) {
+  app.use(express.static(customerWebPath));
+}
+
+// Phục vụ giao diện quản trị viên (Admin Web) tại /admin
+const adminDistPath = path.resolve(__dirname, '../../admin-web/dist/admin-web/browser');
+if (fs.existsSync(adminDistPath)) {
+  app.use('/admin', express.static(adminDistPath));
+}
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -2568,6 +2583,15 @@ QUY TẮC CỐT LÕI BẮT BUỘC VỀ PHONG THÁI TRẢ LỜI:
     console.error('Lỗi xử lý chatbot:', error);
     return res.status(500).json({ success: false, message: 'Lỗi xử lý từ máy chủ tư vấn.' });
   }
+});
+
+// Fallback SPA cho Admin Web khi truy cập các route con (/admin/orders, /admin/products, ...)
+app.get(/^\/admin(?:\/.*)?$/, (req, res, next) => {
+  const adminIndexPath = path.resolve(__dirname, '../../admin-web/dist/admin-web/browser/index.html');
+  if (fs.existsSync(adminIndexPath)) {
+    return res.sendFile(adminIndexPath);
+  }
+  next();
 });
 
 // 7. KHỞI ĐỘNG SERVER

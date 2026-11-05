@@ -1,0 +1,16 @@
+{
+  "name": "webkinhdoanh-group13",
+  "version": "1.0.0",
+  "description": "Làng Gốm Thanh Xuân - Haute Porcelain 1705",
+  "main": "server/src/server.js",
+  "scripts": {
+    "install:server": "npm --prefix server install",
+    "install:admin": "npm --prefix admin-web install",
+    "build:admin": "npm --prefix admin-web install && npx --prefix admin-web ng build --base-href /admin/",
+    "build": "npm --prefix server install && npm run build:admin",
+    "start": "node server/src/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { getApiBaseUrl } from '../api.config';
 import { Observable } from 'rxjs';
 
 export interface RecentOrder {
@@ -100,7 +101,7 @@ export interface ApiResponse<T> {
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private apiRoot = `${window.location.protocol}//${window.location.hostname}:5000/api`;
+  private apiRoot = getApiBaseUrl();
   private statsUrl = `${this.apiRoot}/dashboard/stats`;
 
   getDashboardStats(): Observable<ApiResponse<DashboardStats>> {

@@ -5,9 +5,15 @@
  */
 
 const API_BASE = (window.CRAFTORY_API_BASE || (() => {
+  if (window.location.protocol === 'file:') return 'http://localhost:5000/api';
   const hostname = window.location.hostname || 'localhost';
-  const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-  return `${protocol}//${hostname}:5000/api`;
+  const port = window.location.port;
+  // Khi chạy bằng Live Server máy cá nhân (port 5500, 3000...)
+  if (port && port !== '5000' && (hostname === 'localhost' || hostname === '127.0.0.1')) {
+    return `http://${hostname}:5000/api`;
+  }
+  // Khi chạy qua Express Cloud hoặc cùng domain
+  return `${window.location.origin}/api`;
 })()).replace(/\/+$/, '');
 
 const ApiService = {
