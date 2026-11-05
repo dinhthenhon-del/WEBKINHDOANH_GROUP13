@@ -22,3 +22,4 @@ export function getServerBaseUrl(): string {
   }
   return window.location.origin;
 }
+
