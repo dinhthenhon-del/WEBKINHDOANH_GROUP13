@@ -15,6 +15,7 @@ const API_BASE = (window.CRAFTORY_API_BASE || (() => {
   // Khi chạy qua Express Cloud hoặc cùng domain
   return `${window.location.origin}/api`;
 })()).replace(/\/+$/, '');
+window.CRAFTORY_API_BASE = API_BASE;
 
 const ApiService = {
   // 1. Đăng ký khách hàng (UC-C01)

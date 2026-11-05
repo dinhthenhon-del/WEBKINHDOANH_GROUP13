@@ -74,9 +74,13 @@
     };
 
     const baseUrl = (window.CRAFTORY_API_BASE || (() => {
+      if (window.location.protocol === 'file:') return 'http://localhost:5000/api';
       const hostname = window.location.hostname || 'localhost';
-      const protocol = window.location.protocol === 'file:' ? 'http:' : window.location.protocol;
-      return `${protocol}//${hostname}:5000/api`;
+      const port = window.location.port;
+      if (port && port !== '5000' && (hostname === 'localhost' || hostname === '127.0.0.1')) {
+        return `http://${hostname}:5000/api`;
+      }
+      return `${window.location.origin}/api`;
     })()).replace(/\/+$/, '');
 
     const response = await fetch(`${baseUrl}${endpoint}`, {
